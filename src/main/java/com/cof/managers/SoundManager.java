@@ -8,9 +8,9 @@ import java.io.InputStream;
 public class SoundManager {
     private static Clip clip;
 
-    public static void play() {
+    public static void ShotgunSound() {
         try {
-            InputStream file = SoundManager.class.getResourceAsStream("/audio/buttonSound.wav");
+            InputStream file = SoundManager.class.getResourceAsStream("/audio/ShotgunSound.wav");
             AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(new BufferedInputStream(file));
             clip = AudioSystem.getClip();
             clip.open(audioInputStream);

@@ -1,115 +1,248 @@
 package com.cof.ui;
 
 import com.cof.managers.MusicManager;
+import com.cof.managers.SoundManager;
+import javafx.animation.*;
 import javafx.application.Application;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.effect.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.StackPane;
+import javafx.scene.layout.*;
 import javafx.scene.control.Button;
+import javafx.scene.paint.Color;
 import javafx.stage.Stage;
+import javafx.geometry.Insets;
+import javafx.util.Duration;
 
 import java.util.Objects;
 
 public class PcLoadingScreen extends Application {
+    private MusicManager musicManager;
+    private SoundManager soundManager;
+    private Button muteButton;
+    private final Glow glow = new Glow(0.8);
+    private final DropShadow dropShadow = new DropShadow(20, Color.RED);
 
     @Override
     public void start(Stage primaryStage) {
-        // Create a full-screen background image
+        musicManager = new MusicManager();
+        soundManager = new SoundManager();
+
+        // Background statico
         Image backgroundImage = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/images/LoadingScreen.png")));
         ImageView backgroundView = new ImageView(backgroundImage);
         backgroundView.setPreserveRatio(true);
 
-        // Create the buttons
         Button startButton = createButton("Start");
         Button exitButton = createButton("Exit");
-        Button muteButton = createMuteButton();
+        muteButton = createMuteButton();
 
-        // Create an HBox for the top buttons
-        HBox topButtonBox = new HBox(20, startButton, exitButton); // 20 pixels of spacing
-        topButtonBox.setAlignment(Pos.CENTER);
+        // Aggiungi pulsazione ai pulsanti
+        addPulseAnimation(startButton);
+        addPulseAnimation(exitButton);
 
-        // Create an HBox for the mute button
-        HBox muteButtonBox = new HBox(muteButton);
-        muteButtonBox.setAlignment(Pos.BOTTOM_RIGHT);
+        VBox mainLayout = new VBox();
+        mainLayout.setAlignment(Pos.CENTER);
+        mainLayout.setSpacing(20);
 
-        // Create the overlay pane
-        StackPane overlay = new StackPane(backgroundView, topButtonBox, muteButtonBox);
-        overlay.setStyle("-fx-background-color: rgba(75, 133, 194, 0.7);");
+        // Box per i pulsanti principali senza sfondo
+        HBox buttonBox = new HBox(30);
+        buttonBox.setAlignment(Pos.CENTER);
+        buttonBox.getChildren().addAll(startButton, exitButton);
 
-        // Adjust positions when scene is ready
-        Scene scene = new Scene(overlay, 800, 600); // Set initial dimensions
+        Region topSpacer = new Region();
+        VBox.setVgrow(topSpacer, Priority.ALWAYS);
+
+        HBox muteContainer = new HBox(muteButton);
+        muteContainer.setAlignment(Pos.BOTTOM_RIGHT);
+        muteContainer.setPadding(new Insets(0, 20, 20, 0));
+
+        mainLayout.getChildren().addAll(topSpacer, buttonBox, muteContainer);
+
+        // Aggiungi effetto nebbia/particelle
+        Region fogEffect = createFogEffect();
+
+        StackPane root = new StackPane(backgroundView, fogEffect, mainLayout);
+
+        Scene scene = new Scene(root);
+
+        // Gestione del ridimensionamento
+        scene.widthProperty().addListener((obs, oldVal, newVal) -> {
+            backgroundView.setFitWidth(newVal.doubleValue());
+            fogEffect.setPrefWidth(newVal.doubleValue());
+            double newButtonSize = Math.min(newVal.doubleValue() * 0.15, 200);
+            startButton.setPrefWidth(newButtonSize);
+            exitButton.setPrefWidth(newButtonSize);
+            muteButton.setPrefWidth(newButtonSize * 0.8);
+        });
+
+        scene.heightProperty().addListener((obs, oldVal, newVal) -> {
+            backgroundView.setFitHeight(newVal.doubleValue());
+            fogEffect.setPrefHeight(newVal.doubleValue());
+            double newButtonHeight = Math.min(newVal.doubleValue() * 0.1, 80);
+            startButton.setPrefHeight(newButtonHeight);
+            exitButton.setPrefHeight(newButtonHeight);
+            muteButton.setPrefHeight(newButtonHeight * 0.8);
+        });
+
         primaryStage.setScene(scene);
         primaryStage.setFullScreen(true);
         primaryStage.show();
 
-        // Adjust the background and button positions based on actual scene size
-        scene.widthProperty().addListener((obs, oldVal, newVal) -> {
-            backgroundView.setFitWidth(newVal.doubleValue());
-            topButtonBox.setTranslateY(-scene.getHeight() * 0.3);
-        });
-        scene.heightProperty().addListener((obs, oldVal, newVal) -> {
-            backgroundView.setFitHeight(newVal.doubleValue());
-            muteButtonBox.setTranslateY(-20); // Keep mute button padding from bottom
-        });
-
-        // Initialize the music player
-        MusicManager musicManager = new MusicManager();
         musicManager.play();
+    }
+
+    private Region createFogEffect() {
+        Region fog = new Region();
+        fog.setStyle(
+                "-fx-background-color: rgba(0, 0, 0, 0.1);" +
+                        "-fx-effect: dropshadow(gaussian, rgba(255,255,255,0.3), 50, 0, 0, 0);"
+        );
+
+        // Animazione della nebbia
+        Timeline fogAnimation = new Timeline(
+                new KeyFrame(Duration.ZERO, new KeyValue(fog.opacityProperty(), 0.1)),
+                new KeyFrame(Duration.seconds(3), new KeyValue(fog.opacityProperty(), 0.3)),
+                new KeyFrame(Duration.seconds(6), new KeyValue(fog.opacityProperty(), 0.1))
+        );
+        fogAnimation.setCycleCount(Timeline.INDEFINITE);
+        fogAnimation.play();
+
+        return fog;
+    }
+
+    private void addPulseAnimation(Button button) {
+        ScaleTransition pulse = new ScaleTransition(Duration.seconds(2), button);
+        pulse.setFromX(1.0);
+        pulse.setFromY(1.0);
+        pulse.setToX(1.05);
+        pulse.setToY(1.05);
+        pulse.setCycleCount(Timeline.INDEFINITE);
+        pulse.setAutoReverse(true);
+        pulse.play();
     }
 
     private Button createButton(String text) {
         Button button = new Button(text);
         styleButton(button);
 
-        button.setOnMouseEntered(event -> {
+        button.setOnMouseEntered(e -> {
+            button.setEffect(glow);
+            button.setStyle(getHoverStyle());
             button.setScaleX(1.1);
             button.setScaleY(1.1);
-            button.setStyle("-fx-background-color: #A52A2A; -fx-text-fill: white; -fx-font-size: 18px; -fx-padding: 15px; -fx-background-radius: 10px;");
+            playButtonHoverSound();
         });
 
-        button.setOnMouseExited(event -> {
+        button.setOnMouseExited(e -> {
+            button.setEffect(dropShadow);
+            styleButton(button);
             button.setScaleX(1.0);
             button.setScaleY(1.0);
-            styleButton(button); // Reset style
+        });
+
+        button.setOnMousePressed(e -> {
+            button.setStyle(getPressedStyle());
+            playButtonClickSound();
         });
 
         if (text.equals("Exit")) {
-            button.setOnAction(event -> System.exit(0));
+            button.setOnAction(e -> System.exit(0));
         } else if (text.equals("Start")) {
-            button.setOnAction(event -> {
-                // Logica per avviare l'applicazione (se necessario)
+            button.setOnAction(e -> {
+                soundManager.ShotgunSound();
+                playStartGameAnimation(button);
             });
         }
 
         return button;
     }
 
+    private void playStartGameAnimation(Button button) {
+        FadeTransition fade = new FadeTransition(Duration.seconds(1), button.getScene().getRoot());
+        fade.setFromValue(1.0);
+        fade.setToValue(0.0);
+        fade.setOnFinished(e -> System.out.println("Gioco avviato"));
+
+        // Imposta il colore nero per la transizione
+        Scene scene = button.getScene();
+        scene.setFill(Color.BLACK);
+
+        fade.play();
+    }
+
+    private void playButtonHoverSound() {
+        // Aggiungere qui il suono di hover
+    }
+
+    private void playButtonClickSound() {
+        // Aggiungere qui il suono di click
+    }
+
+    private String getHoverStyle() {
+        return "-fx-background-color: #A52A2A;" +
+                "-fx-text-fill: white;" +
+                "-fx-font-size: 18px;" +
+                "-fx-padding: 15px 30px;" +
+                "-fx-background-radius: 10px;" +
+                "-fx-cursor: hand;" +
+                "-fx-border-color: #FFD700;" +
+                "-fx-border-width: 2px;" +
+                "-fx-border-radius: 10px;";
+    }
+
+    private String getPressedStyle() {
+        return "-fx-background-color: #800000;" +
+                "-fx-text-fill: white;" +
+                "-fx-font-size: 18px;" +
+                "-fx-padding: 15px 30px;" +
+                "-fx-background-radius: 10px;" +
+                "-fx-cursor: hand;" +
+                "-fx-border-color: #FFA500;" +
+                "-fx-border-width: 2px;" +
+                "-fx-border-radius: 10px;";
+    }
+
     private Button createMuteButton() {
-        Button muteButton = new Button("Mute");
-        styleButton(muteButton);
+        Button button = new Button("Mute");
+        styleButton(button);
 
-        muteButton.setOnMouseEntered(event -> {
-            muteButton.setScaleX(1.3);
-            muteButton.setScaleY(1.3);
-            muteButton.setStyle("-fx-background-color: #A52A2A; -fx-text-fill: white; -fx-font-size: 18px; -fx-padding: 10px; -fx-background-radius: 10px;");
+        button.setOnMouseEntered(e -> {
+            button.setEffect(glow);
+            button.setStyle(getHoverStyle());
+            button.setScaleX(1.1);
+            button.setScaleY(1.1);
         });
 
-        muteButton.setOnMouseExited(event -> {
-            muteButton.setScaleX(1.0);
-            muteButton.setScaleY(1.0);
-            styleButton(muteButton); // Reset style
+        button.setOnMouseExited(e -> {
+            button.setEffect(null);
+            styleButton(button);
+            button.setScaleX(1.0);
+            button.setScaleY(1.0);
         });
 
-        muteButton.setOnMouseClicked(event -> toggleMusicState());
+        button.setOnAction(e -> {
+            toggleMusicState();
+            button.setText(MusicManager.isMuted() ? "Unmute" : "Mute");
+        });
 
-        return muteButton;
+        return button;
     }
 
     private void styleButton(Button button) {
-        button.setStyle("-fx-background-color: #8B0000; -fx-text-fill: white; -fx-font-size: 18px; -fx-padding: 15px; -fx-background-radius: 10px;");
+        button.setStyle(
+                "-fx-background-color: #8B0000;" +
+                        "-fx-text-fill: white;" +
+                        "-fx-font-size: 18px;" +
+                        "-fx-padding: 15px 30px;" +
+                        "-fx-background-radius: 10px;" +
+                        "-fx-cursor: hand;"
+        );
+        button.setEffect(dropShadow);
+        button.setMinWidth(100);
+        button.setMinHeight(40);
     }
 
     private void toggleMusicState() {
