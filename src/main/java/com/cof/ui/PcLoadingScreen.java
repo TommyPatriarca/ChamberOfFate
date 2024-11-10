@@ -133,7 +133,6 @@ public class PcLoadingScreen extends Application {
             button.setStyle(getHoverStyle());
             button.setScaleX(1.1);
             button.setScaleY(1.1);
-            playButtonHoverSound();
         });
 
         button.setOnMouseExited(e -> {
@@ -145,7 +144,6 @@ public class PcLoadingScreen extends Application {
 
         button.setOnMousePressed(e -> {
             button.setStyle(getPressedStyle());
-            playButtonClickSound();
         });
 
         if (text.equals("Exit")) {
@@ -164,22 +162,14 @@ public class PcLoadingScreen extends Application {
         FadeTransition fade = new FadeTransition(Duration.seconds(1), button.getScene().getRoot());
         fade.setFromValue(1.0);
         fade.setToValue(0.0);
-        fade.setOnFinished(e -> System.out.println("Gioco avviato"));
-
-        // Imposta il colore nero per la transizione
-        Scene scene = button.getScene();
-        scene.setFill(Color.BLACK);
-
+        fade.setOnFinished(e -> {
+            PcLobbyScreen lobbyScreen = new PcLobbyScreen();
+            lobbyScreen.show((Stage) button.getScene().getWindow());
+        });
         fade.play();
     }
 
-    private void playButtonHoverSound() {
-        // Aggiungere qui il suono di hover
-    }
 
-    private void playButtonClickSound() {
-        // Aggiungere qui il suono di click
-    }
 
     private String getHoverStyle() {
         return "-fx-background-color: #A52A2A;" +
