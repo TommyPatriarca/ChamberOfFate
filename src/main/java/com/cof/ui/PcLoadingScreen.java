@@ -22,6 +22,7 @@ public class PcLoadingScreen extends Application {
     private MusicManager musicManager;
     private SoundManager soundManager;
     private Button muteButton;
+    private boolean alreadyStarted;
     private final Glow glow = new Glow(0.8);
     private final DropShadow dropShadow = new DropShadow(20, Color.RED);
 
@@ -91,14 +92,18 @@ public class PcLoadingScreen extends Application {
         primaryStage.setFullScreen(true);
         primaryStage.show();
 
-        musicManager.play();
+        if(alreadyStarted==false)
+        {
+            musicManager.play();
+            alreadyStarted=true;
+        }
     }
 
     private Region createFogEffect() {
         Region fog = new Region();
         fog.setStyle(
                 "-fx-background-color: rgba(0, 0, 0, 0.1);" +
-                        "-fx-effect: dropshadow(gaussian, rgba(255,255,255,0.3), 50, 0, 0, 0);"
+                        "-fx-effect: dropshadow(gaussian, rgba(255,002,0.3), 50, 0, 0, 0);"
         );
 
         // Animazione della nebbia
