@@ -165,8 +165,8 @@ public class PcLoadingScreen extends Application {
 
     private void playStartGameAnimation(Button button) {
         FadeTransition fade = new FadeTransition(Duration.seconds(1), button.getScene().getRoot());
-        fade.setFromValue(1.0);
-        fade.setToValue(0.0);
+        fade.setFromValue(1);
+        fade.setToValue(0);
         fade.setOnFinished(e -> {
             PcLobbyScreen lobbyScreen = new PcLobbyScreen();
             lobbyScreen.show((Stage) button.getScene().getWindow());

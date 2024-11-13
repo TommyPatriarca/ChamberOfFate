@@ -22,4 +22,12 @@ public class Player {
             healt=100;
         }
     }
+
+    public String getName() {
+        return name;
+    }
+
+    public int getHealt() {
+        return healt;
+    }
 }

@@ -1,5 +1,6 @@
 package com.cof.ui;
 
+import com.cof.utils.FontUtils;
 import javafx.animation.FadeTransition;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -24,9 +25,9 @@ public class PcLobbyScreen {
 
     public void show(Stage primaryStage) {
         // Create main container with gradient background
-        VBox mainLayout = new VBox(30);  // Increased spacing
+        VBox mainLayout = new VBox(40);
         mainLayout.setAlignment(Pos.CENTER);
-        mainLayout.setPadding(new Insets(50));  // Increased padding
+        mainLayout.setPadding(new Insets(60));
 
         // Create gradient background
         Stop[] stops = new Stop[] {
@@ -38,26 +39,26 @@ public class PcLobbyScreen {
 
         // Title with enhanced styling
         Label title = new Label("CHAMBER OF FATE");
-        title.setStyle("-fx-font-size: 48px; -fx-text-fill: linear-gradient(to bottom, #ffffff, #ff0000); -fx-font-weight: bold; -fx-font-family: 'Arial Black';");
+        title.setStyle("-fx-font-size: 56px; -fx-text-fill: linear-gradient(to bottom, #ffffff, #ff0000); -fx-font-weight: bold; -fx-font-family: '" + FontUtils.TITLE_FONT + "';");
         title.setEffect(new DropShadow(30, Color.RED));
 
         // Create containers for lobby sections with glass effect
-        HBox sectionsContainer = new HBox(40);  // Increased spacing
+        HBox sectionsContainer = new HBox(50);
         sectionsContainer.setAlignment(Pos.CENTER);
 
         // Create Lobby Section
         VBox createLobbyBox = createGlassPane();
-        createLobbyBox.setPrefWidth(400);  // Fixed width
+        createLobbyBox.setPrefWidth(450);
 
         Label createSectionLabel = new Label("CREATE NEW LOBBY");
-        createSectionLabel.setStyle("-fx-font-size: 24px; -fx-text-fill: white; -fx-font-weight: bold;");
+        createSectionLabel.setStyle("-fx-font-size: 28px; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-family: '" + FontUtils.SUBTITLE_FONT + "';");
         createSectionLabel.setEffect(new DropShadow(10, Color.RED));
 
         TextField lobbyNameField = createStyledTextField("Lobby Name");
         PasswordField passwordField = createStyledPasswordField();
 
         // Enhanced radio buttons
-        VBox radioBox = new VBox(10);
+        VBox radioBox = new VBox(15);
         radioBox.setAlignment(Pos.CENTER);
         RadioButton publicLobby = createStyledRadioButton("Public Lobby");
         RadioButton privateLobby = createStyledRadioButton("Private Lobby");
@@ -91,25 +92,26 @@ public class PcLobbyScreen {
 
         // Join Lobby Section
         VBox joinLobbyBox = createGlassPane();
-        joinLobbyBox.setPrefWidth(400);  // Fixed width
+        joinLobbyBox.setPrefWidth(450);
 
         Label joinSectionLabel = new Label("AVAILABLE LOBBIES");
-        joinSectionLabel.setStyle("-fx-font-size: 24px; -fx-text-fill: white; -fx-font-weight: bold;");
+        joinSectionLabel.setStyle("-fx-font-size: 28px; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-family: '" + FontUtils.SUBTITLE_FONT + "';");
         joinSectionLabel.setEffect(new DropShadow(10, Color.RED));
 
         lobbyListView = new ListView<>();
-        lobbyListView.setPrefHeight(250);
+        lobbyListView.setPrefHeight(300);
         lobbyListView.setStyle(
                 "-fx-background-color: rgba(60, 60, 60, 0.5);" +
                         "-fx-control-inner-background: transparent;" +
                         "-fx-text-fill: white;" +
-                        "-fx-background-radius: 5;"
+                        "-fx-background-radius: 5;" +
+                        "-fx-font-family: '" + FontUtils.BODY_FONT + "';"
         );
 
-        HBox buttonBox = new HBox(20);
+        HBox buttonBox = new HBox(25);
         buttonBox.setAlignment(Pos.CENTER);
         Button refreshButton = createStyledButton("Refresh");
-        Button joinButton = createStyledButton("Join Selected Lobby");
+        Button joinButton = createStyledButton("Join");
 
         refreshButton.setOnAction(e -> lobbyListView.getItems().setAll(lobbies));
         joinButton.setOnAction(e -> {
@@ -156,9 +158,9 @@ public class PcLobbyScreen {
     }
 
     private VBox createGlassPane() {
-        VBox pane = new VBox(15);
+        VBox pane = new VBox(20);
         pane.setAlignment(Pos.TOP_CENTER);
-        pane.setPadding(new Insets(25));
+        pane.setPadding(new Insets(30));
         pane.setStyle(
                 "-fx-background-color: rgba(255, 255, 255, 0.1);" +
                         "-fx-background-radius: 15;" +
@@ -179,9 +181,10 @@ public class PcLobbyScreen {
                         "-fx-prompt-text-fill: gray;" +
                         "-fx-background-radius: 5;" +
                         "-fx-border-color: rgba(255, 255, 255, 0.2);" +
-                        "-fx-border-radius: 5;"
+                        "-fx-border-radius: 5;" +
+                        "-fx-font-family: '" + FontUtils.BODY_FONT + "';"
         );
-        textField.setPrefWidth(300);
+        textField.setPrefWidth(350);
         return textField;
     }
 
@@ -194,9 +197,10 @@ public class PcLobbyScreen {
                         "-fx-prompt-text-fill: gray;" +
                         "-fx-background-radius: 5;" +
                         "-fx-border-color: rgba(255, 255, 255, 0.2);" +
-                        "-fx-border-radius: 5;"
+                        "-fx-border-radius: 5;" +
+                        "-fx-font-family: '" + FontUtils.BODY_FONT + "';"
         );
-        passwordField.setPrefWidth(300);
+        passwordField.setPrefWidth(350);
         return passwordField;
     }
 
@@ -204,24 +208,26 @@ public class PcLobbyScreen {
         RadioButton radioButton = new RadioButton(text);
         radioButton.setStyle(
                 "-fx-text-fill: white;" +
-                        "-fx-font-size: 14px;"
+                        "-fx-font-size: 16px;" +
+                        "-fx-font-family: '" + FontUtils.BODY_FONT + "';"
         );
         return radioButton;
     }
 
     private Button createStyledButton(String text) {
         Button button = new Button(text);
-        button.setMinWidth(120);  // Set minimum width to prevent size changes
+        button.setMinWidth(140);
         button.setStyle(
                 "-fx-background-color: #8B0000;" +
                         "-fx-text-fill: white;" +
-                        "-fx-font-size: 16px;" +
-                        "-fx-padding: 10px 20px;" +
+                        "-fx-font-size: 18px;" +
+                        "-fx-padding: 12px 24px;" +
                         "-fx-background-radius: 5;" +
                         "-fx-cursor: hand;" +
-                        "-fx-border-color: transparent;" +  // Added transparent border
+                        "-fx-border-color: transparent;" +
                         "-fx-border-width: 2px;" +
-                        "-fx-border-radius: 5;"
+                        "-fx-border-radius: 5;" +
+                        "-fx-font-family: '" + FontUtils.BODY_FONT + "';"
         );
         button.setEffect(dropShadow);
 
@@ -231,13 +237,14 @@ public class PcLobbyScreen {
             button.setStyle(
                     "-fx-background-color: #A52A2A;" +
                             "-fx-text-fill: white;" +
-                            "-fx-font-size: 16px;" +
-                            "-fx-padding: 10px 20px;" +
+                            "-fx-font-size: 18px;" +
+                            "-fx-padding: 12px 24px;" +
                             "-fx-background-radius: 5;" +
                             "-fx-cursor: hand;" +
                             "-fx-border-color: #FFD700;" +
                             "-fx-border-width: 2px;" +
-                            "-fx-border-radius: 5;"
+                            "-fx-border-radius: 5;" +
+                            "-fx-font-family: '" + FontUtils.BODY_FONT + "';"
             );
         });
 
@@ -246,13 +253,14 @@ public class PcLobbyScreen {
             button.setStyle(
                     "-fx-background-color: #8B0000;" +
                             "-fx-text-fill: white;" +
-                            "-fx-font-size: 16px;" +
-                            "-fx-padding: 10px 20px;" +
+                            "-fx-font-size: 18px;" +
+                            "-fx-padding: 12px 24px;" +
                             "-fx-background-radius: 5;" +
                             "-fx-cursor: hand;" +
                             "-fx-border-color: transparent;" +
                             "-fx-border-width: 2px;" +
-                            "-fx-border-radius: 5;"
+                            "-fx-border-radius: 5;" +
+                            "-fx-font-family: '" + FontUtils.BODY_FONT + "';"
             );
         });
 
@@ -297,12 +305,14 @@ public class PcLobbyScreen {
         dialogPane.lookupButton(joinButtonType).setStyle(
                 "-fx-background-color: #8B0000;" +
                         "-fx-text-fill: white;" +
-                        "-fx-background-radius: 5;"
+                        "-fx-background-radius: 5;" +
+                        "-fx-font-family: '" + FontUtils.BODY_FONT + "';"
         );
         dialogPane.lookupButton(ButtonType.CANCEL).setStyle(
                 "-fx-background-color: #4a4a4a;" +
                         "-fx-text-fill: white;" +
-                        "-fx-background-radius: 5;"
+                        "-fx-background-radius: 5;" +
+                        "-fx-font-family: '" + FontUtils.BODY_FONT + "';"
         );
 
         dialog.setResultConverter(dialogButton -> {
