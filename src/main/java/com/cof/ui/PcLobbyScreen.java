@@ -118,9 +118,10 @@ public class PcLobbyScreen {
             String selected = lobbyListView.getSelectionModel().getSelectedItem();
             if (selected != null) {
                 if (selected.startsWith("[Private]")) {
-                    showPasswordDialog();
+                    showPasswordDialog(primaryStage);  // Passa primaryStage come parametro
                 } else {
-                    System.out.println("Joining lobby: " + selected);
+                    // Per lobby pubbliche, vai direttamente alla GameScreen
+                    startGame(primaryStage);
                 }
             }
         });
@@ -325,5 +326,67 @@ public class PcLobbyScreen {
         dialog.showAndWait().ifPresent(password -> {
             System.out.println("Joining private lobby with password: " + password);
         });
+    }
+
+    private void showPasswordDialog(Stage primaryStage) {
+        Dialog<String> dialog = new Dialog<>();
+        dialog.setTitle("Enter Lobby Password");
+        dialog.setHeaderText(null);
+
+        DialogPane dialogPane = dialog.getDialogPane();
+        dialogPane.setStyle(
+                "-fx-background-color: rgba(40, 40, 40, 0.95);" +
+                        "-fx-background-radius: 10;" +
+                        "-fx-border-radius: 10;" +
+                        "-fx-border-color: rgba(255, 255, 255, 0.2);"
+        );
+
+        PasswordField passwordField = createStyledPasswordField();
+        passwordField.setPromptText("Password");
+        dialogPane.setContent(passwordField);
+
+        ButtonType joinButtonType = new ButtonType("Join", ButtonBar.ButtonData.OK_DONE);
+        dialogPane.getButtonTypes().addAll(joinButtonType, ButtonType.CANCEL);
+
+        dialogPane.lookupButton(joinButtonType).setStyle(
+                "-fx-background-color: #8B0000;" +
+                        "-fx-text-fill: white;" +
+                        "-fx-background-radius: 5;" +
+                        "-fx-font-family: '" + FontUtils.BODY_FONT + "';"
+        );
+        dialogPane.lookupButton(ButtonType.CANCEL).setStyle(
+                "-fx-background-color: #4a4a4a;" +
+                        "-fx-text-fill: white;" +
+                        "-fx-background-radius: 5;" +
+                        "-fx-font-family: '" + FontUtils.BODY_FONT + "';"
+        );
+
+        dialog.setResultConverter(dialogButton -> {
+            if (dialogButton == joinButtonType) {
+                return passwordField.getText();
+            }
+            return null;
+        });
+
+        dialog.showAndWait().ifPresent(password -> {
+            // Verifica password qui se necessario
+            startGame(primaryStage);
+        });
+    }
+
+    private void startGame(Stage primaryStage) {
+        // Crea una transizione di dissolvenza
+        VBox root = (VBox) primaryStage.getScene().getRoot();
+        FadeTransition fadeOut = new FadeTransition(Duration.seconds(1), root);
+        fadeOut.setFromValue(1);
+        fadeOut.setToValue(0);
+
+        fadeOut.setOnFinished(e -> {
+            // Avvia la GameScreen
+            GameScreen gameScreen = new GameScreen();
+            gameScreen.show(primaryStage);
+        });
+
+        fadeOut.play();
     }
 }
