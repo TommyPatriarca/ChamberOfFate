@@ -166,20 +166,12 @@ public class GameScreen {
         overlay.getChildren().addAll(
                 createMenuButton("Game Rules", this::showRules),
                 createMenuButton("Settings", this::showSettingsDialog),
-                createSeparator(),
                 createMenuButton("Surrender", this::showSurrenderDialog),
                 createMenuButton("Exit to Lobby", this::showExitConfirmation),
-                createSeparator(),
                 createMenuButton("Close Menu", () -> toggleMenu())
         );
 
         return overlay;
-    }
-
-    private Separator createSeparator() {
-        Separator separator = new Separator();
-        separator.setStyle("-fx-background-color: rgba(255, 255, 255, 0.2);");
-        return separator;
     }
 
     private Button createMenuButton(String text, Runnable action) {
@@ -191,8 +183,7 @@ public class GameScreen {
                         "-fx-font-size: 18px;" +
                         "-fx-min-width: 200px;" +
                         "-fx-cursor: hand;" +
-                        "-fx-padding: 10px;" +
-                        "-fx-background-radius: 5px"
+                        "-fx-padding: 10px;"
         );
 
         button.setOnMouseEntered(e ->
@@ -245,6 +236,7 @@ public class GameScreen {
                         "-fx-padding: 30px;" +
                         "-fx-background-radius: 10px;" +
                         "-fx-max-width: 400px;" +
+                        "-fx-max-height: 400px;" +
                         "-fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.5), 20, 0, 0, 0)"
         );
         dialogBox.setAlignment(Pos.CENTER);
@@ -340,7 +332,7 @@ public class GameScreen {
     private void showSettingsDialog() {
         showDialog(
                 "Settings",
-                "Settings content goes here...",
+                "Fixare",
                 DialogType.INFORMATION
         );
     }
@@ -356,7 +348,7 @@ public class GameScreen {
     private void showRules() {
         showDialog(
                 "Game Rules",
-                "• Each player can have maximum 5 cards\n• More rules to be added...",
+                "• Each player can have maximum 5 cards\n• Yf suttix is gay sutti gay",
                 DialogType.INFORMATION
         );
     }
