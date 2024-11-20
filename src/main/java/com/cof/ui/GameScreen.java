@@ -1,5 +1,6 @@
 package com.cof.ui;
 
+import com.cof.managers.MusicManager;
 import com.cof.utils.FontUtils;
 import javafx.animation.*;
 import javafx.geometry.Insets;
@@ -176,7 +177,7 @@ public class GameScreen {
 
     private Button createMenuButton(String text, Runnable action) {
         Button button = new Button(text);
-        
+
         button.setStyle(
                 "-fx-background-color: transparent;" +
                         "-fx-text-fill: white;" +
@@ -322,27 +323,156 @@ public class GameScreen {
     }
 
     private void showSurrenderDialog() {
-        showDialog(
-                "Surrender",
-                "Are you sure you want to surrender? This will count as a loss.",
-                DialogType.CONFIRMATION
-        );
+
+            VBox dialogBox = new VBox(20);
+            dialogBox.setStyle(
+                    "-fx-background-color: rgba(40, 40, 40, 0.95);" +
+                            "-fx-padding: 30px;" +
+                            "-fx-background-radius: 10px;" +
+                            "-fx-max-width: 400px;" +
+                            "-fx-max-height: 400px;" +
+                            "-fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.5), 20, 0, 0, 0)"
+            );
+            dialogBox.setAlignment(Pos.CENTER);
+
+            Label titleLabel = new Label("Surrender");
+            titleLabel.setStyle(
+                    "-fx-text-fill: white;" +
+                            "-fx-font-size: 24px;" +
+                            "-fx-font-weight: bold"
+            );
+
+            Label messageLabel = new Label("Are you sure you want to surrender? This will count as a loss.");
+            messageLabel.setStyle("-fx-text-fill: white; -fx-font-size: 16px;");
+
+            Button confirmButton = new Button("Confirm");
+            Button cancelButton = new Button("Cancel");
+            styleDialogButton(confirmButton, true);
+            styleDialogButton(cancelButton, false);
+
+            confirmButton.setOnAction(e -> {
+                // Logic to handle surrendering
+                System.exit(0); // Placeholder for surrender logic
+            });
+
+            cancelButton.setOnAction(e -> closeDialog(dialogBox));
+
+            HBox buttons = new HBox(10, confirmButton, cancelButton);
+            buttons.setAlignment(Pos.CENTER);
+
+            dialogBox.getChildren().addAll(titleLabel, messageLabel, buttons);
+
+            root.getChildren().get(0).setEffect(new GaussianBlur(10));
+            dialogBox.setOpacity(0);
+            root.getChildren().add(dialogBox);
+
+            FadeTransition fadeIn = new FadeTransition(Duration.millis(200), dialogBox);
+            fadeIn.setFromValue(0);
+            fadeIn.setToValue(1);
+            fadeIn.play();
     }
 
     private void showSettingsDialog() {
-        showDialog(
-                "Settings",
-                "Fixare",
-                DialogType.INFORMATION
+        VBox dialogBox = new VBox(20);
+        dialogBox.setStyle(
+                "-fx-background-color: rgba(40, 40, 40, 0.95);" +
+                        "-fx-padding: 30px;" +
+                        "-fx-background-radius: 10px;" +
+                        "-fx-max-width: 400px;" +
+                        "-fx-max-height: 400px;" +
+                        "-fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.5), 20, 0, 0, 0)"
         );
+        dialogBox.setAlignment(Pos.CENTER);
+
+        Label titleLabel = new Label("Settings");
+        titleLabel.setStyle(
+                "-fx-text-fill: white;" +
+                        "-fx-font-size: 24px;" +
+                        "-fx-font-weight: bold"
+        );
+
+        Label volumeLabel = new Label("Volume:");
+        volumeLabel.setStyle(
+                "-fx-text-fill: white;" +
+                        "-fx-font-size: 16px;"
+        );
+
+        Slider volumeSlider = new Slider(0, 1, MusicManager.getVolume());
+        volumeSlider.setShowTickLabels(true);
+        volumeSlider.setShowTickMarks(true);
+        volumeSlider.setMajorTickUnit(0.5);
+        volumeSlider.setMinorTickCount(4);
+        volumeSlider.setBlockIncrement(0.1);
+
+        volumeSlider.valueProperty().addListener((observable, oldValue, newValue) -> {
+            MusicManager.setVolume(newValue.doubleValue());
+        });
+
+        Button closeButton = new Button("Close");
+        styleDialogButton(closeButton, false);
+        closeButton.setOnAction(e -> closeDialog(dialogBox));
+
+        dialogBox.getChildren().addAll(titleLabel, volumeLabel, volumeSlider, closeButton);
+
+        root.getChildren().get(0).setEffect(new GaussianBlur(10));
+        dialogBox.setOpacity(0);
+        root.getChildren().add(dialogBox);
+
+        FadeTransition fadeIn = new FadeTransition(Duration.millis(200), dialogBox);
+        fadeIn.setFromValue(0);
+        fadeIn.setToValue(1);
+        fadeIn.play();
     }
 
+
     private void showExitConfirmation() {
-        showDialog(
-                "Exit to Lobby",
-                "Are you sure you want to exit to lobby? Current game progress will be lost.",
-                DialogType.CONFIRMATION
-        );
+
+            VBox dialogBox = new VBox(20);
+            dialogBox.setStyle(
+                    "-fx-background-color: rgba(40, 40, 40, 0.95);" +
+                            "-fx-padding: 30px;" +
+                            "-fx-background-radius: 10px;" +
+                            "-fx-max-width: 400px;" +
+                            "-fx-max-height: 400px;" +
+                            "-fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.5), 20, 0, 0, 0)"
+            );
+            dialogBox.setAlignment(Pos.CENTER);
+
+            Label titleLabel = new Label("Exit to Lobby");
+            titleLabel.setStyle(
+                    "-fx-text-fill: white;" +
+                            "-fx-font-size: 24px;" +
+                            "-fx-font-weight: bold"
+            );
+
+            Label messageLabel = new Label("Are you sure you want to exit to lobby? Current game progress will be lost.");
+            messageLabel.setStyle("-fx-text-fill: white; -fx-font-size: 16px;");
+
+            Button confirmButton = new Button("Confirm");
+            Button cancelButton = new Button("Cancel");
+            styleDialogButton(confirmButton, true);
+            styleDialogButton(cancelButton, false);
+
+            confirmButton.setOnAction(e -> {
+                // Logic to handle exiting to the lobby
+                System.exit(0); // Placeholder for exit logic
+            });
+
+            cancelButton.setOnAction(e -> closeDialog(dialogBox));
+
+            HBox buttons = new HBox(10, confirmButton, cancelButton);
+            buttons.setAlignment(Pos.CENTER);
+
+            dialogBox.getChildren().addAll(titleLabel, messageLabel, buttons);
+
+            root.getChildren().get(0).setEffect(new GaussianBlur(10));
+            dialogBox.setOpacity(0);
+            root.getChildren().add(dialogBox);
+
+            FadeTransition fadeIn = new FadeTransition(Duration.millis(200), dialogBox);
+            fadeIn.setFromValue(0);
+            fadeIn.setToValue(1);
+            fadeIn.play();
     }
 
     private void showRules() {

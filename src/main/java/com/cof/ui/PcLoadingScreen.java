@@ -18,13 +18,15 @@ import javafx.util.Duration;
 
 import java.util.Objects;
 
-public class PcLoadingScreen extends Application {
+public class PcLoadingScreen extends Application{
+
     private MusicManager musicManager;
     private SoundManager soundManager;
     private Button muteButton;
     private boolean alreadyStarted;
     private final Glow glow = new Glow(0.8);
     private final DropShadow dropShadow = new DropShadow(20, Color.RED);
+
 
     @Override
     public void start(Stage primaryStage) {
@@ -246,9 +248,5 @@ public class PcLoadingScreen extends Application {
         } else {
             MusicManager.mute();
         }
-    }
-
-    public static void main(String[] args) {
-        launch(args);
     }
 }

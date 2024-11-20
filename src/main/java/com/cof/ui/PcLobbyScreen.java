@@ -275,8 +275,7 @@ public class PcLobbyScreen {
         fadeOut.setFromValue(1);
         fadeOut.setToValue(0);
         fadeOut.setOnFinished(e -> {
-            PcLoadingScreen loadingScreen = new PcLoadingScreen();
-            loadingScreen.start(stage);
+
         });
 
         fadeOut.play();
