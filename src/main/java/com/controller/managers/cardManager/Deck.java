@@ -3,6 +3,7 @@ package com.controller.managers.cardManager;
 import com.controller.objects.CardObj;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 public class Deck {
 
@@ -22,6 +23,8 @@ public class Deck {
         //Creo 1 mazzo da 52
 
         for(int i=0; i<4;i++){
+
+            //Temp card suit String
             String tempSuit = null;
 
             for(int j=0;j<13;j++){
@@ -34,25 +37,29 @@ public class Deck {
                     default -> tempSuit;
                 };
 
-                    //Ace of Spades
+                    //ACES
                     if (j == 0) {
                         deckArr.add(new CardObj("A" + tempSuit));
                     }
 
-                    //Spade numbers
+                    //NUMBERS
                     else if (j < 10) {
                         deckArr.add(new CardObj((j + 1) + tempSuit));
 
                     }
 
+                    //ROYALS
                     else {
                         switch (j){
+                            //JOLLY
                             case 10:
                                 deckArr.add(new CardObj( "J" + tempSuit));
                                 break;
+                            //QUEEN
                             case 11:
                                 deckArr.add(new CardObj( "Q" + tempSuit));
                                 break;
+                            //KING
                             case 12:
                                 deckArr.add(new CardObj( "K" + tempSuit));
                                 break;
@@ -63,21 +70,40 @@ public class Deck {
             }
 
         }
-        printDeck();
+        //printDeck();
 
+        shuffleDeck();
 
     }
 
+    /**
+     * Function to print the entire deck
+     */
     public void printDeck(){
 
+        System.out.println("||||||||||||");
+        System.out.println("DECK:");
         for(CardObj obj : deckArr){
             System.out.println(obj.getTipo());
 
         }
+        System.out.println("||||||||||||");
+
     }
 
-    public void shuffle(){
+    /**
+     * Function used to shuffle the deck
+     */
+    public void shuffleDeck(){
+        Collections.shuffle(deckArr);
+        //printDeck();
+    }
 
+    public CardObj hitCard() {
+        CardObj tempC = deckArr.getLast();
+        deckArr.removeLast();
+
+        return tempC;
     }
 
 
