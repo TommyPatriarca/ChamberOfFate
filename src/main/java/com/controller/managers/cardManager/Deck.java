@@ -77,7 +77,7 @@ public class Deck {
     }
 
     /**
-     * Function to print the entire deck
+     * Funzione per stampare l'intero il mazzo
      */
     public void printDeck(){
 
@@ -92,13 +92,16 @@ public class Deck {
     }
 
     /**
-     * Function used to shuffle the deck
+     * Funzione usata per mischiare il mazzo
      */
     public void shuffleDeck(){
         Collections.shuffle(deckArr);
         //printDeck();
     }
 
+    /**
+     * Funzione che corrisponde all'opzione "Carta" del blackjack
+     */
     public CardObj hitCard() {
         CardObj tempC = deckArr.getLast();
         deckArr.removeLast();
