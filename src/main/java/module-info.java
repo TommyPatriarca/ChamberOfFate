@@ -3,6 +3,7 @@ module com.cof {
     requires javafx.fxml;
     requires java.desktop;
     requires java.logging;
+    requires java.smartcardio;
 
     opens com.cof to javafx.fxml;
     exports com.cof;
