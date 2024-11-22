@@ -1,7 +1,9 @@
 package com.cof.ui;
 
+import com.cof.game.Card;
+import com.cof.game.Deck;
 import com.cof.managers.MusicManager;
-import com.cof.utils.FontUtils;
+import com.cof.player.Player;
 import javafx.animation.*;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -13,10 +15,13 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import javafx.scene.transform.Rotate;
 import javafx.stage.Stage;
 import javafx.util.Duration;
-
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
+import javafx.animation.RotateTransition;
 
 public class GameScreen {
     private boolean isMuted = false;
@@ -24,6 +29,13 @@ public class GameScreen {
     private StackPane root;
     private VBox menuOverlay;
     private boolean isMenuOpen = false;
+    private Deck deck = new Deck();
+    private List<Player> players = new ArrayList<>();
+    private int currentPlayerIndex = 0;
+    private VBox playerHandDisplay;
+    private VBox opponentHandDisplay;
+    private Label currentPlayerLabel;
+    private Button drawCardButton, passTurnButton;
 
     public void show(Stage primaryStage) {
         root = new StackPane();
@@ -324,52 +336,52 @@ public class GameScreen {
 
     private void showSurrenderDialog() {
 
-            VBox dialogBox = new VBox(20);
-            dialogBox.setStyle(
-                    "-fx-background-color: rgba(40, 40, 40, 0.95);" +
-                            "-fx-padding: 30px;" +
-                            "-fx-background-radius: 10px;" +
-                            "-fx-max-width: 400px;" +
-                            "-fx-max-height: 400px;" +
-                            "-fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.5), 20, 0, 0, 0)"
-            );
-            dialogBox.setAlignment(Pos.CENTER);
+        VBox dialogBox = new VBox(20);
+        dialogBox.setStyle(
+                "-fx-background-color: rgba(40, 40, 40, 0.95);" +
+                        "-fx-padding: 30px;" +
+                        "-fx-background-radius: 10px;" +
+                        "-fx-max-width: 400px;" +
+                        "-fx-max-height: 400px;" +
+                        "-fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.5), 20, 0, 0, 0)"
+        );
+        dialogBox.setAlignment(Pos.CENTER);
 
-            Label titleLabel = new Label("Surrender");
-            titleLabel.setStyle(
-                    "-fx-text-fill: white;" +
-                            "-fx-font-size: 24px;" +
-                            "-fx-font-weight: bold"
-            );
+        Label titleLabel = new Label("Surrender");
+        titleLabel.setStyle(
+                "-fx-text-fill: white;" +
+                        "-fx-font-size: 24px;" +
+                        "-fx-font-weight: bold"
+        );
 
-            Label messageLabel = new Label("Are you sure you want to surrender? This will count as a loss.");
-            messageLabel.setStyle("-fx-text-fill: white; -fx-font-size: 16px;");
+        Label messageLabel = new Label("Are you sure you want to surrender? This will count as a loss.");
+        messageLabel.setStyle("-fx-text-fill: white; -fx-font-size: 16px;");
 
-            Button confirmButton = new Button("Confirm");
-            Button cancelButton = new Button("Cancel");
-            styleDialogButton(confirmButton, true);
-            styleDialogButton(cancelButton, false);
+        Button confirmButton = new Button("Confirm");
+        Button cancelButton = new Button("Cancel");
+        styleDialogButton(confirmButton, true);
+        styleDialogButton(cancelButton, false);
 
-            confirmButton.setOnAction(e -> {
-                // Logic to handle surrendering
-                System.exit(0); // Placeholder for surrender logic
-            });
+        confirmButton.setOnAction(e -> {
+            // Logic to handle surrendering
+            System.exit(0); // Placeholder for surrender logic
+        });
 
-            cancelButton.setOnAction(e -> closeDialog(dialogBox));
+        cancelButton.setOnAction(e -> closeDialog(dialogBox));
 
-            HBox buttons = new HBox(10, confirmButton, cancelButton);
-            buttons.setAlignment(Pos.CENTER);
+        HBox buttons = new HBox(10, confirmButton, cancelButton);
+        buttons.setAlignment(Pos.CENTER);
 
-            dialogBox.getChildren().addAll(titleLabel, messageLabel, buttons);
+        dialogBox.getChildren().addAll(titleLabel, messageLabel, buttons);
 
-            root.getChildren().get(0).setEffect(new GaussianBlur(10));
-            dialogBox.setOpacity(0);
-            root.getChildren().add(dialogBox);
+        root.getChildren().get(0).setEffect(new GaussianBlur(10));
+        dialogBox.setOpacity(0);
+        root.getChildren().add(dialogBox);
 
-            FadeTransition fadeIn = new FadeTransition(Duration.millis(200), dialogBox);
-            fadeIn.setFromValue(0);
-            fadeIn.setToValue(1);
-            fadeIn.play();
+        FadeTransition fadeIn = new FadeTransition(Duration.millis(200), dialogBox);
+        fadeIn.setFromValue(0);
+        fadeIn.setToValue(1);
+        fadeIn.play();
     }
 
     private void showSettingsDialog() {
@@ -427,52 +439,52 @@ public class GameScreen {
 
     private void showExitConfirmation() {
 
-            VBox dialogBox = new VBox(20);
-            dialogBox.setStyle(
-                    "-fx-background-color: rgba(40, 40, 40, 0.95);" +
-                            "-fx-padding: 30px;" +
-                            "-fx-background-radius: 10px;" +
-                            "-fx-max-width: 400px;" +
-                            "-fx-max-height: 400px;" +
-                            "-fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.5), 20, 0, 0, 0)"
-            );
-            dialogBox.setAlignment(Pos.CENTER);
+        VBox dialogBox = new VBox(20);
+        dialogBox.setStyle(
+                "-fx-background-color: rgba(40, 40, 40, 0.95);" +
+                        "-fx-padding: 30px;" +
+                        "-fx-background-radius: 10px;" +
+                        "-fx-max-width: 400px;" +
+                        "-fx-max-height: 400px;" +
+                        "-fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.5), 20, 0, 0, 0)"
+        );
+        dialogBox.setAlignment(Pos.CENTER);
 
-            Label titleLabel = new Label("Exit to Lobby");
-            titleLabel.setStyle(
-                    "-fx-text-fill: white;" +
-                            "-fx-font-size: 24px;" +
-                            "-fx-font-weight: bold"
-            );
+        Label titleLabel = new Label("Exit to Lobby");
+        titleLabel.setStyle(
+                "-fx-text-fill: white;" +
+                        "-fx-font-size: 24px;" +
+                        "-fx-font-weight: bold"
+        );
 
-            Label messageLabel = new Label("Are you sure you want to exit to lobby? Current game progress will be lost.");
-            messageLabel.setStyle("-fx-text-fill: white; -fx-font-size: 16px;");
+        Label messageLabel = new Label("Are you sure you want to exit to lobby? Current game progress will be lost.");
+        messageLabel.setStyle("-fx-text-fill: white; -fx-font-size: 16px;");
 
-            Button confirmButton = new Button("Confirm");
-            Button cancelButton = new Button("Cancel");
-            styleDialogButton(confirmButton, true);
-            styleDialogButton(cancelButton, false);
+        Button confirmButton = new Button("Confirm");
+        Button cancelButton = new Button("Cancel");
+        styleDialogButton(confirmButton, true);
+        styleDialogButton(cancelButton, false);
 
-            confirmButton.setOnAction(e -> {
-                // Logic to handle exiting to the lobby
-                System.exit(0); // Placeholder for exit logic
-            });
+        confirmButton.setOnAction(e -> {
+            // Logic to handle exiting to the lobby
+            System.exit(0); // Placeholder for exit logic
+        });
 
-            cancelButton.setOnAction(e -> closeDialog(dialogBox));
+        cancelButton.setOnAction(e -> closeDialog(dialogBox));
 
-            HBox buttons = new HBox(10, confirmButton, cancelButton);
-            buttons.setAlignment(Pos.CENTER);
+        HBox buttons = new HBox(10, confirmButton, cancelButton);
+        buttons.setAlignment(Pos.CENTER);
 
-            dialogBox.getChildren().addAll(titleLabel, messageLabel, buttons);
+        dialogBox.getChildren().addAll(titleLabel, messageLabel, buttons);
 
-            root.getChildren().get(0).setEffect(new GaussianBlur(10));
-            dialogBox.setOpacity(0);
-            root.getChildren().add(dialogBox);
+        root.getChildren().get(0).setEffect(new GaussianBlur(10));
+        dialogBox.setOpacity(0);
+        root.getChildren().add(dialogBox);
 
-            FadeTransition fadeIn = new FadeTransition(Duration.millis(200), dialogBox);
-            fadeIn.setFromValue(0);
-            fadeIn.setToValue(1);
-            fadeIn.play();
+        FadeTransition fadeIn = new FadeTransition(Duration.millis(200), dialogBox);
+        fadeIn.setFromValue(0);
+        fadeIn.setToValue(1);
+        fadeIn.play();
     }
 
     private void showRules() {
@@ -481,5 +493,120 @@ public class GameScreen {
                 "• Each player can have maximum 5 cards\n• Yf suttix is gay sutti gay",
                 DialogType.INFORMATION
         );
+    }
+
+    public void startGame(Stage primaryStage) {
+        players.add(new Player("Player 1"));
+        players.add(new Player("Player 2"));
+        setupInitialHands();
+
+        StackPane root = new StackPane();
+
+        // Display for player's hand and opponent's hand
+        VBox mainLayout = new VBox(20);
+        mainLayout.setAlignment(Pos.CENTER);
+        mainLayout.setPadding(new Insets(20));
+
+        opponentHandDisplay = new VBox(10);
+        opponentHandDisplay.setAlignment(Pos.CENTER);
+        opponentHandDisplay.getChildren().add(new Label("Opponent's Hand"));
+        updateOpponentDisplay();
+
+        playerHandDisplay = new VBox(10);
+        playerHandDisplay.setAlignment(Pos.CENTER);
+        playerHandDisplay.getChildren().add(new Label("Your Hand"));
+        updatePlayerDisplay();
+
+        HBox controls = createControls();
+
+        mainLayout.getChildren().addAll(opponentHandDisplay, controls, playerHandDisplay);
+        root.getChildren().add(mainLayout);
+
+        Scene scene = new Scene(root, 800, 600);
+        primaryStage.setScene(scene);
+        primaryStage.setTitle("Card Game with Flip Animation");
+        primaryStage.show();
+    }
+
+    private void setupInitialHands() {
+        for (Player player : players) {
+            player.drawCard(deck.drawCard());
+        }
+    }
+
+    private HBox createControls() {
+        HBox controls = new HBox(20);
+        controls.setAlignment(Pos.CENTER);
+
+        currentPlayerLabel = new Label("Turn: " + players.get(currentPlayerIndex).getName());
+        drawCardButton = new Button("Draw Card");
+        passTurnButton = new Button("Pass Turn");
+
+        drawCardButton.setOnAction(e -> drawCardForCurrentPlayer());
+        passTurnButton.setOnAction(e -> passTurn());
+
+        controls.getChildren().addAll(currentPlayerLabel, drawCardButton, passTurnButton);
+        return controls;
+    }
+
+    private void drawCardForCurrentPlayer() {
+        Player currentPlayer = players.get(currentPlayerIndex);
+        Card drawnCard = deck.drawCard();
+
+        if (drawnCard != null) {
+            currentPlayer.drawCard(drawnCard);
+            playCardFlipAnimation(drawnCard, true);
+            updatePlayerDisplay();
+        }
+    }
+
+    private void passTurn() {
+        currentPlayerIndex = (currentPlayerIndex + 1) % players.size();
+        currentPlayerLabel.setText("Turn: " + players.get(currentPlayerIndex).getName());
+        updateOpponentDisplay();
+        updatePlayerDisplay();
+    }
+
+    private void updatePlayerDisplay() {
+        Player currentPlayer = players.get(currentPlayerIndex);
+        playerHandDisplay.getChildren().clear();
+        playerHandDisplay.getChildren().add(new Label("Your Hand"));
+
+        for (Card card : currentPlayer.getHand()) {
+            playerHandDisplay.getChildren().add(card.getCardImage());
+        }
+    }
+
+    private void updateOpponentDisplay() {
+        Player opponent = players.get((currentPlayerIndex + 1) % players.size());
+        opponentHandDisplay.getChildren().clear();
+        opponentHandDisplay.getChildren().add(new Label("Opponent's Hand"));
+
+        for (Card card : opponent.getHand()) {
+            ImageView backImageView = new ImageView("resources/Cards/back.png");
+            backImageView.setFitWidth(100);
+            backImageView.setFitHeight(150);
+            opponentHandDisplay.getChildren().add(backImageView);
+        }
+    }
+
+    private void playCardFlipAnimation(Card card, boolean isPlayer) {
+        ImageView cardView = card.getCardImage();
+        cardView.setRotationAxis(Rotate.Y_AXIS);
+
+        RotateTransition flipToBack = new RotateTransition(Duration.seconds(0.5), cardView);
+        flipToBack.setFromAngle(0);
+        flipToBack.setToAngle(90);
+
+        RotateTransition flipToFront = new RotateTransition(Duration.seconds(0.5), cardView);
+        flipToFront.setFromAngle(90);
+        flipToFront.setToAngle(0);
+
+        flipToBack.setOnFinished(event -> {
+            cardView.setImage(card.getCardImage().getImage());
+            flipToFront.play();
+        });
+
+        flipToBack.play();
     }
 }

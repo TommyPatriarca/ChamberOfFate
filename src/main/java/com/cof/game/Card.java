@@ -3,6 +3,8 @@ package com.cof.game;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
+import java.util.Objects;
+
 public class Card {
     private String suit; // Seme della carta
     private String value; // Valore della carta
@@ -14,13 +16,14 @@ public class Card {
         this.suit = suit;
         this.value = value;
         this.imagePath = generateImagePath(suit, value);
-        this.cardImage = new ImageView(new Image(imagePath));
+        this.cardImage = new ImageView(new Image(Objects.requireNonNull(getClass().getResourceAsStream(imagePath))));
         configureCardImage();
     }
 
     // Genera il percorso dell'immagine basato sul seme e il valore
     private String generateImagePath(String suit, String value) {
-        return "resources/Cards/" + suit + "_" + value + ".png";
+        return "/Cards/" + suit + "_" + value + ".png";
+        //test return "/Cards/Clubs_10.png";
     }
 
     // Configura l'immagine della carta
