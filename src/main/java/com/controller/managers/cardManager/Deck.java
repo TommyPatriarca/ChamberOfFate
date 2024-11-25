@@ -1,6 +1,7 @@
 package com.controller.managers.cardManager;
 
 import com.controller.objects.CardObj;
+import com.controller.objects.PlayerObj;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -77,7 +78,7 @@ public class Deck {
     }
 
     /**
-     * Function to print the entire deck
+     * Funzione per stampare l'intero mazzo
      */
     public void printDeck(){
 
@@ -92,7 +93,7 @@ public class Deck {
     }
 
     /**
-     * Function used to shuffle the deck
+     * Funzione per mischiare il mazzo
      */
     public void shuffleDeck(){
         Collections.shuffle(deckArr);
