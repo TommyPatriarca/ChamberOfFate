@@ -157,32 +157,24 @@ public class Controller {
         System.out.println("Giocatore 1 totale: " + firstCard1);
 
         while(true){
-            System.out.println("Giocatore 2 totale: " + runCount2);
+            runCount2 = checkCards(player2, false);
             if(runCount2<17){
-                if(runCount2<12){
+                if(runCount2 == 12 && firstCard1 == 2 || firstCard1 == 3){
+                        hitCard(false);
+                }
+                else if(runCount2<12 || firstCard1 > 6){
                     hitCard(false);
                 }
                 else {
-                    if(runCount2 == 12){
-                        if(firstCard1 == 2 || firstCard1 == 3){
-                            hitCard(false);
-                        }
-                    }
-                    else {
-                        if(firstCard1<7){
-                            break;
-                        }
-                        else {
-                            hitCard(false);
-                        }
-                    }
+                    break;
                 }
 
             }
             else{
                 break;
             }
-            runCount2 = checkCards(player2, false);
+            System.out.println("Giocatore 2 totale: " + runCount2);
+
         }
 
         return true;

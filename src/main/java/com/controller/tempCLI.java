@@ -24,16 +24,17 @@ public class tempCLI {
         System.out.println("Nome: ");
         controller.startGame(scanner.nextLine());
 
-        System.out.println("Hai le seguenti carte: ");
-        printCards();
-
-        System.out.println("Il giocatore 2 ha la seguente carta\n" + controller.getPlayer2().getPlayDeck().getFirst().getTipo());
-
         pl1Turn();
 
     }
 
     public  void pl1Turn(){
+
+        System.out.println("Hai le seguenti carte: ");
+        printCards();
+
+        System.out.println("Il giocatore 2 ha la seguente carta\n" + controller.getPlayer2().getPlayDeck().getFirst().getTipo());
+
         while (true){
 
             System.out.println("Cosa vuoi fare: \n1)Hit\n2)Stand");
@@ -69,6 +70,7 @@ public class tempCLI {
         System.out.println("Scrivi 1 per prossimo turno: ");
 
         if(scanner.nextInt() ==1){
+            controller.turn();
             pl1Turn();
         }
     }
