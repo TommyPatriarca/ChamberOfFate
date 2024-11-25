@@ -40,8 +40,8 @@ public class PcLoadingScreen extends Application {
         ImageView backgroundView = new ImageView(backgroundImage);
         backgroundView.setPreserveRatio(true);
 
-        Button startButton = createButton("Start");
-        Button exitButton = createButton("Exit");
+        Button startButton = createButton("Start", primaryStage);
+        Button exitButton = createButton("Exit", primaryStage);
         muteButton = createMuteButton();
 
         VBox mainLayout = new VBox();
@@ -104,7 +104,7 @@ public class PcLoadingScreen extends Application {
         }
     }
 
-    private Button createButton(String text) {
+    private Button createButton(String text, Stage stage) {
         Button button = new Button(text);
         styleButton(button);
 
@@ -128,7 +128,7 @@ public class PcLoadingScreen extends Application {
         } else if (text.equalsIgnoreCase("Start")) {
             button.setOnAction(e -> {
                 soundManager.ShotgunSound();
-                playStartGameAnimation(button);
+                fadeToModeScreen(stage);
             });
         }
 
@@ -140,17 +140,6 @@ public class PcLoadingScreen extends Application {
         scaleTransition.setToX(scale);
         scaleTransition.setToY(scale);
         scaleTransition.play();
-    }
-
-    private void playStartGameAnimation(Button button) {
-        FadeTransition fade = new FadeTransition(Duration.seconds(1), button.getScene().getRoot());
-        fade.setFromValue(1);
-        fade.setToValue(0);
-        fade.setOnFinished(e -> {
-            PcLobbyScreen lobbyScreen = new PcLobbyScreen();
-            lobbyScreen.show((Stage) button.getScene().getWindow());
-        });
-        fade.play();
     }
 
     private Button createMuteButton() {
@@ -182,13 +171,13 @@ public class PcLoadingScreen extends Application {
                 "-fx-background-color: black;" +
                         "-fx-text-fill: crimson;" +
                         "-fx-padding: 10px;" +
-                        "-fx-background-radius: 8;" + // Slightly rounded for a pixelated look
+                        "-fx-background-radius: 8;" +
                         "-fx-border-color: darkred;" +
                         "-fx-border-width: 4px;" +
-                        "-fx-border-radius: 8;" + // Matches the background radius for consistency
+                        "-fx-border-radius: 8;" +
                         "-fx-cursor: hand;"
         );
-        button.setFont(FontUtils.PIXEL_HORROR); // Apply the custom horror font
+        button.setFont(FontUtils.PIXEL_HORROR);
         button.setMinWidth(120);
         button.setMinHeight(50);
     }
@@ -197,11 +186,11 @@ public class PcLoadingScreen extends Application {
         return "-fx-background-color: darkred;" +
                 "-fx-text-fill: black;" +
                 "-fx-padding: 10px;" +
-                "-fx-background-radius: 8;" + // Matches the rounded pixel style
+                "-fx-background-radius: 8;" +
                 "-fx-border-color: crimson;" +
                 "-fx-border-width: 4px;" +
                 "-fx-border-radius: 8;" +
-                "-fx-effect: dropshadow(gaussian, crimson, 20, 0.8, 0, 0);"; // Pulsating glow effect
+                "-fx-effect: dropshadow(gaussian, crimson, 20, 0.8, 0, 0);";
     }
 
     private String getPressedStyle() {
@@ -212,12 +201,8 @@ public class PcLoadingScreen extends Application {
                 "-fx-border-color: black;" +
                 "-fx-border-width: 4px;" +
                 "-fx-border-radius: 8;" +
-                "-fx-effect: dropshadow(gaussian, red, 30, 1.0, 0, 0);"; // Intensifies for a pressed look
+                "-fx-effect: dropshadow(gaussian, red, 30, 1.0, 0, 0);";
     }
-
-
-
-
 
     private void toggleMusicState() {
         if (MusicManager.isMuted()) {
@@ -226,4 +211,16 @@ public class PcLoadingScreen extends Application {
             MusicManager.mute();
         }
     }
+    private void fadeToModeScreen(Stage stage) {
+        StackPane root = (StackPane) stage.getScene().getRoot();
+        FadeTransition fadeOut = new FadeTransition(Duration.seconds(1), root);
+        fadeOut.setFromValue(1);
+        fadeOut.setToValue(0);
+        fadeOut.setOnFinished(e -> {
+            ModeScreen modeScreen = new ModeScreen();
+            modeScreen.show(stage);
+        });
+        fadeOut.play();
+    }
+
 }
