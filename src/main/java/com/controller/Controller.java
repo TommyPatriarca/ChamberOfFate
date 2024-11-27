@@ -20,8 +20,8 @@ public class Controller {
     private int turnCount = 0;
 
     /**
-     * The controller is used to manage all the logical part of the game.
-     * @param onOrOff If true, the game will be online, if false offline
+     * Il controller è usato per gestire tutta la parte logica del gioco
+     * @param onOrOff Se true il gioco sarà online, se false offline
      */
     public Controller (boolean onOrOff){
 
@@ -37,14 +37,14 @@ public class Controller {
     }
 
     /**
-     * Function to manage the Online version of the game
+     * Funzione per gestire la versione online del gioco
      */
     public void onlineGame(){
 
     }
 
     /**
-     * Function to manage the Offline version of the game. AI TO BE ADDED
+     * Funzione per gestire la versione offline del gioco con AI
      */
     public void offlineGame(){
         deck = new Deck();
@@ -54,11 +54,12 @@ public class Controller {
         this.playerName = playerName;
         player1 = new PlayerObj(playerName);
         player2 = new PlayerObj("CPU");
-
         turn();
-
     }
 
+    /**
+     * Funzione per gestire ogni turno
+     */
     public void turn(){
 
         player1.resetPlayer();

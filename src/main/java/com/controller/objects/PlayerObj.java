@@ -7,10 +7,11 @@ public class PlayerObj {
     private ArrayList<CardObj> playDeck;
     private int HP = 5;
     private String name;
+    private int revAMMO;
 
     /**
-     *
-     * @param name The name of the player
+     * L'oggetto giocatore
+     * @param name Il nome del giocatore
      */
     public PlayerObj(String name){
         this.name = name;
@@ -23,6 +24,10 @@ public class PlayerObj {
 
     public ArrayList<CardObj> getPlayDeck(){
         return playDeck;
+    }
+
+    public void setRevAMMO(int revAMMO){
+        this.revAMMO = revAMMO;
     }
 
     public void resetPlayer(){

@@ -6,8 +6,8 @@ import java.sql.SQLOutput;
 import java.util.Scanner;
 
 /**
- * This is a temporary CLI, not to be added to the final game, but used to test the controller before
- * using it in the GUIs
+ * Questa è una CLI temporanea, che non sarà aggiunta al gioco finale, ma è solo usata per
+ * testare il controllore prima di aggiungerlo alla GUI
  */
 public class tempCLI {
     private Scanner scanner = new Scanner(System.in);
@@ -60,7 +60,6 @@ public class tempCLI {
         controller.AITurn();
 
         System.out.println("Il giocatore ha pescato le seguenti carte: ");
-
 
         for(int i=0;i<controller.getPlayer2().getPlayDeck().size(); i++){
             System.out.println(controller.getPlayer2().getPlayDeck().get(i).getTipo());

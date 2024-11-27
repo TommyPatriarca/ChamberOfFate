@@ -10,7 +10,7 @@ public class CardObj {
      *  Diamonds = Quadri
      *  Clubs = Fiori
      *  Spades = Picche
-     * @param type Il numero di carta ed il seme (In inglese) ed . ES. "4 di fiori" = 4C
+     * @param type Il numero di carta ed il seme (In inglese). ES. "4 di fiori" = 4C
      *
      */
     public CardObj(String type){

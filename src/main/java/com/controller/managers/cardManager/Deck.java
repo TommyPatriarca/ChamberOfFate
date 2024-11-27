@@ -20,6 +20,9 @@ public class Deck {
 
 */
 
+    /**
+     * Il mazzo completo della partita, composto da 52 carte
+     */
     public Deck(){
         //Creo 1 mazzo da 52
 
