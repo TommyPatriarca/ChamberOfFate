@@ -36,7 +36,7 @@ public class PcLoadingScreen extends Application {
         soundManager = new SoundManager();
 
         // Static background
-        Image backgroundImage = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/images/LoadingScreen.png")));
+        Image backgroundImage = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/images/loadpls.jpg")));
         ImageView backgroundView = new ImageView(backgroundImage);
         backgroundView.setPreserveRatio(true);
 
@@ -217,8 +217,8 @@ public class PcLoadingScreen extends Application {
         fadeOut.setFromValue(1);
         fadeOut.setToValue(0);
         fadeOut.setOnFinished(e -> {
-            ModeScreen modeScreen = new ModeScreen();
-            modeScreen.show(stage);
+            //ModeScreen modeScreen = new ModeScreen();
+            //modeScreen.show(stage);
         });
         fadeOut.play();
     }
