@@ -9,6 +9,8 @@ public class PlayerObj {
     private String name;
     private int revAMMO;
 
+    private int[] caricatore = new int[6];
+
     /**
      * L'oggetto giocatore
      * @param name Il nome del giocatore
@@ -26,14 +28,45 @@ public class PlayerObj {
         return playDeck;
     }
 
-    public void setRevAMMO(int revAMMO){
+    /**
+     * Funzione per farsi sparare
+     * @param revAMMO Proiettili nel caricatore
+     * @return Se true, si è sparato, se false no
+     */
+    public boolean shoot(int revAMMO){
         this.revAMMO = revAMMO;
+
+        for(int i=0;i<6;i++) {
+            if(i<revAMMO){
+                caricatore[i] = 1;
+
+            }
+            else{
+                caricatore[i] = 0;
+            }
+            /*for (int j = 0; j < revAMMO; j++) {
+                caricatore[i] = 1;
+            }*/
+        }
+
+        double randomN = Math.random() * 6;
+
+        int randomN2 = (int) randomN;
+
+        System.out.println("Colpo " + randomN2);
+
+        for(int i=0;i<6;i++){
+            if(caricatore[i] == 1 && randomN2 == i){
+                return true;
+            }
+
+        }
+        return false;
     }
 
     public void resetPlayer(){
         playDeck = new ArrayList<>();
         HP = 5;
     }
-
 
 }

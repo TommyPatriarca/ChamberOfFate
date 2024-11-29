@@ -80,10 +80,11 @@ public class Deck {
 
     }
 
+
     /**
      * Funzione per stampare l'intero mazzo
      */
-    public void printDeck(){
+    /*public void printDeck(){
 
         System.out.println("||||||||||||");
         System.out.println("DECK:");
@@ -93,7 +94,7 @@ public class Deck {
         }
         System.out.println("||||||||||||");
 
-    }
+    }*/
 
     /**
      * Funzione per mischiare il mazzo

@@ -135,6 +135,66 @@ public class Controller {
     }
 
     /**
+     * Funzione per controllare il risultato di entrambi i Blackjack
+     * @return Se 1, si spara il giocatore il giocatore 1, se 2 il secondo,  se -1 pari
+     */
+    public int checkResult(){
+        int runCountP1, runCountP2;
+
+        runCountP1 = checkCards(player1, false);
+        runCountP2 = checkCards(player2, false);
+
+        //Controllo se non siano uguali
+        if(runCountP1!=runCountP2){
+            //Controllo se siano minori di 22
+            if(runCountP1<22 && runCountP2<22){
+
+                //Controllo se P1>P2
+                if(runCountP1>runCountP2){
+
+                    //Si spara il P2
+                    return 2;
+                }
+
+                //Altrimenti se P2>P1
+                else{
+
+                    //Si spara il P1
+                    return 1;
+                }
+            }
+
+            //Controllo se P1 non ha sballato
+            else if(runCountP1>22){
+                //Alrimenti si spara P1
+                return 1;
+
+            }
+
+            //Controllo se P2 non ha sballato
+            else if(runCountP2>22){
+                //Alrimenti si spara P2
+                return 2;
+
+            }
+
+            //Entrambi hanno sballato
+            else{
+                //Nessuno si spara, pari
+                return -1;
+            }
+
+        }
+
+        //Altrimenti sono pari
+        else{
+            //Nessuno si spara
+            return -1;
+        }
+
+    }
+
+    /**
      *
      * @param firstOrSec Se true player1, se false player2
      */

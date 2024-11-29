@@ -66,6 +66,8 @@ public class tempCLI {
         }
         System.out.println("Totale : " + controller.checkCards(controller.getPlayer2(), false));
 
+        System.out.println("Risultato sparo " + controller.checkResult());
+
         System.out.println("Scrivi 1 per prossimo turno: ");
 
         if(scanner.nextInt() ==1){
