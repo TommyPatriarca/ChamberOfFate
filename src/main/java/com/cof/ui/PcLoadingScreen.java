@@ -155,15 +155,18 @@ public class PcLoadingScreen extends Application {
     }
 
     private void fadeToModeScreen(Stage stage) {
-        VBox root = (VBox) stage.getScene().getRoot();
+        VBox root = (VBox) stage.getScene().getRoot(); // Ensure the correct root type
         FadeTransition fadeOut = new FadeTransition(Duration.seconds(1), root);
         fadeOut.setFromValue(1);
         fadeOut.setToValue(0);
         fadeOut.setOnFinished(e -> {
-            // Implementa qui il passaggio alla schermata del gioco
+            // Transition to ModeScreen
+            ModeScreen modeScreen = new ModeScreen();
+            modeScreen.show(stage); // Reuse the same Stage
         });
         fadeOut.play();
     }
+
 
     public static void main(String[] args) {
         launch(args);
