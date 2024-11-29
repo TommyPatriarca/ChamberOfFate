@@ -2,21 +2,21 @@ package com.cof.ui;
 
 import com.cof.managers.MusicManager;
 import com.cof.managers.SoundManager;
-import com.cof.utils.FontUtils;
-import javafx.animation.*;
+import javafx.animation.FadeTransition;
 import javafx.application.Application;
 import javafx.geometry.Pos;
-import javafx.scene.Cursor;
 import javafx.scene.ImageCursor;
 import javafx.scene.Scene;
-import javafx.scene.effect.*;
+import javafx.scene.effect.Glow;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
-import javafx.scene.control.Button;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 import javafx.geometry.Insets;
+import javafx.scene.control.Button;
 import javafx.util.Duration;
 
 import java.util.Objects;
@@ -25,10 +25,11 @@ public class PcLoadingScreen extends Application {
 
     private MusicManager musicManager;
     private SoundManager soundManager;
-    private Button muteButton;
+    private ImageView muteIcon;
     private boolean alreadyStarted;
     private final Glow glow = new Glow(0.8);
-    private final DropShadow dropShadow = new DropShadow(20, Color.DARKRED);
+    private double xOffset = 0;
+    private double yOffset = 0;
 
     @Override
     public void start(Stage primaryStage) {
@@ -36,191 +37,135 @@ public class PcLoadingScreen extends Application {
         soundManager = new SoundManager();
 
         // Static background
-        Image backgroundImage = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/images/loadpls.jpg")));
+        Image backgroundImage = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/images/LoadingBackground.jpg")));
         ImageView backgroundView = new ImageView(backgroundImage);
-        backgroundView.setPreserveRatio(true);
+        backgroundView.setPreserveRatio(false);
+        backgroundView.setFitWidth(1920);
+        backgroundView.setFitHeight(1080);
 
-        Button startButton = createButton("Start", primaryStage);
-        Button exitButton = createButton("Exit", primaryStage);
-        muteButton = createMuteButton();
+        muteIcon = createMuteIcon();
 
+        // Barra superiore personalizzata
+        HBox titleBar = createCustomTitleBar(primaryStage);
+
+        // Layout principale
+        StackPane root = new StackPane();
+        root.getChildren().add(backgroundView);
+
+        // Posiziona la barra sopra lo sfondo
         VBox mainLayout = new VBox();
-        mainLayout.setAlignment(Pos.CENTER);
-        mainLayout.setSpacing(20);
+        mainLayout.getChildren().addAll(titleBar, root);
 
-        HBox buttonBox = new HBox(30);
-        buttonBox.setAlignment(Pos.CENTER);
-        buttonBox.getChildren().addAll(startButton, exitButton);
-
-        Region topSpacer = new Region();
-        VBox.setVgrow(topSpacer, Priority.ALWAYS);
-
-        HBox muteContainer = new HBox(muteButton);
-        muteContainer.setAlignment(Pos.BOTTOM_RIGHT);
-        muteContainer.setPadding(new Insets(0, 20, 20, 0));
-
-        mainLayout.getChildren().addAll(topSpacer, buttonBox, muteContainer);
-
-        StackPane root = new StackPane(backgroundView, mainLayout);
+        // Posiziona il bottone mute
+        StackPane.setAlignment(muteIcon, Pos.BOTTOM_RIGHT);
+        StackPane.setMargin(muteIcon, new Insets(0, 20, 20, 0));
+        root.getChildren().add(muteIcon);
 
         // Custom cursor
         Image cursorImage = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/images/crosshair.png")));
         ImageCursor customCursor = new ImageCursor(cursorImage, cursorImage.getWidth() / 2, cursorImage.getHeight() / 2);
         root.setCursor(customCursor);
 
-        Scene scene = new Scene(root);
+        Scene scene = new Scene(mainLayout);
 
-        handleResponsiveness(scene, backgroundView, startButton, exitButton, muteButton);
-
+        // Rimuovi la barra di sistema
+        primaryStage.initStyle(StageStyle.UNDECORATED);
         primaryStage.setScene(scene);
-        primaryStage.setFullScreen(true);
+        primaryStage.setMaximized(true);
         primaryStage.show();
+
+        handleBackgroundResize(scene, backgroundView);
 
         if (!alreadyStarted) {
             musicManager.play();
             alreadyStarted = true;
         }
-    }
 
-    private void handleResponsiveness(Scene scene, ImageView backgroundView, Button... buttons) {
-        scene.widthProperty().addListener((obs, oldVal, newVal) -> {
-            backgroundView.setFitWidth(newVal.doubleValue());
-            adjustButtonSize(buttons, newVal.doubleValue(), scene.getHeight());
-        });
-
-        scene.heightProperty().addListener((obs, oldVal, newVal) -> {
-            backgroundView.setFitHeight(newVal.doubleValue());
-            adjustButtonSize(buttons, scene.getWidth(), newVal.doubleValue());
-        });
-    }
-
-    private void adjustButtonSize(Button[] buttons, double width, double height) {
-        double newButtonWidth = Math.min(width * 0.15, 200);
-        double newButtonHeight = Math.min(height * 0.1, 80);
-
-        for (Button button : buttons) {
-            button.setPrefWidth(newButtonWidth);
-            button.setPrefHeight(newButtonHeight);
-        }
-    }
-
-    private Button createButton(String text, Stage stage) {
-        Button button = new Button(text);
-        styleButton(button);
-
-        button.setOnMouseEntered(e -> {
-            button.setEffect(glow);
-            button.setStyle(getHoverStyle());
-            smoothScale(button, 1.1);
-        });
-
-        button.setOnMouseExited(e -> {
-            button.setEffect(dropShadow);
-            styleButton(button);
-            smoothScale(button, 1.0);
-        });
-
-        button.setOnMousePressed(e -> button.setStyle(getPressedStyle()));
-        button.setOnMouseReleased(e -> styleButton(button));
-
-        if (text.equalsIgnoreCase("Exit")) {
-            button.setOnAction(e -> System.exit(0));
-        } else if (text.equalsIgnoreCase("Start")) {
-            button.setOnAction(e -> {
+        // Avvio gioco al click
+        root.setOnMouseClicked(event -> {
+            if (!muteIcon.isHover() && !titleBar.isHover()) {
                 soundManager.ShotgunSound();
-                fadeToModeScreen(stage);
-            });
-        }
-
-        return button;
+                fadeToModeScreen(primaryStage);
+            }
+        });
     }
 
-    private void smoothScale(Button button, double scale) {
-        ScaleTransition scaleTransition = new ScaleTransition(Duration.millis(200), button);
-        scaleTransition.setToX(scale);
-        scaleTransition.setToY(scale);
-        scaleTransition.play();
+    private void handleBackgroundResize(Scene scene, ImageView backgroundView) {
+        // Adatta lo sfondo a riempire sempre l'intera finestra
+        scene.widthProperty().addListener((obs, oldVal, newVal) -> backgroundView.setFitWidth(newVal.doubleValue()));
+        scene.heightProperty().addListener((obs, oldVal, newVal) -> backgroundView.setFitHeight(newVal.doubleValue()));
     }
 
-    private Button createMuteButton() {
-        Button button = new Button("Mute");
-        styleButton(button);
+    private ImageView createMuteIcon() {
+        // Carica le immagini per mute e unmute
+        Image muteImage = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/icons/mute.png")));
+        Image unmuteImage = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/icons/unmute.png")));
 
-        button.setOnMouseEntered(e -> {
-            button.setEffect(glow);
-            button.setStyle(getHoverStyle());
-            smoothScale(button, 1.1);
+        ImageView imageView = new ImageView(MusicManager.isMuted() ? muteImage : unmuteImage);
+        imageView.setFitWidth(50);
+        imageView.setFitHeight(50);
+
+        // Aggiungi effetto hover
+        imageView.setOnMouseEntered(e -> imageView.setEffect(glow));
+        imageView.setOnMouseExited(e -> imageView.setEffect(null));
+
+        // Gestisci il click per alternare tra mute e unmute
+        imageView.setOnMouseClicked(e -> {
+            if (MusicManager.isMuted()) {
+                MusicManager.unmute();
+                imageView.setImage(unmuteImage);
+            } else {
+                MusicManager.mute();
+                imageView.setImage(muteImage);
+            }
         });
 
-        button.setOnMouseExited(e -> {
-            button.setEffect(null);
-            styleButton(button);
-            smoothScale(button, 1.0);
-        });
-
-        button.setOnAction(e -> {
-            toggleMusicState();
-            button.setText(MusicManager.isMuted() ? "Unmute" : "Mute");
-        });
-
-        return button;
+        return imageView;
     }
 
-    private void styleButton(Button button) {
-        button.setStyle(
-                "-fx-background-color: black;" +
-                        "-fx-text-fill: crimson;" +
-                        "-fx-padding: 10px;" +
-                        "-fx-background-radius: 8;" +
-                        "-fx-border-color: darkred;" +
-                        "-fx-border-width: 4px;" +
-                        "-fx-border-radius: 8;" +
+    private HBox createCustomTitleBar(Stage stage) {
+        HBox titleBar = new HBox();
+        titleBar.setAlignment(Pos.CENTER_LEFT);
+        titleBar.setStyle("-fx-background-color: black; -fx-padding: 2;");
+        titleBar.setPrefHeight(20);
+
+        Button closeButton = new Button("X");
+        closeButton.setStyle(
+                "-fx-background-color: red;" +
+                        "-fx-text-fill: white;" +
+                        "-fx-font-size: 12px;" +
                         "-fx-cursor: hand;"
         );
-        button.setFont(FontUtils.PIXEL_HORROR);
-        button.setMinWidth(120);
-        button.setMinHeight(50);
+        closeButton.setOnAction(e -> System.exit(0));
+
+        titleBar.getChildren().add(closeButton);
+        HBox.setMargin(closeButton, new Insets(0, 10, 0, 10));
+
+        // Aggiungi drag event per spostare la finestra
+        titleBar.setOnMousePressed(e -> {
+            xOffset = e.getSceneX();
+            yOffset = e.getSceneY();
+        });
+        titleBar.setOnMouseDragged(e -> {
+            stage.setX(e.getScreenX() - xOffset);
+            stage.setY(e.getScreenY() - yOffset);
+        });
+
+        return titleBar;
     }
 
-    private String getHoverStyle() {
-        return "-fx-background-color: darkred;" +
-                "-fx-text-fill: black;" +
-                "-fx-padding: 10px;" +
-                "-fx-background-radius: 8;" +
-                "-fx-border-color: crimson;" +
-                "-fx-border-width: 4px;" +
-                "-fx-border-radius: 8;" +
-                "-fx-effect: dropshadow(gaussian, crimson, 20, 0.8, 0, 0);";
-    }
-
-    private String getPressedStyle() {
-        return "-fx-background-color: crimson;" +
-                "-fx-text-fill: black;" +
-                "-fx-padding: 10px;" +
-                "-fx-background-radius: 8;" +
-                "-fx-border-color: black;" +
-                "-fx-border-width: 4px;" +
-                "-fx-border-radius: 8;" +
-                "-fx-effect: dropshadow(gaussian, red, 30, 1.0, 0, 0);";
-    }
-
-    private void toggleMusicState() {
-        if (MusicManager.isMuted()) {
-            MusicManager.unmute();
-        } else {
-            MusicManager.mute();
-        }
-    }
     private void fadeToModeScreen(Stage stage) {
-        StackPane root = (StackPane) stage.getScene().getRoot();
+        VBox root = (VBox) stage.getScene().getRoot();
         FadeTransition fadeOut = new FadeTransition(Duration.seconds(1), root);
         fadeOut.setFromValue(1);
         fadeOut.setToValue(0);
         fadeOut.setOnFinished(e -> {
-            //ModeScreen modeScreen = new ModeScreen();
-            //modeScreen.show(stage);
+            // Implementa qui il passaggio alla schermata del gioco
         });
         fadeOut.play();
     }
 
+    public static void main(String[] args) {
+        launch(args);
+    }
 }
