@@ -165,14 +165,14 @@ public class Controller {
             }
 
             //Controllo se P1 non ha sballato
-            else if(runCountP1>22){
+            else if(runCountP1>21){
                 //Alrimenti si spara P1
                 return 1;
 
             }
 
             //Controllo se P2 non ha sballato
-            else if(runCountP2>22){
+            else if(runCountP2>21){
                 //Alrimenti si spara P2
                 return 2;
 
