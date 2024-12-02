@@ -1,6 +1,7 @@
 package com.cof.ui;
 
 import com.cof.utils.FontUtils;
+import com.controller.Controller;
 import javafx.animation.FadeTransition;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -97,8 +98,18 @@ public class ModeScreen {
         button.setOnMousePressed(e -> button.setStyle(getPressedStyle()));
         button.setOnMouseReleased(e -> styleButton(button));
 
+        // Action for Offline Button
+        if ("Offline".equals(text)) {
+            button.setOnAction(e -> {
+                Controller controller = new Controller(false); // Initialize in offline mode
+                GameScreen gameScreen = new GameScreen(controller); // Pass the controller
+                gameScreen.show((Stage) button.getScene().getWindow()); // Use the same Stage
+            });
+        }
+
         return button;
     }
+
 
     private void styleButton(Button button) {
         button.setStyle(
