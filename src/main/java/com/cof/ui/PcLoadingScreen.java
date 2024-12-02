@@ -31,6 +31,7 @@ public class PcLoadingScreen extends Application {
     private double xOffset = 0;
     private double yOffset = 0;
 
+
     @Override
     public void start(Stage primaryStage) {
         musicManager = new MusicManager();
@@ -39,9 +40,9 @@ public class PcLoadingScreen extends Application {
         // Static background
         Image backgroundImage = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/images/LoadingBackground.jpg")));
         ImageView backgroundView = new ImageView(backgroundImage);
-        backgroundView.setPreserveRatio(false);
-        backgroundView.setFitWidth(1920);
-        backgroundView.setFitHeight(1080);
+        backgroundView.setPreserveRatio(true);
+        backgroundView.setFitWidth(primaryStage.getWidth());
+        backgroundView.setFitHeight(primaryStage.getHeight());
 
         muteIcon = createMuteIcon();
 
