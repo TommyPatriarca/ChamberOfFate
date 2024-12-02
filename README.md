@@ -27,7 +27,7 @@ In Chamber of Fate, players compete in a high-stakes variation of blackjack:
 3. Choose a mode (Offline or Online) and prepare to risk it all in the Chamber of Fate.
 
 ## Contact
-For bug reports, feature requests, or support, please open an issue in the [GitHub Issues section](https://github.com/your-repo/issues).
+For bug reports, feature requests, or support, please open an issue in the [GitHub Issues section]([https://github.com/your-repo/issues](https://github.com/TommyPatriarca/ChamberOfFate/issues)).
 
 ---
 
