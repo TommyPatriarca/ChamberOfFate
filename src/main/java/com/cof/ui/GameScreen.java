@@ -1,6 +1,7 @@
 package com.cof.ui;
 
 import com.controller.Controller;
+import com.controller.objects.CardObj;
 import javafx.animation.RotateTransition;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -65,26 +66,33 @@ public class GameScreen {
         // Inizializza le carte del giocatore
         playerHandDisplay.getChildren().clear();
         playerHandDisplay.getChildren().add(new Label("Your Hand"));
-        controller.getPlayer1().getPlayDeck().forEach(card ->
-                playerHandDisplay.getChildren().add(createCardView(card.getTipo()))
-        );
+
+        // Mostra tutte le carte del giocatore
+        controller.getPlayer1().getPlayDeck().forEach(card -> {
+            if (card != null) { // Verifica che la carta esista
+                playerHandDisplay.getChildren().add(createCardView(card)); // Passa l'oggetto CardObj
+            }
+        });
 
         // Inizializza le carte dell'avversario
         opponentHandDisplay.getChildren().clear();
         opponentHandDisplay.getChildren().add(new Label("Opponent's Hand"));
 
         boolean isFirstCard = true;
-        for (var card : controller.getPlayer2().getPlayDeck()) {
-            if (isFirstCard) {
-                opponentHandDisplay.getChildren().add(createCardView(card.getTipo())); // Prima carta visibile
-                isFirstCard = false;
-            } else {
-                opponentHandDisplay.getChildren().add(createBackCardView()); // Carte successive nascoste
+        for (CardObj card : controller.getPlayer2().getPlayDeck()) {
+            if (card != null) { // Verifica che la carta esista
+                if (isFirstCard) {
+                    opponentHandDisplay.getChildren().add(createCardView(card)); // Prima carta visibile
+                    isFirstCard = false;
+                } else {
+                    opponentHandDisplay.getChildren().add(createBackCardView()); // Carte successive coperte
+                }
             }
         }
 
         currentPlayerLabel.setText("Your Turn");
     }
+
 
 
 
@@ -170,48 +178,44 @@ public class GameScreen {
     }
 
     private void updateGameDisplay() {
-        // Aggiorna le carte del giocatore
         playerHandDisplay.getChildren().clear();
         playerHandDisplay.getChildren().add(new Label("Your Hand"));
+
         controller.getPlayer1().getPlayDeck().forEach(card ->
-                playerHandDisplay.getChildren().add(createCardView(card.getTipo()))
+                playerHandDisplay.getChildren().add(createCardView(card))
         );
 
-        // Aggiorna le carte dell'avversario
         opponentHandDisplay.getChildren().clear();
         opponentHandDisplay.getChildren().add(new Label("Opponent's Hand"));
 
-        // Mostra la prima carta dell'avversario visibile
         boolean isFirstCard = true;
-        for (var card : controller.getPlayer2().getPlayDeck()) {
+        for (CardObj card : controller.getPlayer2().getPlayDeck()) {
             if (isFirstCard) {
-                opponentHandDisplay.getChildren().add(createCardView(card.getTipo())); // Prima carta visibile
+                opponentHandDisplay.getChildren().add(createCardView(card));
                 isFirstCard = false;
             } else {
-                opponentHandDisplay.getChildren().add(createBackCardView()); // Carte successive nascoste
+                opponentHandDisplay.getChildren().add(createBackCardView());
             }
         }
-
-        currentPlayerLabel.setText("Your Turn");
     }
 
-
-    private ImageView createCardView(String cardType) {
-        ImageView cardImageView = new ImageView(new Image(getClass().getResourceAsStream("/cards/Back_1.png")));
+    private ImageView createCardView(CardObj card) {
+        String imagePath = card.getImagePath();
+        ImageView cardImageView = new ImageView(new Image(getClass().getResourceAsStream(imagePath)));
         cardImageView.setFitWidth(100);
         cardImageView.setFitHeight(150);
-
-        // Imposta l'animazione per mostrare la faccia della carta
-        playCardFlipAnimation(cardImageView, cardType);
         return cardImageView;
     }
 
+
+
     private ImageView createBackCardView() {
-        ImageView backImageView = new ImageView(new Image(getClass().getResourceAsStream("/cards/Back_1.png")));
+        ImageView backImageView = new ImageView(new Image(getClass().getResourceAsStream("/Cards/Back_1.png")));
         backImageView.setFitWidth(100);
         backImageView.setFitHeight(150);
         return backImageView;
     }
+
 
     private void playCardFlipAnimation(ImageView cardView, String cardType) {
         cardView.setRotationAxis(Rotate.Y_AXIS);
