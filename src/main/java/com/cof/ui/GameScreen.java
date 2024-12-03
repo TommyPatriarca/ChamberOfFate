@@ -5,19 +5,21 @@ import javafx.animation.RotateTransition;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
 import javafx.scene.transform.Rotate;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 import javafx.util.Duration;
 
 public class GameScreen {
     private Controller controller;
-    private VBox playerHandDisplay, opponentHandDisplay;
+    private HBox playerHandDisplay, opponentHandDisplay;
     private Label currentPlayerLabel;
     private Button drawCardButton, passTurnButton;
     private StackPane root;
@@ -27,10 +29,20 @@ public class GameScreen {
     }
 
     public void show(Stage primaryStage) {
+        // Configura lo stile del palco PRIMA di renderlo visibile
+        if (!primaryStage.isShowing()) {
+            primaryStage.initStyle(StageStyle.UNDECORATED); // Rimuove la barra superiore standard
+        }
+
+        primaryStage.setMaximized(true); // Schermo intero
+
         controller.startGame("Player 1"); // Avvia il gioco
 
         root = new StackPane();
         BorderPane gameLayout = new BorderPane();
+
+        VBox topBar = createCustomTopBar(primaryStage);
+        gameLayout.setTop(topBar);
 
         VBox gameArea = createGameArea();
         gameLayout.setCenter(gameArea);
@@ -40,12 +52,74 @@ public class GameScreen {
 
         root.getChildren().add(gameLayout);
 
-        Scene scene = new Scene(root, 800, 600);
-        primaryStage.setScene(scene);
-        primaryStage.setTitle("Offline Game");
-        primaryStage.show();
+        Scene scene = new Scene(root);
+        primaryStage.setScene(scene); // Configura la scena
+        primaryStage.setTitle("Chamber of Fate - Fullscreen Modern UI");
 
-        updateGameDisplay(); // Inizializza la GUI con lo stato corrente del gioco
+        // Mostra le carte iniziali
+        initializePlayerHands();
+        primaryStage.show(); // Mostra il palco
+    }
+
+    private void initializePlayerHands() {
+        // Inizializza le carte del giocatore
+        playerHandDisplay.getChildren().clear();
+        playerHandDisplay.getChildren().add(new Label("Your Hand"));
+        controller.getPlayer1().getPlayDeck().forEach(card ->
+                playerHandDisplay.getChildren().add(createCardView(card.getTipo()))
+        );
+
+        // Inizializza le carte dell'avversario
+        opponentHandDisplay.getChildren().clear();
+        opponentHandDisplay.getChildren().add(new Label("Opponent's Hand"));
+
+        boolean isFirstCard = true;
+        for (var card : controller.getPlayer2().getPlayDeck()) {
+            if (isFirstCard) {
+                opponentHandDisplay.getChildren().add(createCardView(card.getTipo())); // Prima carta visibile
+                isFirstCard = false;
+            } else {
+                opponentHandDisplay.getChildren().add(createBackCardView()); // Carte successive nascoste
+            }
+        }
+
+        currentPlayerLabel.setText("Your Turn");
+    }
+
+
+
+    private VBox createCustomTopBar(Stage primaryStage) {
+        VBox topBar = new VBox();
+        topBar.setStyle("-fx-background-color: #1e1e1e;");
+        topBar.setPadding(new Insets(10));
+
+        HBox barContent = new HBox();
+        barContent.setAlignment(Pos.CENTER);
+        barContent.setSpacing(20);
+
+        Label titleLabel = new Label("Chamber of Fate");
+        titleLabel.setFont(Font.font("Arial", FontWeight.BOLD, 18));
+        titleLabel.setTextFill(Color.WHITE);
+
+        Button minimizeButton = new Button("_");
+        minimizeButton.setOnAction(e -> primaryStage.setIconified(true));
+        styleBarButton(minimizeButton);
+
+        Button closeButton = new Button("X");
+        closeButton.setOnAction(e -> primaryStage.close());
+        styleBarButton(closeButton);
+
+        barContent.getChildren().addAll(titleLabel, minimizeButton, closeButton);
+        topBar.getChildren().add(barContent);
+
+        return topBar;
+    }
+
+
+    private void styleBarButton(Button button) {
+        button.setStyle("-fx-background-color: #333333; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 5;");
+        button.setOnMouseEntered(e -> button.setStyle("-fx-background-color: #555555; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 5;"));
+        button.setOnMouseExited(e -> button.setStyle("-fx-background-color: #333333; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 5;"));
     }
 
     private VBox createGameArea() {
@@ -53,13 +127,11 @@ public class GameScreen {
         gameArea.setAlignment(Pos.CENTER);
         gameArea.setPadding(new Insets(20));
 
-        // Area avversario
-        opponentHandDisplay = new VBox(10);
+        opponentHandDisplay = new HBox(10);
         opponentHandDisplay.setAlignment(Pos.CENTER);
         opponentHandDisplay.getChildren().add(new Label("Opponent's Hand"));
 
-        // Area giocatore
-        playerHandDisplay = new VBox(10);
+        playerHandDisplay = new HBox(10);
         playerHandDisplay.setAlignment(Pos.CENTER);
         playerHandDisplay.getChildren().add(new Label("Your Hand"));
 
@@ -76,8 +148,11 @@ public class GameScreen {
         drawCardButton = new Button("Draw Card");
         passTurnButton = new Button("Pass Turn");
 
+        drawCardButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-size: 14px;");
+        passTurnButton.setStyle("-fx-background-color: #f44336; -fx-text-fill: white; -fx-font-size: 14px;");
+
         drawCardButton.setOnAction(e -> {
-            controller.hitCard(true); // Pesca una carta per il giocatore
+            controller.hitCard(true);
             updateGameDisplay();
             if (controller.checkCards(controller.getPlayer1(), false) > 21) {
                 showGameOver("Busted! Opponent Wins.");
@@ -85,7 +160,7 @@ public class GameScreen {
         });
 
         passTurnButton.setOnAction(e -> {
-            controller.AITurn(); // Logica del turno dell'IA
+            controller.AITurn();
             updateGameDisplay();
             checkGameResult();
         });
@@ -105,22 +180,29 @@ public class GameScreen {
         // Aggiorna le carte dell'avversario
         opponentHandDisplay.getChildren().clear();
         opponentHandDisplay.getChildren().add(new Label("Opponent's Hand"));
-        controller.getPlayer2().getPlayDeck().forEach(card ->
-                opponentHandDisplay.getChildren().add(createBackCardView()) // Carte nascoste
-        );
+
+        // Mostra la prima carta dell'avversario visibile
+        boolean isFirstCard = true;
+        for (var card : controller.getPlayer2().getPlayDeck()) {
+            if (isFirstCard) {
+                opponentHandDisplay.getChildren().add(createCardView(card.getTipo())); // Prima carta visibile
+                isFirstCard = false;
+            } else {
+                opponentHandDisplay.getChildren().add(createBackCardView()); // Carte successive nascoste
+            }
+        }
 
         currentPlayerLabel.setText("Your Turn");
     }
 
+
     private ImageView createCardView(String cardType) {
-        // Percorso basato su risorse del tuo progetto
-        String imagePath = "resources/Cards/" + "Clubs_2" + ".png";
-        ImageView cardImageView = new ImageView(new Image(getClass().getResourceAsStream("/cards/Clubs_2.png")));
+        ImageView cardImageView = new ImageView(new Image(getClass().getResourceAsStream("/cards/Back_1.png")));
         cardImageView.setFitWidth(100);
         cardImageView.setFitHeight(150);
 
-        // Animazione di rotazione per la carta
-        playCardFlipAnimation(cardImageView);
+        // Imposta l'animazione per mostrare la faccia della carta
+        playCardFlipAnimation(cardImageView, cardType);
         return cardImageView;
     }
 
@@ -131,21 +213,27 @@ public class GameScreen {
         return backImageView;
     }
 
-
-    private void playCardFlipAnimation(ImageView cardView) {
+    private void playCardFlipAnimation(ImageView cardView, String cardType) {
         cardView.setRotationAxis(Rotate.Y_AXIS);
 
+        // Rotazione per nascondere il retro
         RotateTransition flipToBack = new RotateTransition(Duration.seconds(0.5), cardView);
         flipToBack.setFromAngle(0);
         flipToBack.setToAngle(90);
 
+        // Rotazione per mostrare la faccia
         RotateTransition flipToFront = new RotateTransition(Duration.seconds(0.5), cardView);
         flipToFront.setFromAngle(90);
         flipToFront.setToAngle(0);
 
-        flipToBack.setOnFinished(event -> flipToFront.play());
+        flipToBack.setOnFinished(event -> {
+            cardView.setImage(new Image(getClass().getResourceAsStream("/cards/" + cardType + ".png")));
+            flipToFront.play();
+        });
+
         flipToBack.play();
     }
+
 
     private void checkGameResult() {
         int result = controller.checkResult();
@@ -164,6 +252,5 @@ public class GameScreen {
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
-        // Puoi aggiungere logica per resettare il gioco o tornare al menu principale
     }
 }

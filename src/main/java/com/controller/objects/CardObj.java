@@ -22,5 +22,11 @@ public class CardObj {
         return type;
     }
 
+    // Genera il percorso dell'immagine basato sul seme e il valore
+    private String generateImagePath(String suit, String value) {
+        return "/Cards/" + suit + "_" + value + ".png";
+        //test return "/Cards/Clubs_10.png";
+    }
+
 
 }
