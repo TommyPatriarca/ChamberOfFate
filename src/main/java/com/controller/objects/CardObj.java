@@ -21,8 +21,8 @@ public class CardObj {
 
     // Genera il percorso dell'immagine basato sul seme e il valore
     public String getImagePath() {
-        String suit = type.substring(type.length() - 1); // Ultimo carattere (es. C per Clubs)
-        String value = type.substring(0, type.length() - 1); // Resto del valore (es. 4 per 4C)
+        String suit = type.substring(type.length() - 1);
+        String value = type.substring(0, type.length() - 1);
 
         // Mappa i semi ai nomi completi
         String suitFullName;
@@ -42,6 +42,8 @@ public class CardObj {
             default:
                 throw new IllegalArgumentException("Seme non valido: " + suit);
         }
+        System.out.println(suitFullName);
+        System.out.println(value);
 
         return "/Cards/" + suitFullName + "_" + value + ".png";
     }
