@@ -41,7 +41,7 @@ public class Controller {
      * Funzione per gestire la versione online del gioco
      */
     public void onlineGame(){
-
+        //OkHttpClient client;
     }
 
     /**
