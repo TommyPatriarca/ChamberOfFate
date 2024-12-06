@@ -1,6 +1,7 @@
 package com.cof.ui;
 
 import com.cof.utils.FontUtils;
+import com.controller.Controller;
 import javafx.animation.FadeTransition;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -383,7 +384,7 @@ public class PcLobbyScreen {
 
         fadeOut.setOnFinished(e -> {
             // Avvia la GameScreen
-            GameScreen gameScreen = new GameScreen();
+            GameScreen gameScreen = new GameScreen(new Controller(true));
             gameScreen.show(primaryStage);
         });
 

@@ -28,6 +28,9 @@ public class tempCLI {
 
     }
 
+    /**
+     * Turno del giocatore 1
+     */
     public  void pl1Turn(){
 
         System.out.println("Hai le seguenti carte: ");
@@ -56,8 +59,12 @@ public class tempCLI {
         }
     }
 
+    /**
+     * Turno del giocatore 2
+     */
     public void pl2Turn(){
         controller.AITurn();
+        int result;
 
         System.out.println("Il giocatore ha pescato le seguenti carte: ");
 
@@ -67,6 +74,20 @@ public class tempCLI {
         System.out.println("Totale : " + controller.checkCards(controller.getPlayer2(), false));
 
         System.out.println("Risultato sparo " + controller.checkResult());
+
+        result = controller.checkResult();
+
+        if(result!=-1){
+            if(controller.shootPlayer()){
+                System.out.println("Il giocatore"  + result + " si è sparato!");
+                System.out.println("Il giocatore ha ora " + controller.getPlayer(result).getHP());
+            }
+            else {
+                System.out.println("Il giocatore" + result + " si è salvato");
+            }
+
+        }
+
 
         System.out.println("Scrivi 1 per prossimo turno: ");
 

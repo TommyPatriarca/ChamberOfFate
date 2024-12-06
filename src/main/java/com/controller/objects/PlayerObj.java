@@ -20,12 +20,11 @@ public class PlayerObj {
         playDeck = new ArrayList<>();
     }
 
+    /**
+     * @param cardObj La carta da aggiungere alle carte del giocatore
+     */
     public void addCard(CardObj cardObj){
         playDeck.add(cardObj);
-    }
-
-    public ArrayList<CardObj> getPlayDeck(){
-        return playDeck;
     }
 
     /**
@@ -57,6 +56,7 @@ public class PlayerObj {
 
         for(int i=0;i<6;i++){
             if(caricatore[i] == 1 && randomN2 == i){
+                HP--;
                 return true;
             }
 
@@ -64,9 +64,24 @@ public class PlayerObj {
         return false;
     }
 
+    /**
+     * Funzione per resettare mazzo e HP alla fine di ogni turno
+     *
+     */
     public void resetPlayer(){
         playDeck = new ArrayList<>();
         HP = 5;
+    }
+
+    /**
+     * @return L'Arraylist di CardObj con le carte del giocatore
+     */
+    public ArrayList<CardObj> getPlayDeck(){
+        return playDeck;
+    }
+
+    public int getHP(){
+        return HP;
     }
 
 }

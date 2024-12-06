@@ -137,7 +137,7 @@ public class Controller {
 
     /**
      * Funzione per controllare il risultato di entrambi i Blackjack
-     * @return Se 1, si spara il giocatore il giocatore 1, se 2 il secondo,  se -1 pari
+     * @return Se 1, si spara il giocatore 1, se 2 il secondo,  se -1 pari
      */
     public int checkResult(){
         int runCountP1, runCountP2;
@@ -197,6 +197,46 @@ public class Controller {
 
     /**
      *
+     */
+    public boolean shootPlayer(){
+        int result = checkResult();
+
+        //Il running count del giocatore che ha vinto
+        int runCount;
+
+        if(result==1){
+            runCount = checkCards(player2, false);
+            //CONTROLLARE SE E' STATO FATTO BLACKJACK E NON SOLO 21
+            //OTTIMIZZARE MEGLIO GLI IF, SE POSSIBILE FARE UN UNICO IF PER TUTTI E DUE I CASi
+            if(runCount==21){
+                if(player1.shoot(3)){
+                    return true;
+                }
+            }
+            else {
+                if(player1.shoot(1)){
+                    return false;
+                }
+            }
+        }
+        else if(result==2){
+            runCount = checkCards(player1, false);
+            if(runCount==21){
+                if(player2.shoot(3)){
+                    return true;
+                }
+            }
+            else {
+                if(player2.shoot(1)){
+                    return false;
+                }
+            }
+        }
+            return false;
+    }
+
+    /**
+     *
      * @param firstOrSec Se true player1, se false player2
      */
     public void hitCard(boolean firstOrSec){
@@ -246,12 +286,30 @@ public class Controller {
 
     //GET FUNCTIONS
 
+    //ANDRANNO SOSTITUITE CON IL GETPLAYER GENERALe
     public PlayerObj getPlayer1(){
         return player1;
     }
 
     public PlayerObj getPlayer2(){
         return player2;
+    }
+
+    /**
+     *
+     * @param player Se 1, player1, se 2 player2
+     * @return il giocatore richiesto
+     */
+    public PlayerObj getPlayer(int player){
+        if(player == 1){
+            return player1;
+        }
+        else if(player==2){
+            return player2;
+        }
+        else {
+            return null;
+        }
     }
 
 }
