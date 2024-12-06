@@ -44,6 +44,11 @@ public class PcLoadingScreen extends Application {
         backgroundView.setFitWidth(primaryStage.getWidth());
         backgroundView.setFitHeight(primaryStage.getHeight());
 
+        //Icon
+        Image appIcon = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/icons/Icon1.png")));
+        primaryStage.getIcons().add(appIcon);
+
+
         muteIcon = createMuteIcon();
 
         // Barra superiore personalizzata
