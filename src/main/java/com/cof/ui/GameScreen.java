@@ -1,7 +1,9 @@
 package com.cof.ui;
 
+import com.cof.managers.SoundManager;
 import com.controller.Controller;
 import com.controller.objects.CardObj;
+import javafx.animation.RotateTransition;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -14,10 +16,13 @@ import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
+import javafx.scene.transform.Rotate;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import javafx.util.Duration;
 
 public class GameScreen {
+    private SoundManager soundManager = new SoundManager();
     private Controller controller;
     private HBox playerHandDisplay, opponentHandDisplay;
     private Label currentPlayerLabel, player1HP, player2HP;
@@ -34,6 +39,19 @@ public class GameScreen {
 
         controller.startGame("Player 1");
 
+        // Immagine di sfondo
+        Image backgroundImage = new Image(getClass().getResourceAsStream("/images/Table.jpg"));
+        ImageView backgroundView = new ImageView(backgroundImage);
+        backgroundView.setPreserveRatio(false);
+        backgroundView.setFitWidth(primaryStage.getWidth());
+        backgroundView.setFitHeight(primaryStage.getHeight());
+
+        // Listener per aggiornare lo sfondo alle dimensioni della finestra
+        primaryStage.widthProperty().addListener((observable, oldValue, newValue) ->
+                backgroundView.setFitWidth(newValue.doubleValue()));
+        primaryStage.heightProperty().addListener((observable, oldValue, newValue) ->
+                backgroundView.setFitHeight(newValue.doubleValue()));
+
         root = new StackPane();
         BorderPane gameLayout = new BorderPane();
 
@@ -46,7 +64,8 @@ public class GameScreen {
         HBox bottomControls = createBottomControls();
         gameLayout.setBottom(bottomControls);
 
-        root.getChildren().add(gameLayout);
+        // Aggiungi lo sfondo al layout principale
+        root.getChildren().addAll(backgroundView, gameLayout);
 
         Scene scene = new Scene(root);
         primaryStage.setScene(scene);
@@ -55,6 +74,7 @@ public class GameScreen {
         initializePlayerHands();
         primaryStage.show();
     }
+
 
     private void initializePlayerHands() {
         playerHandDisplay.getChildren().clear();
@@ -214,13 +234,6 @@ public class GameScreen {
         player2HP.setText("Player 2 HP: " + controller.getPlayer2().getHP());
     }
 
-    private ImageView createCardView(CardObj card) {
-        String imagePath = card.getImagePath();
-        ImageView cardImageView = new ImageView(new Image(getClass().getResourceAsStream(imagePath)));
-        cardImageView.setFitWidth(100);
-        cardImageView.setFitHeight(150);
-        return cardImageView;
-    }
 
     private ImageView createBackCardView() {
         ImageView backImageView = new ImageView(new Image(getClass().getResourceAsStream("/Cards/Back_1.png")));
@@ -228,4 +241,40 @@ public class GameScreen {
         backImageView.setFitHeight(150);
         return backImageView;
     }
+
+    private ImageView createCardView(CardObj card) {
+        ImageView cardView = createBackCardView(); // Inizia come coperta
+        String imagePath = card.getImagePath();
+
+        // Applica l'animazione di flip quando viene aggiunta
+        playCardFlipAnimation(cardView, imagePath);
+
+        return cardView;
+    }
+
+    private void playCardFlipAnimation(ImageView cardView, String newImagePath) {
+        SoundManager.FlipCardSound();
+
+        RotateTransition rotateToSide = new RotateTransition(Duration.seconds(0.3), cardView);
+        rotateToSide.setFromAngle(0);
+        rotateToSide.setToAngle(90);
+        rotateToSide.setAxis(Rotate.Y_AXIS);
+
+        RotateTransition rotateToFront = new RotateTransition(Duration.seconds(0.3), cardView);
+        rotateToFront.setFromAngle(90);
+        rotateToFront.setToAngle(0);
+        rotateToFront.setAxis(Rotate.Y_AXIS);
+
+        // Cambia immagine e avvia la seconda parte dell'animazione
+        rotateToSide.setOnFinished(event -> {
+            cardView.setImage(new Image(getClass().getResourceAsStream(newImagePath)));
+            rotateToFront.play();
+        });
+
+        // Avvia la prima parte dell'animazione
+        rotateToSide.play();
+    }
+
+
+
 }
