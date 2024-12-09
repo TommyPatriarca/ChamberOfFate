@@ -2,42 +2,37 @@ package com.cof.ui;
 
 import com.controller.Controller;
 import com.controller.objects.CardObj;
-import javafx.animation.RotateTransition;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
-import javafx.scene.transform.Rotate;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
-import javafx.util.Duration;
 
 public class GameScreen {
     private Controller controller;
     private HBox playerHandDisplay, opponentHandDisplay;
-    private Label currentPlayerLabel;
+    private Label currentPlayerLabel, player1HP, player2HP;
     private Button drawCardButton, passTurnButton;
     private StackPane root;
+    private int currentRound = 1;
 
     public GameScreen(Controller controller) {
         this.controller = controller;
     }
 
     public void show(Stage primaryStage) {
-        // Configura lo stile del palco PRIMA di renderlo visibile
-        if (!primaryStage.isShowing()) {
-            primaryStage.initStyle(StageStyle.UNDECORATED); // Rimuove la barra superiore standard
-        }
+        primaryStage.setMaximized(true);
 
-        primaryStage.setMaximized(true); // Schermo intero
-
-        controller.startGame("Player 1"); // Avvia il gioco
+        controller.startGame("Player 1");
 
         root = new StackPane();
         BorderPane gameLayout = new BorderPane();
@@ -54,47 +49,41 @@ public class GameScreen {
         root.getChildren().add(gameLayout);
 
         Scene scene = new Scene(root);
-        primaryStage.setScene(scene); // Configura la scena
-        primaryStage.setTitle("Chamber of Fate - Fullscreen Modern UI");
+        primaryStage.setScene(scene);
+        primaryStage.setTitle("Chamber of Fate - Round " + currentRound);
 
-        // Mostra le carte iniziali
         initializePlayerHands();
-        primaryStage.show(); // Mostra il palco
+        primaryStage.show();
     }
 
     private void initializePlayerHands() {
-        // Inizializza le carte del giocatore
         playerHandDisplay.getChildren().clear();
         playerHandDisplay.getChildren().add(new Label("Your Hand"));
 
-        // Mostra tutte le carte del giocatore
+        // Carte del giocatore umano
         controller.getPlayer1().getPlayDeck().forEach(card -> {
-            if (card != null) { // Verifica che la carta esista
-                playerHandDisplay.getChildren().add(createCardView(card)); // Passa l'oggetto CardObj
+            if (card != null) {
+                playerHandDisplay.getChildren().add(createCardView(card));
             }
         });
 
-        // Inizializza le carte dell'avversario
         opponentHandDisplay.getChildren().clear();
         opponentHandDisplay.getChildren().add(new Label("Opponent's Hand"));
 
+        // Carte del bot (una scoperta, una coperta)
         boolean isFirstCard = true;
         for (CardObj card : controller.getPlayer2().getPlayDeck()) {
-            if (card != null) { // Verifica che la carta esista
-                if (isFirstCard) {
-                    opponentHandDisplay.getChildren().add(createCardView(card)); // Prima carta visibile
-                    isFirstCard = false;
-                } else {
-                    opponentHandDisplay.getChildren().add(createBackCardView()); // Carte successive coperte
-                }
+            if (isFirstCard) {
+                opponentHandDisplay.getChildren().add(createCardView(card));
+                isFirstCard = false;
+            } else {
+                opponentHandDisplay.getChildren().add(createBackCardView());
             }
         }
 
         currentPlayerLabel.setText("Your Turn");
+        updatePlayerHP();
     }
-
-
-
 
     private VBox createCustomTopBar(Stage primaryStage) {
         VBox topBar = new VBox();
@@ -109,25 +98,15 @@ public class GameScreen {
         titleLabel.setFont(Font.font("Arial", FontWeight.BOLD, 18));
         titleLabel.setTextFill(Color.WHITE);
 
-        Button minimizeButton = new Button("_");
-        minimizeButton.setOnAction(e -> primaryStage.setIconified(true));
-        styleBarButton(minimizeButton);
+        player1HP = new Label("Player 1 HP: 5");
+        player1HP.setTextFill(Color.WHITE);
+        player2HP = new Label("Player 2 HP: 5");
+        player2HP.setTextFill(Color.WHITE);
 
-        Button closeButton = new Button("X");
-        closeButton.setOnAction(e -> primaryStage.close());
-        styleBarButton(closeButton);
-
-        barContent.getChildren().addAll(titleLabel, minimizeButton, closeButton);
+        barContent.getChildren().addAll(titleLabel, player1HP, player2HP);
         topBar.getChildren().add(barContent);
 
         return topBar;
-    }
-
-
-    private void styleBarButton(Button button) {
-        button.setStyle("-fx-background-color: #333333; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 5;");
-        button.setOnMouseEntered(e -> button.setStyle("-fx-background-color: #555555; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 5;"));
-        button.setOnMouseExited(e -> button.setStyle("-fx-background-color: #333333; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 5;"));
     }
 
     private VBox createGameArea() {
@@ -137,11 +116,9 @@ public class GameScreen {
 
         opponentHandDisplay = new HBox(10);
         opponentHandDisplay.setAlignment(Pos.CENTER);
-        opponentHandDisplay.getChildren().add(new Label("Opponent's Hand"));
 
         playerHandDisplay = new HBox(10);
         playerHandDisplay.setAlignment(Pos.CENTER);
-        playerHandDisplay.getChildren().add(new Label("Your Hand"));
 
         gameArea.getChildren().addAll(opponentHandDisplay, playerHandDisplay);
         return gameArea;
@@ -154,7 +131,7 @@ public class GameScreen {
 
         currentPlayerLabel = new Label("Your Turn");
         drawCardButton = new Button("Draw Card");
-        passTurnButton = new Button("Pass Turn");
+        passTurnButton = new Button("Stand");
 
         drawCardButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-size: 14px;");
         passTurnButton.setStyle("-fx-background-color: #f44336; -fx-text-fill: white; -fx-font-size: 14px;");
@@ -163,40 +140,78 @@ public class GameScreen {
             controller.hitCard(true);
             updateGameDisplay();
             if (controller.checkCards(controller.getPlayer1(), false) > 21) {
-                showGameOver("Busted! Opponent Wins.");
+                resolveRound("You Busted! Opponent Wins.");
             }
         });
 
-        passTurnButton.setOnAction(e -> {
-            controller.AITurn();
-            updateGameDisplay();
-            checkGameResult();
-        });
+        passTurnButton.setOnAction(e -> resolveRound(null));
 
         controls.getChildren().addAll(currentPlayerLabel, drawCardButton, passTurnButton);
         return controls;
     }
 
-    private void updateGameDisplay() {
-        playerHandDisplay.getChildren().clear();
-        playerHandDisplay.getChildren().add(new Label("Your Hand"));
+    private void resolveRound(String message) {
+        revealAllCards();
 
-        controller.getPlayer1().getPlayDeck().forEach(card ->
-                playerHandDisplay.getChildren().add(createCardView(card))
-        );
+        int player1Score = controller.checkCards(controller.getPlayer1(), false);
+        int player2Score = controller.checkCards(controller.getPlayer2(), false);
 
-        opponentHandDisplay.getChildren().clear();
-        opponentHandDisplay.getChildren().add(new Label("Opponent's Hand"));
-
-        boolean isFirstCard = true;
-        for (CardObj card : controller.getPlayer2().getPlayDeck()) {
-            if (isFirstCard) {
-                opponentHandDisplay.getChildren().add(createCardView(card));
-                isFirstCard = false;
+        if (message == null) {
+            if (player1Score > player2Score && player1Score <= 21 || player2Score > 21) {
+                message = "You Win! Opponent Fires.";
+                boolean shotResult = controller.getPlayer2().shoot(6);
+                if (shotResult) controller.getPlayer2().getHP();
+                System.out.println("vite1"+controller.getPlayer2().getHP());
             } else {
-                opponentHandDisplay.getChildren().add(createBackCardView());
+                message = "You Lose! You Fire.";
+                boolean shotResult = controller.getPlayer1().shoot(6);
+                if (shotResult) controller.getPlayer1().getHP();
+                System.out.println("vite1"+controller.getPlayer1().getHP());
             }
         }
+
+        showRoundResult(message);
+    }
+
+    private void revealAllCards() {
+        opponentHandDisplay.getChildren().clear();
+        controller.getPlayer2().getPlayDeck().forEach(card -> opponentHandDisplay.getChildren().add(createCardView(card)));
+    }
+
+    private void showRoundResult(String message) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Round Result");
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+
+        if (controller.getPlayer1().getHP() == 0 || controller.getPlayer2().getHP() == 0) {
+            endGame();
+        } else {
+            currentRound++;
+            controller.turn();
+            updateGameDisplay();
+        }
+    }
+
+    private void endGame() {
+        String winner = controller.getPlayer1().getHP() > 0 ? "Player 1 Wins!" : "Player 2 Wins!";
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Game Over");
+        alert.setHeaderText(null);
+        alert.setContentText(winner);
+        alert.showAndWait();
+        System.exit(0);
+    }
+
+    private void updateGameDisplay() {
+        initializePlayerHands();
+        updatePlayerHP();
+    }
+
+    private void updatePlayerHP() {
+        player1HP.setText("Player 1 HP: " + controller.getPlayer1().getHP());
+        player2HP.setText("Player 2 HP: " + controller.getPlayer2().getHP());
     }
 
     private ImageView createCardView(CardObj card) {
@@ -207,54 +222,10 @@ public class GameScreen {
         return cardImageView;
     }
 
-
-
     private ImageView createBackCardView() {
         ImageView backImageView = new ImageView(new Image(getClass().getResourceAsStream("/Cards/Back_1.png")));
         backImageView.setFitWidth(100);
         backImageView.setFitHeight(150);
         return backImageView;
-    }
-
-
-    private void playCardFlipAnimation(ImageView cardView, String cardType) {
-        cardView.setRotationAxis(Rotate.Y_AXIS);
-
-        // Rotazione per nascondere il retro
-        RotateTransition flipToBack = new RotateTransition(Duration.seconds(0.5), cardView);
-        flipToBack.setFromAngle(0);
-        flipToBack.setToAngle(90);
-
-        // Rotazione per mostrare la faccia
-        RotateTransition flipToFront = new RotateTransition(Duration.seconds(0.5), cardView);
-        flipToFront.setFromAngle(90);
-        flipToFront.setToAngle(0);
-
-        flipToBack.setOnFinished(event -> {
-            cardView.setImage(new Image(getClass().getResourceAsStream("/cards/" + cardType + ".png")));
-            flipToFront.play();
-        });
-
-        flipToBack.play();
-    }
-
-
-    private void checkGameResult() {
-        int result = controller.checkResult();
-        if (result == 1) {
-            showGameOver("You Lose!");
-        } else if (result == 2) {
-            showGameOver("You Win!");
-        } else if (result == -1) {
-            showGameOver("It's a Draw!");
-        }
-    }
-
-    private void showGameOver(String message) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Game Over");
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
     }
 }
