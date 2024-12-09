@@ -29,19 +29,24 @@ public class ModeScreen {
         VBox mainLayout = new VBox(30); // Spaziatura tra i pulsanti
         mainLayout.setAlignment(Pos.CENTER); // Allinea inizialmente al centro
         mainLayout.setPadding(new Insets(50, 0, 0, 0)); // Aggiungi un margine superiore di 50px per spostare tutto più in basso
-        
-        mainLayout.setPadding(new Insets(50, 0, 0, 0)); // Margine superiore per ulteriore spazio
 
         Button onlineButton = createButton("Online");
         Button offlineButton = createButton("Offline");
 
         mainLayout.getChildren().addAll(onlineButton, offlineButton);
 
+        // Immagine di sfondo
         Image backgroundImage = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/images/ModeBackground.jpg")));
         ImageView backgroundView = new ImageView(backgroundImage);
-        backgroundView.setPreserveRatio(true);
+
+        // Configura l'immagine di sfondo per riempire completamente l'area
+        backgroundView.setPreserveRatio(false); // Disattiva il rapporto d'aspetto
         backgroundView.setFitWidth(primaryStage.getWidth());
         backgroundView.setFitHeight(primaryStage.getHeight());
+
+        // Aggiungi listener per aggiornare dinamicamente
+        primaryStage.widthProperty().addListener((obs, oldVal, newVal) -> backgroundView.setFitWidth(newVal.doubleValue()));
+        primaryStage.heightProperty().addListener((obs, oldVal, newVal) -> backgroundView.setFitHeight(newVal.doubleValue()));
 
         StackPane root = new StackPane(backgroundView, mainLayout);
 
@@ -50,6 +55,7 @@ public class ModeScreen {
 
         Scene scene = new Scene(layoutWithBar, primaryStage.getWidth(), primaryStage.getHeight(), Color.BLACK);
 
+        // Transizione di fade-in
         FadeTransition fadeIn = new FadeTransition(Duration.seconds(1), root);
         fadeIn.setFromValue(0);
         fadeIn.setToValue(1);
@@ -109,7 +115,6 @@ public class ModeScreen {
 
         return button;
     }
-
 
     private void styleButton(Button button) {
         button.setStyle(

@@ -31,7 +31,6 @@ public class PcLoadingScreen extends Application {
     private double xOffset = 0;
     private double yOffset = 0;
 
-
     @Override
     public void start(Stage primaryStage) {
         musicManager = new MusicManager();
@@ -40,14 +39,16 @@ public class PcLoadingScreen extends Application {
         // Static background
         Image backgroundImage = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/images/LoadingBackground.jpg")));
         ImageView backgroundView = new ImageView(backgroundImage);
-        backgroundView.setPreserveRatio(true);
-        backgroundView.setFitWidth(primaryStage.getWidth());
-        backgroundView.setFitHeight(primaryStage.getHeight());
 
-        //Icon
+        // Rimuovi il mantenimento del rapporto d'aspetto
+        backgroundView.setPreserveRatio(false);
+
+        // Adatta l'immagine alle dimensioni della finestra
+        handleBackgroundResize(primaryStage, backgroundView);
+
+        // Icon
         Image appIcon = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/icons/Icon1.png")));
         primaryStage.getIcons().add(appIcon);
-
 
         muteIcon = createMuteIcon();
 
@@ -80,8 +81,6 @@ public class PcLoadingScreen extends Application {
         primaryStage.setMaximized(true);
         primaryStage.show();
 
-        handleBackgroundResize(scene, backgroundView);
-
         if (!alreadyStarted) {
             musicManager.play();
             alreadyStarted = true;
@@ -96,10 +95,10 @@ public class PcLoadingScreen extends Application {
         });
     }
 
-    private void handleBackgroundResize(Scene scene, ImageView backgroundView) {
+    private void handleBackgroundResize(Stage stage, ImageView backgroundView) {
         // Adatta lo sfondo a riempire sempre l'intera finestra
-        scene.widthProperty().addListener((obs, oldVal, newVal) -> backgroundView.setFitWidth(newVal.doubleValue()));
-        scene.heightProperty().addListener((obs, oldVal, newVal) -> backgroundView.setFitHeight(newVal.doubleValue()));
+        stage.widthProperty().addListener((obs, oldVal, newVal) -> backgroundView.setFitWidth(newVal.doubleValue()));
+        stage.heightProperty().addListener((obs, oldVal, newVal) -> backgroundView.setFitHeight(newVal.doubleValue()));
     }
 
     private ImageView createMuteIcon() {
@@ -172,7 +171,6 @@ public class PcLoadingScreen extends Application {
         });
         fadeOut.play();
     }
-
 
     public static void main(String[] args) {
         launch(args);
