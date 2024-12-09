@@ -45,6 +45,10 @@ public class CardObj {
         System.out.println(suitFullName);
         System.out.println(value);
 
-        return "/Cards/" + suitFullName + "_" + value + ".png";
+        if(value.equals("A")){
+            return "/Cards/" + suitFullName + "_" + "ACE" + ".png";
+        }else{
+            return "/Cards/" + suitFullName + "_" + value + ".png";
+        }
     }
 }
