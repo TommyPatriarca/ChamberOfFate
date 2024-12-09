@@ -25,7 +25,7 @@ public class Controller {
      * @param onOrOff Se true il gioco sarà online, se false offline
      */
     public Controller (boolean onOrOff){
-        
+
         //This function creates a new deck
 
         if(onOrOff){
