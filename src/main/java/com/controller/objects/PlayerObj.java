@@ -75,7 +75,6 @@ public class PlayerObj {
      */
     public void resetPlayer(){
         playDeck = new ArrayList<>();
-        HP = 5;
     }
 
     /**

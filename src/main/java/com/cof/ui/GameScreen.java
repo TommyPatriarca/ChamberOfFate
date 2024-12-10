@@ -218,7 +218,7 @@ public class GameScreen {
         alert.setContentText(message);
         alert.showAndWait();
 
-        if (controller.getPlayer1().getHP() == 3 || controller.getPlayer2().getHP() == 3) {
+        if (controller.getPlayer1().getHP() == 0 || controller.getPlayer2().getHP() == 0) {
             endGame();
         } else {
             currentRound++;
