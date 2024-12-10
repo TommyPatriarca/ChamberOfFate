@@ -1,16 +1,16 @@
 
 package com.cof.ui;
 
+import com.cof.managers.MusicManager;
 import com.cof.managers.SoundManager;
 import com.controller.Controller;
 import com.controller.objects.CardObj;
+import javafx.animation.FadeTransition;
 import javafx.animation.RotateTransition;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
@@ -55,6 +55,9 @@ public class GameScreen {
 
         root.getChildren().addAll(backgroundView, gameLayout);
 
+        // Aggiungi il menu
+        createMenu();
+
         Scene scene = new Scene(root);
         primaryStage.setScene(scene);
         primaryStage.setTitle("Chamber of Fate - Round " + currentRound);
@@ -62,6 +65,7 @@ public class GameScreen {
         initializePlayerHands();
         primaryStage.show();
     }
+
 
     private ImageView createBackground(Stage primaryStage) {
         Image backgroundImage = new Image(getClass().getResourceAsStream("/images/Table.jpg"));
@@ -295,6 +299,118 @@ public class GameScreen {
 
         rotateToSide.play();
     }
+
+    private void createMenu() {
+        VBox menu = new VBox(15);
+        menu.setStyle("-fx-background-color: rgba(20, 20, 20, 0.95); -fx-border-color: gold; -fx-border-width: 3; -fx-padding: 20;");
+        menu.setAlignment(Pos.CENTER);
+        menu.setVisible(false);
+
+        // Animazioni per apertura e chiusura
+        FadeTransition fadeIn = new FadeTransition(Duration.seconds(0.5), menu);
+        fadeIn.setFromValue(0);
+        fadeIn.setToValue(1);
+
+        FadeTransition fadeOut = new FadeTransition(Duration.seconds(0.5), menu);
+        fadeOut.setFromValue(1);
+        fadeOut.setToValue(0);
+
+        // Pulsanti del menu
+        Button rulesButton = createMenuButton("Regole", this::showRules);
+        Button creditsButton = createMenuButton("Crediti", this::showCredits);
+        Button volumeButton = createMenuButton("Volume", this::showVolumeControl);
+        Button surrenderButton = createMenuButton("Arrenditi", this::surrender);
+        Button exitButton = createMenuButton("Esci", () -> System.exit(0));
+
+        menu.getChildren().addAll(rulesButton, creditsButton, volumeButton, surrenderButton, exitButton);
+
+        // Aggiungi il menu alla root
+        root.getChildren().add(menu);
+
+        // Pulsante per aprire/chiudere il menu
+        Button toggleMenuButton = createStyledButton("Menu", "#333333");
+        toggleMenuButton.setStyle("-fx-background-color: rgba(40, 40, 40, 0.8); -fx-border-color: gold; -fx-border-width: 2; -fx-font-size: 16px; -fx-text-fill: gold;");
+        toggleMenuButton.setOnAction(e -> {
+            if (menu.isVisible()) {
+                fadeOut.setOnFinished(ev -> menu.setVisible(false));
+                fadeOut.play();
+            } else {
+                menu.setVisible(true);
+                fadeIn.play();
+            }
+        });
+
+        BorderPane.setAlignment(toggleMenuButton, Pos.TOP_RIGHT);
+        ((BorderPane) root.getChildren().get(1)).setRight(toggleMenuButton);
+    }
+
+    private Button createMenuButton(String text, Runnable action) {
+        Button button = new Button(text);
+        button.setStyle("-fx-background-color: rgba(30, 30, 30, 0.9); -fx-border-color: gold; -fx-border-width: 2; -fx-font-size: 14px; -fx-text-fill: gold;");
+        button.setOnAction(e -> action.run());
+        return button;
+    }
+
+    private void showRules() {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Regole del Gioco");
+        alert.setHeaderText("Regole");
+        alert.setContentText("Le regole del gioco sono semplici: sopravvivi e vinci.");
+        alert.showAndWait();
+    }
+
+    private void showCredits() {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Crediti");
+        alert.setHeaderText("Crediti");
+        alert.setContentText("Creato da Tommaso Patriarca. Grafica retrò ispirata agli anni '80.");
+        alert.showAndWait();
+    }
+
+    private void showVolumeControl() {
+        Stage volumeStage = new Stage();
+        volumeStage.setTitle("Regolazione Volume");
+
+        VBox volumeLayout = new VBox(10);
+        volumeLayout.setAlignment(Pos.CENTER);
+        volumeLayout.setPadding(new Insets(20));
+        volumeLayout.setStyle("-fx-background-color: rgba(20, 20, 20, 0.95); -fx-border-color: gold; -fx-border-width: 2;");
+
+        Label volumeLabel = new Label("Volume");
+        volumeLabel.setTextFill(Color.GOLD);
+        volumeLabel.setFont(Font.font("Courier New", FontWeight.BOLD, 16));
+
+        Slider volumeSlider = new Slider(0, 1, MusicManager.getVolume());
+        volumeSlider.setShowTickMarks(true);
+        volumeSlider.setShowTickLabels(true);
+        volumeSlider.setMajorTickUnit(0.1);
+        volumeSlider.setMinorTickCount(4);
+        volumeSlider.setBlockIncrement(0.05);
+        volumeSlider.setStyle("-fx-control-inner-background: #222; -fx-accent: gold;");
+
+        volumeSlider.valueProperty().addListener((observable, oldValue, newValue) -> {
+            MusicManager.setVolume(newValue.doubleValue());
+        });
+
+        Button closeButton = new Button("Chiudi");
+        closeButton.setStyle("-fx-background-color: rgba(30, 30, 30, 0.9); -fx-border-color: gold; -fx-font-size: 14px; -fx-text-fill: gold;");
+        closeButton.setOnAction(e -> volumeStage.close());
+
+        volumeLayout.getChildren().addAll(volumeLabel, volumeSlider, closeButton);
+
+        Scene volumeScene = new Scene(volumeLayout, 300, 200);
+        volumeStage.setScene(volumeScene);
+        volumeStage.show();
+    }
+
+    private void surrender() {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Arrendersi");
+        alert.setHeaderText("Vuoi arrenderti?");
+        alert.setContentText("Questa azione terminerà la partita.");
+        if (alert.showAndWait().get() == ButtonType.OK) {
+            System.exit(0);
+        }
+    }
+
 }
-
-
