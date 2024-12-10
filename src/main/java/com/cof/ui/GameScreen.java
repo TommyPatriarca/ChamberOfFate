@@ -1,3 +1,4 @@
+
 package com.cof.ui;
 
 import com.cof.managers.SoundManager;
@@ -18,7 +19,6 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.transform.Rotate;
 import javafx.stage.Stage;
-import javafx.stage.StageStyle;
 import javafx.util.Duration;
 
 public class GameScreen {
@@ -36,21 +36,10 @@ public class GameScreen {
 
     public void show(Stage primaryStage) {
         primaryStage.setMaximized(true);
-
         controller.startGame("Player 1");
 
         // Immagine di sfondo
-        Image backgroundImage = new Image(getClass().getResourceAsStream("/images/Table.jpg"));
-        ImageView backgroundView = new ImageView(backgroundImage);
-        backgroundView.setPreserveRatio(false);
-        backgroundView.setFitWidth(primaryStage.getWidth());
-        backgroundView.setFitHeight(primaryStage.getHeight());
-
-        // Listener per aggiornare lo sfondo alle dimensioni della finestra
-        primaryStage.widthProperty().addListener((observable, oldValue, newValue) ->
-                backgroundView.setFitWidth(newValue.doubleValue()));
-        primaryStage.heightProperty().addListener((observable, oldValue, newValue) ->
-                backgroundView.setFitHeight(newValue.doubleValue()));
+        ImageView backgroundView = createBackground(primaryStage);
 
         root = new StackPane();
         BorderPane gameLayout = new BorderPane();
@@ -64,7 +53,6 @@ public class GameScreen {
         HBox bottomControls = createBottomControls();
         gameLayout.setBottom(bottomControls);
 
-        // Aggiungi lo sfondo al layout principale
         root.getChildren().addAll(backgroundView, gameLayout);
 
         Scene scene = new Scene(root);
@@ -75,39 +63,24 @@ public class GameScreen {
         primaryStage.show();
     }
 
-    private void initializePlayerHands() {
-        playerHandDisplay.getChildren().clear();
-        playerHandDisplay.getChildren().add(new Label("Your Hand"));
+    private ImageView createBackground(Stage primaryStage) {
+        Image backgroundImage = new Image(getClass().getResourceAsStream("/images/Table.jpg"));
+        ImageView backgroundView = new ImageView(backgroundImage);
+        backgroundView.setPreserveRatio(false);
+        backgroundView.setFitWidth(primaryStage.getWidth());
+        backgroundView.setFitHeight(primaryStage.getHeight());
 
-        // Carte del giocatore umano
-        controller.getPlayer1().getPlayDeck().forEach(card -> {
-            if (card != null) {
-                playerHandDisplay.getChildren().add(createCardView(card));
-            }
-        });
+        primaryStage.widthProperty().addListener((observable, oldValue, newValue) ->
+                backgroundView.setFitWidth(newValue.doubleValue()));
+        primaryStage.heightProperty().addListener((observable, oldValue, newValue) ->
+                backgroundView.setFitHeight(newValue.doubleValue()));
 
-        opponentHandDisplay.getChildren().clear();
-        opponentHandDisplay.getChildren().add(new Label("Opponent's Hand"));
-
-        // Carte del bot (una scoperta, altre coperte)
-        boolean isFirstCard = true;
-        for (CardObj card : controller.getPlayer2().getPlayDeck()) {
-            if (isFirstCard) {
-                opponentHandDisplay.getChildren().add(createCardView(card));
-                isFirstCard = false;
-            } else {
-                opponentHandDisplay.getChildren().add(createBackCardView());
-            }
-        }
-
-        currentPlayerLabel.setText("Your Turn");
-        updatePlayerHP();
+        return backgroundView;
     }
-
 
     private VBox createCustomTopBar(Stage primaryStage) {
         VBox topBar = new VBox();
-        topBar.setStyle("-fx-background-color: #1e1e1e;");
+        topBar.setStyle("-fx-background-color: #333333;");
         topBar.setPadding(new Insets(10));
 
         HBox barContent = new HBox();
@@ -115,13 +88,16 @@ public class GameScreen {
         barContent.setSpacing(20);
 
         Label titleLabel = new Label("Chamber of Fate");
-        titleLabel.setFont(Font.font("Arial", FontWeight.BOLD, 18));
+        titleLabel.setFont(Font.font("Arial", FontWeight.BOLD, 20));
         titleLabel.setTextFill(Color.WHITE);
 
         player1HP = new Label("Player 1 HP: 5");
-        player1HP.setTextFill(Color.WHITE);
+        player1HP.setFont(Font.font("Arial", FontWeight.BOLD, 14));
+        player1HP.setTextFill(Color.LIGHTGREEN);
+
         player2HP = new Label("Player 2 HP: 5");
-        player2HP.setTextFill(Color.WHITE);
+        player2HP.setFont(Font.font("Arial", FontWeight.BOLD, 14));
+        player2HP.setTextFill(Color.RED);
 
         barContent.getChildren().addAll(titleLabel, player1HP, player2HP);
         topBar.getChildren().add(barContent);
@@ -150,11 +126,11 @@ public class GameScreen {
         controls.setPadding(new Insets(20));
 
         currentPlayerLabel = new Label("Your Turn");
-        drawCardButton = new Button("Draw Card");
-        passTurnButton = new Button("Stand");
+        currentPlayerLabel.setFont(Font.font("Arial", FontWeight.BOLD, 16));
+        currentPlayerLabel.setTextFill(Color.WHITE);
 
-        drawCardButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-size: 14px;");
-        passTurnButton.setStyle("-fx-background-color: #f44336; -fx-text-fill: white; -fx-font-size: 14px;");
+        drawCardButton = createStyledButton("Draw Card", "#4CAF50");
+        passTurnButton = createStyledButton("Stand", "#f44336");
 
         drawCardButton.setOnAction(e -> {
             controller.hitCard(true);
@@ -170,7 +146,25 @@ public class GameScreen {
         return controls;
     }
 
-    //funzione per controllare il vincitore del round
+    private Button createStyledButton(String text, String backgroundColor) {
+        Button button = new Button(text);
+        button.setStyle("-fx-background-color: " + backgroundColor + "; -fx-text-fill: white; -fx-font-size: 14px; " +
+                "-fx-font-weight: bold; -fx-background-radius: 10px;");
+        return button;
+    }
+
+    private void initializePlayerHands() {
+        playerHandDisplay.getChildren().clear();
+        controller.getPlayer1().getPlayDeck().forEach(card -> {
+            if (card != null) {
+                playerHandDisplay.getChildren().add(createCardView(card));
+            }
+        });
+
+        opponentHandDisplay.getChildren().clear();
+        opponentHandDisplay.getChildren().add(createBackCardView());
+    }
+
     private void resolveRound(String message) {
         revealAllCards();
 
@@ -186,44 +180,37 @@ public class GameScreen {
 
                 if (player2Score > 21) {
                     message = "Opponent Busted! You Win.";
+                    controller.getPlayer2().shoot(6);
                 } else if (player1Score == player2Score) {
                     message = "It's a draw.";
                 } else if (player1Score > player2Score) {
                     message = "You Win! Opponent Fires.";
+                    controller.getPlayer2().shoot(6);
                 } else {
                     message = "You Lose! You Fire.";
+                    controller.getPlayer1().shoot(6);
                 }
             }
         }
 
-        revealAllCards(); // Ensure all cards are visible
+        revealAllCards();
         showRoundResult(message);
     }
 
-
-
-
-
-
-    //per la fine di un round faccio in modo di far vedere tutte le carte
     private void revealAllCards() {
-        // Clear opponent's display and show all cards
         opponentHandDisplay.getChildren().clear();
         controller.getPlayer2().getPlayDeck().forEach(card -> {
             opponentHandDisplay.getChildren().add(createCardView(card));
         });
 
-        // You can add similar logic here for the player's cards if necessary
         playerHandDisplay.getChildren().clear();
         controller.getPlayer1().getPlayDeck().forEach(card -> {
             playerHandDisplay.getChildren().add(createCardView(card));
         });
 
-        updatePlayerHP(); // Update player health points
+        updatePlayerHP();
     }
 
-
-    //Mostro il risultato del round
     private void showRoundResult(String message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("Round Result");
@@ -254,30 +241,23 @@ public class GameScreen {
         initializePlayerHands();
         updatePlayerHP();
 
-        // Aggiorna le carte dell'avversario
         opponentHandDisplay.getChildren().clear();
         boolean isFirstCard = true;
 
         for (CardObj card : controller.getPlayer2().getPlayDeck()) {
             if (isFirstCard) {
-                // Mostra la prima carta scoperta
                 opponentHandDisplay.getChildren().add(createCardView(card));
                 isFirstCard = false;
             } else {
-                // Mostra le altre carte coperte
                 opponentHandDisplay.getChildren().add(createBackCardView());
             }
         }
     }
 
-
-
-
     private void updatePlayerHP() {
         player1HP.setText("Player 1 HP: " + controller.getPlayer1().getHP());
         player2HP.setText("Player 2 HP: " + controller.getPlayer2().getHP());
     }
-
 
     private ImageView createBackCardView() {
         ImageView backImageView = new ImageView(new Image(getClass().getResourceAsStream("/Cards/Back_1.png")));
@@ -287,10 +267,9 @@ public class GameScreen {
     }
 
     private ImageView createCardView(CardObj card) {
-        ImageView cardView = createBackCardView(); // Inizia come coperta
+        ImageView cardView = createBackCardView();
         String imagePath = card.getImagePath();
 
-        // Applica l'animazione di flip quando viene aggiunta
         playCardFlipAnimation(cardView, imagePath);
 
         return cardView;
@@ -309,16 +288,13 @@ public class GameScreen {
         rotateToFront.setToAngle(0);
         rotateToFront.setAxis(Rotate.Y_AXIS);
 
-        // Cambia immagine e avvia la seconda parte dell'animazione
         rotateToSide.setOnFinished(event -> {
             cardView.setImage(new Image(getClass().getResourceAsStream(newImagePath)));
             rotateToFront.play();
         });
 
-        // Avvia la prima parte dell'animazione
         rotateToSide.play();
     }
-
-
-
 }
+
+

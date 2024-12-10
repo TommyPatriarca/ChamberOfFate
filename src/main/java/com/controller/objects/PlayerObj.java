@@ -89,4 +89,7 @@ public class PlayerObj {
         return HP;
     }
 
+    public void decrementHP() {
+        HP--;
+    }
 }
