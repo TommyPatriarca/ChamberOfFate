@@ -75,7 +75,6 @@ public class GameScreen {
         primaryStage.show();
     }
 
-
     private void initializePlayerHands() {
         playerHandDisplay.getChildren().clear();
         playerHandDisplay.getChildren().add(new Label("Your Hand"));
@@ -90,7 +89,7 @@ public class GameScreen {
         opponentHandDisplay.getChildren().clear();
         opponentHandDisplay.getChildren().add(new Label("Opponent's Hand"));
 
-        // Carte del bot (una scoperta, una coperta)
+        // Carte del bot (una scoperta, altre coperte)
         boolean isFirstCard = true;
         for (CardObj card : controller.getPlayer2().getPlayDeck()) {
             if (isFirstCard) {
@@ -104,6 +103,7 @@ public class GameScreen {
         currentPlayerLabel.setText("Your Turn");
         updatePlayerHP();
     }
+
 
     private VBox createCustomTopBar(Stage primaryStage) {
         VBox topBar = new VBox();
@@ -181,7 +181,7 @@ public class GameScreen {
             if (player1Score > 21) {
                 message = "You Busted! Opponent Wins.";
             } else {
-                controller.AITurn(() -> updateGameDisplay()); // Passa il callback
+                controller.AITurn(() -> updateGameDisplay());
                 player2Score = controller.checkCards(controller.getPlayer2(), false);
 
                 if (player2Score > 21) {
@@ -196,6 +196,7 @@ public class GameScreen {
             }
         }
 
+        revealAllCards(); // Ensure all cards are visible
         showRoundResult(message);
     }
 
@@ -203,11 +204,24 @@ public class GameScreen {
 
 
 
+
     //per la fine di un round faccio in modo di far vedere tutte le carte
     private void revealAllCards() {
+        // Clear opponent's display and show all cards
         opponentHandDisplay.getChildren().clear();
-        controller.getPlayer2().getPlayDeck().forEach(card -> opponentHandDisplay.getChildren().add(createCardView(card)));
+        controller.getPlayer2().getPlayDeck().forEach(card -> {
+            opponentHandDisplay.getChildren().add(createCardView(card));
+        });
+
+        // You can add similar logic here for the player's cards if necessary
+        playerHandDisplay.getChildren().clear();
+        controller.getPlayer1().getPlayDeck().forEach(card -> {
+            playerHandDisplay.getChildren().add(createCardView(card));
+        });
+
+        updatePlayerHP(); // Update player health points
     }
+
 
     //Mostro il risultato del round
     private void showRoundResult(String message) {
@@ -240,12 +254,22 @@ public class GameScreen {
         initializePlayerHands();
         updatePlayerHP();
 
-        // Mostra le carte visibili del bot
+        // Aggiorna le carte dell'avversario
         opponentHandDisplay.getChildren().clear();
+        boolean isFirstCard = true;
+
         for (CardObj card : controller.getPlayer2().getPlayDeck()) {
-            opponentHandDisplay.getChildren().add(createCardView(card));
+            if (isFirstCard) {
+                // Mostra la prima carta scoperta
+                opponentHandDisplay.getChildren().add(createCardView(card));
+                isFirstCard = false;
+            } else {
+                // Mostra le altre carte coperte
+                opponentHandDisplay.getChildren().add(createBackCardView());
+            }
         }
     }
+
 
 
 
