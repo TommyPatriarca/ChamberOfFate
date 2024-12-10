@@ -61,32 +61,42 @@ public class Controller {
     /**
      * Funzione per gestire ogni turno
      */
-    public void turn(){
-
+    public void turn() {
         player1.resetPlayer();
         player2.resetPlayer();
 
-        turnCount++;
-
-        //PRIME DUE CARTE
         player1.addCard(deck.hitCard());
         player1.addCard(deck.hitCard());
 
         player2.addCard(deck.hitCard());
         player2.addCard(deck.hitCard());
-
-        //CARTE SCELTE DAL GIOCATORE
-
     }
 
-    public boolean AITurn(){
-        if(AI()){
-            return true;
+
+    public boolean AITurn(Runnable updateDisplayCallback) {
+        int firstCard1 = checkCards(player1, true);
+        int runCount2 = checkCards(player2, false);
+
+        System.out.println("AI Turn Start - Player 1 First Card: " + firstCard1 + ", AI Total: " + runCount2);
+
+        while (runCount2 < 17) {
+            if (deckHasCards()) {
+                hitCard(false);
+                runCount2 = checkCards(player2, false);
+                System.out.println("AI Draws a Card - New AI Total: " + runCount2);
+
+                // Callback per aggiornare la GUI
+                updateDisplayCallback.run();
+            } else {
+                System.out.println("Deck is empty. AI cannot draw more cards.");
+                break;
+            }
         }
-        else {
-            return false;
-        }
+
+        System.out.println("AI Turn End - Final AI Total: " + runCount2);
+        return true;
     }
+
 
     /**
      *
@@ -251,37 +261,40 @@ public class Controller {
     /**
      * Intelligenza Artificiale che segue la tabella del BlackJack
      */
-    public boolean AI(){
 
-        int firstCard1 = checkCards(player1, true);
-        int runCount2 = checkCards(player2, false);
+    public boolean AI() {
+        int firstCard1 = checkCards(player1, true); // Prima carta del giocatore umano
+        int runCount2 = checkCards(player2, false); // Totale punteggio del bot
 
-        System.out.println("Giocatore 1 totale: " + firstCard1);
+        System.out.println("AI Turn Start - Player 1 First Card: " + firstCard1 + ", AI Total: " + runCount2);
 
-        while(true){
-            runCount2 = checkCards(player2, false);
-            if(runCount2<17){
-                if(runCount2 == 12 && firstCard1 == 2 || firstCard1 == 3){
-                        hitCard(false);
-                }
-                else if(runCount2<12 || firstCard1 > 6){
-                    hitCard(false);
-                }
-                else {
-                    break;
-                }
+        while (runCount2 < 17) { // L'AI pesca fino a un punteggio minimo di 17
+            System.out.println("AI Decision - AI Total: " + runCount2);
 
+            // Pescare una carta
+            if (deckHasCards()) { // Controlla che il mazzo non sia vuoto
+                hitCard(false);
+                runCount2 = checkCards(player2, false); // Aggiorna il punteggio dopo la pesca
+                System.out.println("AI Draws a Card - New AI Total: " + runCount2);
+            } else {
+                System.out.println("Deck is empty. AI cannot draw more cards.");
+                break; // Termina il ciclo se non ci sono più carte
             }
-            else{
-                break;
-            }
-            System.out.println("Giocatore 2 totale: " + runCount2);
-
         }
 
-        return true;
-
+        System.out.println("AI Turn End - Final AI Total: " + runCount2);
+        return true; // Turno completato
     }
+
+    /**
+     * Controlla se il mazzo ha ancora carte.
+     * @return true se il mazzo contiene carte, false altrimenti.
+     */
+    private boolean deckHasCards() {
+        return !deck.isEmpty();
+    }
+
+
 
 
     //GET FUNCTIONS

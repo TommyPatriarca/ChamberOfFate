@@ -23,9 +23,14 @@ public class PlayerObj {
     /**
      * @param cardObj La carta da aggiungere alle carte del giocatore
      */
-    public void addCard(CardObj cardObj){
-        playDeck.add(cardObj);
+    public void addCard(CardObj cardObj) {
+        if (cardObj != null) {
+            playDeck.add(cardObj);
+        } else {
+            System.out.println("Attempted to add a null card to the player's deck.");
+        }
     }
+
 
     /**
      * Funzione per farsi sparare

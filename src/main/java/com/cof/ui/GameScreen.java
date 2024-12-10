@@ -176,42 +176,32 @@ public class GameScreen {
 
         int player1Score = controller.checkCards(controller.getPlayer1(), false);
         int player2Score = controller.checkCards(controller.getPlayer2(), false);
-        //gestisco i controlli dei punteggi della partita
+
         if (message == null) {
-            if(player1Score == player2Score)
-            {
-                message = "It is a draw";
-            }
-            else if(player1Score == 21 && player2Score != 21)
-            {
-                message = "You Win! Opponent Fires.";
-                boolean shotResult = controller.getPlayer2().shoot(6); // usare la logica per caricare il giusto numero di colpi
-                if (shotResult) controller.getPlayer2().getHP();
-                System.out.println("vite player 2 = "+controller.getPlayer2().getHP());
-            }
-            else if (player2Score == 21 && player1Score != 21)
-            {
-                message = "You Lose! You Fire.";
-                boolean shotResult = controller.getPlayer1().shoot(6); // usare la logica per caricare il giusto numero di colpi
-                if (shotResult) controller.getPlayer1().getHP();
-                System.out.println("vite player 1 = "+controller.getPlayer1().getHP());
-            }
-            else if (player1Score > player2Score && player1Score <= 21 || player2Score > 21)
-            {
-                message = "You Win! Opponent Fires.";
-                boolean shotResult = controller.getPlayer2().shoot(6); // usare la logica per caricare il giusto numero di colpi
-                if (shotResult) controller.getPlayer2().getHP();
-                System.out.println("vite player 2 = "+controller.getPlayer2().getHP());
+            if (player1Score > 21) {
+                message = "You Busted! Opponent Wins.";
             } else {
-                message = "You Lose! You Fire.";
-                boolean shotResult = controller.getPlayer1().shoot(6); // usare la logica per caricare il giusto numero di colpi
-                if (shotResult) controller.getPlayer1().getHP();
-                System.out.println("vite player 1 = "+controller.getPlayer1().getHP());
+                controller.AITurn(() -> updateGameDisplay()); // Passa il callback
+                player2Score = controller.checkCards(controller.getPlayer2(), false);
+
+                if (player2Score > 21) {
+                    message = "Opponent Busted! You Win.";
+                } else if (player1Score == player2Score) {
+                    message = "It's a draw.";
+                } else if (player1Score > player2Score) {
+                    message = "You Win! Opponent Fires.";
+                } else {
+                    message = "You Lose! You Fire.";
+                }
             }
         }
 
         showRoundResult(message);
     }
+
+
+
+
 
     //per la fine di un round faccio in modo di far vedere tutte le carte
     private void revealAllCards() {
@@ -249,7 +239,15 @@ public class GameScreen {
     private void updateGameDisplay() {
         initializePlayerHands();
         updatePlayerHP();
+
+        // Mostra le carte visibili del bot
+        opponentHandDisplay.getChildren().clear();
+        for (CardObj card : controller.getPlayer2().getPlayDeck()) {
+            opponentHandDisplay.getChildren().add(createCardView(card));
+        }
     }
+
+
 
     private void updatePlayerHP() {
         player1HP.setText("Player 1 HP: " + controller.getPlayer1().getHP());

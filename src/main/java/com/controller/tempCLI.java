@@ -63,7 +63,9 @@ public class tempCLI {
      * Turno del giocatore 2
      */
     public void pl2Turn(){
-        controller.AITurn();
+        controller.AITurn(() -> {
+            // Nessuna azione necessaria per la CLI
+        });
         int result;
 
         System.out.println("Il giocatore ha pescato le seguenti carte: ");

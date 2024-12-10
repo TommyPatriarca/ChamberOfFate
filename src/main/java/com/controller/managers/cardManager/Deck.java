@@ -105,11 +105,23 @@ public class Deck {
     }
 
     public CardObj hitCard() {
-        CardObj tempC = deckArr.getLast();
-        deckArr.removeLast();
+        if (deckArr.isEmpty()) {
+            System.out.println("No cards left in the deck.");
+            return null; // Restituisci null se il mazzo è vuoto
+        }
 
+        CardObj tempC = deckArr.get(deckArr.size() - 1); // Ultima carta del mazzo
+        deckArr.remove(deckArr.size() - 1); // Rimuovi la carta pescata
         return tempC;
     }
 
 
+    public boolean isEmpty() {
+        if(deckArr.isEmpty()){
+            return true;
+        }
+        else{
+            return false;
+        }
+    }
 }
