@@ -178,6 +178,7 @@ public class GameScreen {
         if (message == null) {
             if (player1Score > 21) {
                 message = "You Busted! Opponent Wins.";
+                controller.getPlayer1().shoot(6);
             } else {
                 controller.AITurn(() -> updateGameDisplay());
                 player2Score = controller.checkCards(controller.getPlayer2(), false);
@@ -412,5 +413,4 @@ public class GameScreen {
             System.exit(0);
         }
     }
-
 }

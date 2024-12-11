@@ -112,6 +112,12 @@ public class ModeScreen {
                 gameScreen.show((Stage) button.getScene().getWindow()); // Use the same Stage
             });
         }
+        else if("Online".equals(text)){
+            button.setOnAction(e -> {
+                PcLobbyScreen pcLobbyScreen = new PcLobbyScreen();
+                pcLobbyScreen.show((Stage) button.getScene().getWindow()); // Use the same Stage
+            });
+        }
 
         return button;
     }
