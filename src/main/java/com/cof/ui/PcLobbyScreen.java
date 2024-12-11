@@ -137,7 +137,6 @@ public class PcLobbyScreen {
         Pane dimBackground = new Pane();
         dimBackground.setStyle("-fx-background-color: rgba(0, 0, 0, 0.6);");
 
-        // Bind to the scene's width and height to ensure proper resizing
         Scene scene = overlayPane.getScene();
         if (scene != null) {
             dimBackground.prefWidthProperty().bind(scene.widthProperty());
@@ -156,27 +155,59 @@ public class PcLobbyScreen {
 
         TextField lobbyNameField = new TextField();
         lobbyNameField.setPromptText("Lobby Name");
-        lobbyNameField.setStyle("-fx-font-size: 16px;");
+        lobbyNameField.setStyle("-fx-font-size: 16px; -fx-border-width: 2px;");
 
         PasswordField passwordField = new PasswordField();
         passwordField.setPromptText("Password (optional)");
-        passwordField.setStyle("-fx-font-size: 16px;");
+        passwordField.setStyle("-fx-font-size: 16px; -fx-border-width: 2px;");
 
         Button createButton = new Button("Create");
         createButton.setStyle("-fx-font-size: 16px; -fx-background-color: #555; -fx-text-fill: white;");
+        createButton.setDisable(true);
+
+        // Validate lobby name and password
+        lobbyNameField.textProperty().addListener((obs, oldText, newText) -> {
+            if (newText.length() > 15) {
+                lobbyNameField.setText(newText.substring(0, 15));
+            }
+
+            boolean isValidName = newText.matches("[a-zA-Z0-9 ]+");
+            if (isValidName) {
+                lobbyNameField.setStyle("-fx-font-size: 16px; -fx-border-width: 2px; -fx-border-color: green;");
+            } else {
+                lobbyNameField.setStyle("-fx-font-size: 16px; -fx-border-width: 2px; -fx-border-color: red;");
+            }
+
+            // Enable create button only if name is valid
+            createButton.setDisable(!isValidName || newText.isEmpty());
+        });
+
+        passwordField.textProperty().addListener((obs, oldText, newText) -> {
+            if (newText.length() > 20) {
+                passwordField.setText(newText.substring(0, 20));
+            }
+
+            boolean isValidPassword = newText.matches("[a-zA-Z0-9]*"); // Optional field, but if filled must be valid
+            if (isValidPassword || newText.isEmpty()) {
+                passwordField.setStyle("-fx-font-size: 16px; -fx-border-width: 2px; -fx-border-color: green;");
+            } else {
+                passwordField.setStyle("-fx-font-size: 16px; -fx-border-width: 2px; -fx-border-color: red;");
+            }
+        });
+
         createButton.setOnAction(e -> {
             String lobbyType = passwordField.getText().isEmpty() ? "[Public] " : "[Private] ";
             lobbies.add(lobbyType + lobbyNameField.getText());
             lobbyListView.getItems().setAll(lobbies);
             overlayPane.getChildren().removeAll(dimBackground, popup);
-            overlayPane.setMouseTransparent(true); // Re-enable interactions
+            overlayPane.setMouseTransparent(true);
         });
 
         Button cancelButton = new Button("Cancel");
         cancelButton.setStyle("-fx-font-size: 16px; -fx-background-color: #555; -fx-text-fill: white;");
         cancelButton.setOnAction(e -> {
             overlayPane.getChildren().removeAll(dimBackground, popup);
-            overlayPane.setMouseTransparent(true); // Re-enable interactions
+            overlayPane.setMouseTransparent(true);
         });
 
         HBox buttonBox = new HBox(10, createButton, cancelButton);
@@ -185,8 +216,9 @@ public class PcLobbyScreen {
         popup.getChildren().addAll(titleLabel, lobbyNameField, passwordField, buttonBox);
 
         overlayPane.getChildren().addAll(dimBackground, popup);
-        overlayPane.setMouseTransparent(false); // Block interactions below the popup
+        overlayPane.setMouseTransparent(false);
     }
+
 
     private void showPasswordDialog() {
         // Create the dimmed overlay
