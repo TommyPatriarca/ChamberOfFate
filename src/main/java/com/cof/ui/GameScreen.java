@@ -15,6 +15,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.transform.Rotate;
@@ -302,6 +303,7 @@ public class GameScreen {
     }
 
     private void createMenu() {
+        // Creazione del menu
         VBox menu = new VBox(15);
         menu.setStyle("-fx-background-color: rgba(20, 20, 20, 0.95); -fx-border-color: gold; -fx-border-width: 3; -fx-padding: 20;");
         menu.setAlignment(Pos.CENTER);
@@ -325,25 +327,53 @@ public class GameScreen {
 
         menu.getChildren().addAll(rulesButton, creditsButton, volumeButton, surrenderButton, exitButton);
 
-        // Aggiungi il menu alla root
-        root.getChildren().add(menu);
+        // Rettangolo trasparente per catturare i clic fuori dal menu
+        Rectangle clickCatcher = new Rectangle();
+        clickCatcher.setFill(Color.TRANSPARENT);
+        clickCatcher.setVisible(false);
+        clickCatcher.setOnMouseClicked(event -> {
+            if (menu.isVisible()) {
+                fadeOut.setOnFinished(ev -> {
+                    menu.setVisible(false);
+                    clickCatcher.setVisible(false);
+                });
+                fadeOut.play();
+            }
+        });
 
         // Pulsante per aprire/chiudere il menu
         Button toggleMenuButton = createStyledButton("Menu", "#333333");
         toggleMenuButton.setStyle("-fx-background-color: rgba(40, 40, 40, 0.8); -fx-border-color: gold; -fx-border-width: 2; -fx-font-size: 16px; -fx-text-fill: gold;");
         toggleMenuButton.setOnAction(e -> {
             if (menu.isVisible()) {
-                fadeOut.setOnFinished(ev -> menu.setVisible(false));
+                fadeOut.setOnFinished(ev -> {
+                    menu.setVisible(false);
+                    clickCatcher.setVisible(false);
+                });
                 fadeOut.play();
             } else {
                 menu.setVisible(true);
+                clickCatcher.setVisible(true);
                 fadeIn.play();
             }
         });
 
+        // Aggiusta il clickCatcher alla dimensione della scena
+        root.sceneProperty().addListener((observable, oldScene, newScene) -> {
+            if (newScene != null) {
+                clickCatcher.widthProperty().bind(newScene.widthProperty());
+                clickCatcher.heightProperty().bind(newScene.heightProperty());
+            }
+        });
+
+        // Aggiungi il menu e il clickCatcher alla root
+        root.getChildren().addAll(clickCatcher, menu);
+
+        // Posiziona il pulsante del menu
         BorderPane.setAlignment(toggleMenuButton, Pos.TOP_RIGHT);
         ((BorderPane) root.getChildren().get(1)).setRight(toggleMenuButton);
     }
+
 
     private Button createMenuButton(String text, Runnable action) {
         Button button = new Button(text);
@@ -372,37 +402,67 @@ public class GameScreen {
         Stage volumeStage = new Stage();
         volumeStage.setTitle("Regolazione Volume");
 
-        VBox volumeLayout = new VBox(10);
+        // Layout principale
+        VBox volumeLayout = new VBox(20);
         volumeLayout.setAlignment(Pos.CENTER);
         volumeLayout.setPadding(new Insets(20));
-        volumeLayout.setStyle("-fx-background-color: rgba(20, 20, 20, 0.95); -fx-border-color: gold; -fx-border-width: 2;");
+        volumeLayout.setStyle("-fx-background-color: rgba(30, 30, 30, 0.95); -fx-border-color: gold; -fx-border-width: 3;");
 
-        Label volumeLabel = new Label("Volume");
+        // Etichetta del titolo
+        Label volumeLabel = new Label("Regolazione Volume");
         volumeLabel.setTextFill(Color.GOLD);
-        volumeLabel.setFont(Font.font("Courier New", FontWeight.BOLD, 16));
+        volumeLabel.setFont(Font.font("Arial", FontWeight.BOLD, 18));
 
+        // Slider per il volume
         Slider volumeSlider = new Slider(0, 1, MusicManager.getVolume());
         volumeSlider.setShowTickMarks(true);
         volumeSlider.setShowTickLabels(true);
-        volumeSlider.setMajorTickUnit(0.1);
+        volumeSlider.setMajorTickUnit(0.25);
         volumeSlider.setMinorTickCount(4);
         volumeSlider.setBlockIncrement(0.05);
-        volumeSlider.setStyle("-fx-control-inner-background: #222; -fx-accent: gold;");
+        volumeSlider.setStyle(
+                "-fx-control-inner-background: #222; " +
+                        "-fx-accent: gold; " +
+                        "-fx-track-color: #555;" +
+                        "-fx-thumb-color: #FFD700;" // Colore del thumb
+        );
 
+        // Etichetta dinamica per mostrare il valore del volume
+        Label volumeValueLabel = new Label(String.format("Volume: %.0f%%", MusicManager.getVolume() * 100));
+        volumeValueLabel.setTextFill(Color.LIGHTGRAY);
+        volumeValueLabel.setFont(Font.font("Arial", FontWeight.BOLD, 14));
+
+        // Listener per aggiornare il valore dinamico del volume
         volumeSlider.valueProperty().addListener((observable, oldValue, newValue) -> {
             MusicManager.setVolume(newValue.doubleValue());
+            volumeValueLabel.setText(String.format("Volume: %.0f%%", newValue.doubleValue() * 100));
         });
 
+        // Pulsante di chiusura
         Button closeButton = new Button("Chiudi");
-        closeButton.setStyle("-fx-background-color: rgba(30, 30, 30, 0.9); -fx-border-color: gold; -fx-font-size: 14px; -fx-text-fill: gold;");
+        closeButton.setStyle(
+                "-fx-background-color: rgba(30, 30, 30, 0.8); " +
+                        "-fx-border-color: gold; " +
+                        "-fx-border-width: 2; " +
+                        "-fx-font-size: 14px; " +
+                        "-fx-text-fill: gold; " +
+                        "-fx-background-radius: 10px;"
+        );
         closeButton.setOnAction(e -> volumeStage.close());
 
-        volumeLayout.getChildren().addAll(volumeLabel, volumeSlider, closeButton);
+        // Layout pulsanti
+        HBox buttonLayout = new HBox(closeButton);
+        buttonLayout.setAlignment(Pos.CENTER);
 
-        Scene volumeScene = new Scene(volumeLayout, 300, 200);
+        // Aggiungi elementi al layout principale
+        volumeLayout.getChildren().addAll(volumeLabel, volumeSlider, volumeValueLabel, buttonLayout);
+
+        // Scena e stage
+        Scene volumeScene = new Scene(volumeLayout, 400, 250);
         volumeStage.setScene(volumeScene);
         volumeStage.show();
     }
+
 
     private void surrender() {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
