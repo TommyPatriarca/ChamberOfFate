@@ -35,6 +35,10 @@ public class GameScreen {
         this.controller = controller;
     }
 
+    /**
+     * Funzione per mostrare la schermata di gioco
+     */
+
     public void show(Stage primaryStage) {
         primaryStage.setMaximized(true);
         controller.startGame("Player 1");
@@ -67,6 +71,10 @@ public class GameScreen {
         primaryStage.show();
     }
 
+    /**
+     * Funzione per impostare l'immagine di sfondo in modo "responsive"
+     * @return L'imageview da usare come sfondo
+     */
 
     private ImageView createBackground(Stage primaryStage) {
         Image backgroundImage = new Image(getClass().getResourceAsStream("/images/Table.jpg"));
@@ -82,6 +90,11 @@ public class GameScreen {
 
         return backgroundView;
     }
+
+    /**
+     * Funzione per creare una top bar con stile custom
+     * @return La top bar stilizzata
+     */
 
     private VBox createCustomTopBar(Stage primaryStage) {
         VBox topBar = new VBox();
@@ -110,6 +123,11 @@ public class GameScreen {
         return topBar;
     }
 
+    /**
+     * Funzione per creare il vbox da usare come campo di gioco
+     * @return Il box utilizzato come "campo di gioco"
+     */
+
     private VBox createGameArea() {
         VBox gameArea = new VBox(20);
         gameArea.setAlignment(Pos.CENTER);
@@ -124,6 +142,11 @@ public class GameScreen {
         gameArea.getChildren().addAll(opponentHandDisplay, playerHandDisplay);
         return gameArea;
     }
+
+    /**
+     * Funzione per creare il box con i pulsanti "draw card" e "stand"
+     * @return Il box contenente i comandi per la partita
+     */
 
     private HBox createBottomControls() {
         HBox controls = new HBox(20);
@@ -151,12 +174,21 @@ public class GameScreen {
         return controls;
     }
 
+    /**
+     * Funzione per creare i bottoni stilizzati passandogli il testo e il colore di sfondo
+     * @return Ritorna i bottoni stilizzati
+     */
+
     private Button createStyledButton(String text, String backgroundColor) {
         Button button = new Button(text);
         button.setStyle("-fx-background-color: " + backgroundColor + "; -fx-text-fill: white; -fx-font-size: 14px; " +
                 "-fx-font-weight: bold; -fx-background-radius: 10px;");
         return button;
     }
+
+    /**
+     * Funzione per inizializzare le mani dei giocatori
+     */
 
     private void initializePlayerHands() {
         playerHandDisplay.getChildren().clear();
@@ -169,6 +201,10 @@ public class GameScreen {
         opponentHandDisplay.getChildren().clear();
         opponentHandDisplay.getChildren().add(createBackCardView());
     }
+
+    /**
+     * Funzione per risolvere il risultato del round
+     */
 
     private void resolveRound(String message) {
         revealAllCards();
@@ -203,6 +239,10 @@ public class GameScreen {
         showRoundResult(message);
     }
 
+    /**
+     * Funzione per far girare tutte le carte sul tavolo
+     */
+
     private void revealAllCards() {
         opponentHandDisplay.getChildren().clear();
         controller.getPlayer2().getPlayDeck().forEach(card -> {
@@ -216,6 +256,10 @@ public class GameScreen {
 
         updatePlayerHP();
     }
+
+    /**
+     * Funzione per mostrare i risultati dei round
+     */
 
     private void showRoundResult(String message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
@@ -233,6 +277,10 @@ public class GameScreen {
         }
     }
 
+    /**
+     * Funzione per mostrare il risultato della partita
+     */
+
     private void endGame() {
         String winner = controller.getPlayer1().getHP() > 0 ? "Player 1 Wins!" : "Player 2 Wins!";
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
@@ -242,6 +290,10 @@ public class GameScreen {
         alert.showAndWait();
         System.exit(0);
     }
+
+    /**
+     * Funzione per aggiornare la schermata di gioco
+     */
 
     private void updateGameDisplay() {
         initializePlayerHands();
@@ -260,10 +312,19 @@ public class GameScreen {
         }
     }
 
+    /**
+     * Funzione per aggiornare la vita dei player
+     */
+
     private void updatePlayerHP() {
         player1HP.setText("Player 1 HP: " + controller.getPlayer1().getHP());
         player2HP.setText("Player 2 HP: " + controller.getPlayer2().getHP());
     }
+
+    /**
+     * Funzione per creare la prospettiva del retro delle carte
+     * @return Un imageview da usare come retro della carta
+     */
 
     private ImageView createBackCardView() {
         ImageView backImageView = new ImageView(new Image(getClass().getResourceAsStream("/Cards/Back_1.png")));
@@ -271,6 +332,11 @@ public class GameScreen {
         backImageView.setFitHeight(150);
         return backImageView;
     }
+
+    /**
+     * Funzione per creare la prospettiva della faccia delle carte
+     * @return Un imageview da usare come faccia delle carte
+     */
 
     private ImageView createCardView(CardObj card) {
         ImageView cardView = createBackCardView();
@@ -280,6 +346,10 @@ public class GameScreen {
 
         return cardView;
     }
+
+    /**
+     * Funzione per creare un animazione di rotazione per le carte
+     */
 
     private void playCardFlipAnimation(ImageView cardView, String newImagePath) {
         SoundManager.FlipCardSound();
@@ -301,6 +371,10 @@ public class GameScreen {
 
         rotateToSide.play();
     }
+
+    /**
+     * Funzione per creare il menu
+     */
 
     private void createMenu() {
         // Creazione del menu
@@ -359,6 +433,7 @@ public class GameScreen {
         });
 
         // Aggiusta il clickCatcher alla dimensione della scena
+        //TODO ancora da sistemare il menu
         root.sceneProperty().addListener((observable, oldScene, newScene) -> {
             if (newScene != null) {
                 clickCatcher.widthProperty().bind(newScene.widthProperty());
@@ -366,14 +441,17 @@ public class GameScreen {
             }
         });
 
-        // Aggiungi il menu e il clickCatcher alla root
+        // Aggiunge il menu e il catcher al pannello
         root.getChildren().addAll(clickCatcher, menu);
 
-        // Posiziona il pulsante del menu
         BorderPane.setAlignment(toggleMenuButton, Pos.TOP_RIGHT);
         ((BorderPane) root.getChildren().get(1)).setRight(toggleMenuButton);
     }
 
+    /**
+     * Funzione per creare dei bottoni stilizzati da usare nel menu
+     * @return Il bottone da utilizzare nel menu
+     */
 
     private Button createMenuButton(String text, Runnable action) {
         Button button = new Button(text);
@@ -382,33 +460,43 @@ public class GameScreen {
         return button;
     }
 
+    /**
+     * Funzione per mostrare il regolamento del gioco
+     */
+
     private void showRules() {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("Regole del Gioco");
         alert.setHeaderText("Regole");
-        alert.setContentText("Le regole del gioco sono semplici: sopravvivi e vinci.");
+        alert.setContentText("Devo mettere le regole");
         alert.showAndWait();
     }
+
+    /**
+     * Funzione per mostrare i crediti del gioco
+     */
 
     private void showCredits() {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("Crediti");
         alert.setHeaderText("Crediti");
-        alert.setContentText("Creato da Tommaso Patriarca. Grafica retrò ispirata agli anni '80.");
+        alert.setContentText("Creato da Tommaso Patriarca, Alessandro Anastasio, Michele Comalli e Marco Barlascini");
         alert.showAndWait();
     }
+
+    /**
+     * Funzione per mostrare i controlli del volume
+     */
 
     private void showVolumeControl() {
         Stage volumeStage = new Stage();
         volumeStage.setTitle("Regolazione Volume");
 
-        // Layout principale
         VBox volumeLayout = new VBox(20);
         volumeLayout.setAlignment(Pos.CENTER);
         volumeLayout.setPadding(new Insets(20));
         volumeLayout.setStyle("-fx-background-color: rgba(30, 30, 30, 0.95); -fx-border-color: gold; -fx-border-width: 3;");
 
-        // Etichetta del titolo
         Label volumeLabel = new Label("Regolazione Volume");
         volumeLabel.setTextFill(Color.GOLD);
         volumeLabel.setFont(Font.font("Arial", FontWeight.BOLD, 18));
@@ -453,16 +541,15 @@ public class GameScreen {
         // Layout pulsanti
         HBox buttonLayout = new HBox(closeButton);
         buttonLayout.setAlignment(Pos.CENTER);
-
-        // Aggiungi elementi al layout principale
         volumeLayout.getChildren().addAll(volumeLabel, volumeSlider, volumeValueLabel, buttonLayout);
-
-        // Scena e stage
         Scene volumeScene = new Scene(volumeLayout, 400, 250);
         volumeStage.setScene(volumeScene);
         volumeStage.show();
     }
 
+    /**
+     * Funzione per mostrare la schermata per arrendersi
+     */
 
     private void surrender() {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
