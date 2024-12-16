@@ -13,6 +13,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
@@ -383,7 +384,6 @@ public class GameScreen {
         menu.setAlignment(Pos.CENTER);
         menu.setVisible(false);
 
-        // Animazioni per apertura e chiusura
         FadeTransition fadeIn = new FadeTransition(Duration.seconds(0.5), menu);
         fadeIn.setFromValue(0);
         fadeIn.setToValue(1);
@@ -401,52 +401,41 @@ public class GameScreen {
 
         menu.getChildren().addAll(rulesButton, creditsButton, volumeButton, surrenderButton, exitButton);
 
-        // Rettangolo trasparente per catturare i clic fuori dal menu
-        Rectangle clickCatcher = new Rectangle();
-        clickCatcher.setFill(Color.TRANSPARENT);
-        clickCatcher.setVisible(false);
-        clickCatcher.setOnMouseClicked(event -> {
-            if (menu.isVisible()) {
-                fadeOut.setOnFinished(ev -> {
-                    menu.setVisible(false);
-                    clickCatcher.setVisible(false);
-                });
-                fadeOut.play();
-            }
-        });
-
-        // Pulsante per aprire/chiudere il menu
+        // Pulsante per aprire
         Button toggleMenuButton = createStyledButton("Menu", "#333333");
         toggleMenuButton.setStyle("-fx-background-color: rgba(40, 40, 40, 0.8); -fx-border-color: gold; -fx-border-width: 2; -fx-font-size: 16px; -fx-text-fill: gold;");
         toggleMenuButton.setOnAction(e -> {
             if (menu.isVisible()) {
-                fadeOut.setOnFinished(ev -> {
-                    menu.setVisible(false);
-                    clickCatcher.setVisible(false);
-                });
+                fadeOut.setOnFinished(ev -> menu.setVisible(false));
                 fadeOut.play();
             } else {
                 menu.setVisible(true);
-                clickCatcher.setVisible(true);
                 fadeIn.play();
             }
         });
 
-        // Aggiusta il clickCatcher alla dimensione della scena
-        //TODO ancora da sistemare il menu
+        // Listener per il tasto ESC
         root.sceneProperty().addListener((observable, oldScene, newScene) -> {
             if (newScene != null) {
-                clickCatcher.widthProperty().bind(newScene.widthProperty());
-                clickCatcher.heightProperty().bind(newScene.heightProperty());
+                newScene.setOnKeyPressed(event -> {
+                    if (event.getCode() == KeyCode.ESCAPE) {
+                        if (menu.isVisible()) {
+                            fadeOut.setOnFinished(ev -> menu.setVisible(false));
+                            fadeOut.play();
+                        } else {
+                            System.exit(0); // Esci dal gioco
+                        }
+                    }
+                });
             }
         });
 
-        // Aggiunge il menu e il catcher al pannello
-        root.getChildren().addAll(clickCatcher, menu);
+        root.getChildren().add(menu);
 
         BorderPane.setAlignment(toggleMenuButton, Pos.TOP_RIGHT);
         ((BorderPane) root.getChildren().get(1)).setRight(toggleMenuButton);
     }
+
 
     /**
      * Funzione per creare dei bottoni stilizzati da usare nel menu
