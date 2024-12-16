@@ -7,6 +7,7 @@ import javafx.application.Application;
 import javafx.geometry.Pos;
 import javafx.scene.ImageCursor;
 import javafx.scene.Scene;
+import javafx.scene.control.Label;
 import javafx.scene.effect.Glow;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -131,22 +132,39 @@ public class PcLoadingScreen extends Application {
     private HBox createCustomTitleBar(Stage stage) {
         HBox titleBar = new HBox();
         titleBar.setAlignment(Pos.CENTER_LEFT);
-        titleBar.setStyle("-fx-background-color: black; -fx-padding: 2;");
-        titleBar.setPrefHeight(20);
+        titleBar.setStyle("-fx-background-color: #1E1E1E; -fx-padding: 4;");
+        titleBar.setPrefHeight(30);
 
-        Button closeButton = new Button("X");
-        closeButton.setStyle(
-                "-fx-background-color: red;" +
+        // Title label
+        Label titleLabel = new Label("Chamber of Fate");
+        titleLabel.setStyle("-fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold;");
+        titleLabel.setPadding(new Insets(0, 10, 0, 10));
+
+        // Minimize button
+        Button minimizeButton = new Button("_");
+        minimizeButton.setStyle(
+                "-fx-background-color: #444;" +
                         "-fx-text-fill: white;" +
                         "-fx-font-size: 12px;" +
-                        "-fx-cursor: hand;"
+                        "-fx-padding: 2 10 2 10;" +
+                        "-fx-cursor: hand;" +
+                        "-fx-background-radius: 5;"
+        );
+        minimizeButton.setOnAction(e -> stage.setIconified(true));
+
+        // Close button
+        Button closeButton = new Button("X");
+        closeButton.setStyle(
+                "-fx-background-color: #FF5C5C;" +
+                        "-fx-text-fill: white;" +
+                        "-fx-font-size: 12px;" +
+                        "-fx-padding: 2 10 2 10;" +
+                        "-fx-cursor: hand;" +
+                        "-fx-background-radius: 5;"
         );
         closeButton.setOnAction(e -> System.exit(0));
 
-        titleBar.getChildren().add(closeButton);
-        HBox.setMargin(closeButton, new Insets(0, 10, 0, 10));
-
-        // Aggiungi drag event per spostare la finestra
+        // Drag functionality
         titleBar.setOnMousePressed(e -> {
             xOffset = e.getSceneX();
             yOffset = e.getSceneY();
@@ -156,8 +174,14 @@ public class PcLoadingScreen extends Application {
             stage.setY(e.getScreenY() - yOffset);
         });
 
+        // Layout spacing and alignment
+        HBox spacer = new HBox();
+        HBox.setHgrow(spacer, Priority.ALWAYS); // Push buttons to the right
+
+        titleBar.getChildren().addAll(titleLabel, spacer, minimizeButton, closeButton);
         return titleBar;
     }
+
 
     private void fadeToModeScreen(Stage stage) {
         VBox root = (VBox) stage.getScene().getRoot(); // Ensure the correct root type
