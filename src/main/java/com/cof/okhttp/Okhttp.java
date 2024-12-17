@@ -2,11 +2,8 @@ package com.cof.okhttp;
 
 import okhttp3.*;
 
+import javax.swing.*;
 import java.io.IOException;
-import java.util.List;
-import java.util.function.Consumer;
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 
 
 public class Okhttp {
@@ -71,26 +68,4 @@ public class Okhttp {
         }).start();
         return true;
     }
-
-    public void getLobbies(Consumer<List<String>> callback) {
-        Request request = new Request.Builder()
-                .url(SERVER_URL + "?azione=getLobbies")
-                .build();
-
-        new Thread(() -> {
-            try {
-                Response response = client.newCall(request).execute();
-                if (response.isSuccessful()) {
-                    String responseBody = response.body().string();
-                    List<String> lobbies = new Gson().fromJson(responseBody, new TypeToken<List<String>>() {}.getType());
-                    callback.accept(lobbies);
-                } else {
-                    System.out.println("Errore del server: \n" + response.message());
-                }
-            } catch (IOException ex) {
-                System.out.println("Errore di connessione: \n" + ex.getMessage());
-            }
-        }).start();
-    }
-
 }

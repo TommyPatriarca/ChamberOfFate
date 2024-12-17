@@ -1,5 +1,4 @@
 <?php
-
 // Classe Lobby per rappresentare una singola lobby con nome e ID
 class Lobby {
     public $lobbyName; // Nome della lobby
@@ -97,16 +96,8 @@ try {
     }
 
     $lobbyList = newLobby($lobbyFile);
-    if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-        $azione = $_GET['azione'] ?? '';
 
-        if ($azione === 'list') {
-            $lobbyList = newLobby($lobbyFile); // Carica l'elenco delle lobby dal file
-            header('Content-Type: application/json');
-            echo json_encode($lobbyList);
-            exit;
-        }
-    }elseif ($azione === 'join') {
+    if ($azione === 'join') {
         $lobbyTrovata = false;
         foreach ($lobbyList as $lobby) {
             if ($lobby->lobbyName === $lobbyName && $lobby->id === $id) {
@@ -122,31 +113,13 @@ try {
             echo json_encode(['status' => 'fail', 'message' => 'Lobby non trovata']);
         }
     } elseif ($azione === 'create') {
-          $lobbyEsistente = false;
-          foreach ($lobbyList as $lobby) {
-              if ($lobby->id === $id || $lobby->lobbyName === $lobbyName) {
-                  $lobbyEsistente = true;
-                  break;
-              }
-          }
-
-          header('Content-Type: application/json');
-          if ($lobbyEsistente) {
-              echo json_encode(['status' => 'fail', 'message' => 'Lobby già esistente']);
-          } else {
-              // Aggiungi la nuova lobby all'elenco
-              $lobbyList[] = new Lobby($lobbyName, $id);
-
-              // Salva l'elenco delle lobby
-              salvaLobby($lobbyFile, $lobbyList);
-
-              // Crea un file specifico per la nuova lobby
-              creaFileLobby($lobbyName, $id);
-
-              echo json_encode(['status' => 'success', 'message' => 'Creazione riuscita']);
-          }
-      }
-
+        $lobbyEsistente = false;
+        foreach ($lobbyList as $lobby) {
+            if ($lobby->id === $id || $lobby->lobbyName === $lobbyName) {
+                $lobbyEsistente = true;
+                break;
+            }
+        }
 
         header('Content-Type: application/json');
         if ($lobbyEsistente) {
