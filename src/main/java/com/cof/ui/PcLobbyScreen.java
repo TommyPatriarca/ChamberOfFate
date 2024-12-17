@@ -1,6 +1,8 @@
 package com.cof.ui;
 
+import com.cof.okhttp.Okhttp;
 import com.cof.utils.FontUtils;
+import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -16,7 +18,7 @@ import java.util.List;
 import java.util.Objects;
 
 public class PcLobbyScreen {
-
+    private Okhttp okhttp = new Okhttp();
     private final List<String> lobbies = new ArrayList<>();
     private ListView<String> lobbyListView;
     private StackPane overlayPane; // For popups over the content
@@ -196,12 +198,20 @@ public class PcLobbyScreen {
         });
 
         createButton.setOnAction(e -> {
-            String lobbyType = passwordField.getText().isEmpty() ? "[Public] " : "[Private] ";
-            lobbies.add(lobbyType + lobbyNameField.getText());
-            lobbyListView.getItems().setAll(lobbies);
+            String lobbyName = lobbyNameField.getText();
+            okhttp.createLobby(lobbyName);
+
+            // Aggiorna la lista delle lobby
+            okhttp.getLobbies(lobbies -> Platform.runLater(() -> {
+                this.lobbies.clear();
+                this.lobbies.addAll(lobbies);
+                lobbyListView.getItems().setAll(lobbies);
+            }));
+
             overlayPane.getChildren().removeAll(dimBackground, popup);
             overlayPane.setMouseTransparent(true);
         });
+
 
         Button cancelButton = new Button("Cancel");
         cancelButton.setStyle("-fx-font-size: 16px; -fx-background-color: #555; -fx-text-fill: white;");

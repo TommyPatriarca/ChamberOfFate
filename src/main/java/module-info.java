@@ -3,8 +3,8 @@ module com.cof {
     requires javafx.fxml;
     requires java.desktop;
     requires java.smartcardio;
-    requires java.sql;
     requires okhttp3;
+    requires com.google.gson;
 
     opens com.cof to javafx.fxml;
     exports com.cof;
