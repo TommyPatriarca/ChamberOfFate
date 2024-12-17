@@ -78,7 +78,13 @@ public class GameScreen {
      */
 
     private ImageView createBackground(Stage primaryStage) {
-        Image backgroundImage = new Image(getClass().getResourceAsStream("/images/Table.jpg"));
+        Image backgroundImage;
+        if(Math.random()/2 == 0){
+             backgroundImage = new Image(getClass().getResourceAsStream("/images/Table1.jpg"));
+        }
+        else{
+             backgroundImage = new Image(getClass().getResourceAsStream("/images/Table2.jpg"));
+        }
         ImageView backgroundView = new ImageView(backgroundImage);
         backgroundView.setPreserveRatio(false);
         backgroundView.setFitWidth(primaryStage.getWidth());

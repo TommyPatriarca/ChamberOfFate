@@ -140,7 +140,7 @@ public class PcLoadingScreen extends Application {
         titleLabel.setStyle("-fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold;");
         titleLabel.setPadding(new Insets(0, 10, 0, 10));
 
-        // Minimize button
+        // Bottone per minimizzare la finestra
         Button minimizeButton = new Button("_");
         minimizeButton.setStyle(
                 "-fx-background-color: #444;" +
@@ -152,7 +152,7 @@ public class PcLoadingScreen extends Application {
         );
         minimizeButton.setOnAction(e -> stage.setIconified(true));
 
-        // Close button
+        // Bottone per chiudere il gioco
         Button closeButton = new Button("X");
         closeButton.setStyle(
                 "-fx-background-color: #FF5C5C;" +
@@ -164,7 +164,7 @@ public class PcLoadingScreen extends Application {
         );
         closeButton.setOnAction(e -> System.exit(0));
 
-        // Drag functionality
+        // Funzione per trascinare la finestra
         titleBar.setOnMousePressed(e -> {
             xOffset = e.getSceneX();
             yOffset = e.getSceneY();
@@ -174,9 +174,8 @@ public class PcLoadingScreen extends Application {
             stage.setY(e.getScreenY() - yOffset);
         });
 
-        // Layout spacing and alignment
         HBox spacer = new HBox();
-        HBox.setHgrow(spacer, Priority.ALWAYS); // Push buttons to the right
+        HBox.setHgrow(spacer, Priority.ALWAYS);
 
         titleBar.getChildren().addAll(titleLabel, spacer, minimizeButton, closeButton);
         return titleBar;
@@ -184,14 +183,13 @@ public class PcLoadingScreen extends Application {
 
 
     private void fadeToModeScreen(Stage stage) {
-        VBox root = (VBox) stage.getScene().getRoot(); // Ensure the correct root type
+        VBox root = (VBox) stage.getScene().getRoot();
         FadeTransition fadeOut = new FadeTransition(Duration.seconds(1), root);
         fadeOut.setFromValue(1);
         fadeOut.setToValue(0);
         fadeOut.setOnFinished(e -> {
-            // Transition to ModeScreen
             ModeScreen modeScreen = new ModeScreen();
-            modeScreen.show(stage); // Reuse the same Stage
+            modeScreen.show(stage);
         });
         fadeOut.play();
     }
