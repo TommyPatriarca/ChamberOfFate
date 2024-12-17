@@ -54,6 +54,21 @@ function salvaLobby($filePath, $lobbyList) {
     }
 }
 
+// Funzione per creare un file specifico per una lobby
+function creaFileLobby($lobbyName, $id) {
+    $fileName = $lobbyName . '.json'; // Nome file basato su lobbyName
+    $lobbyData = [
+        'lobbyName' => $lobbyName,
+        'id' => $id,
+        'created_at' => date('Y-m-d H:i:s') // Timestamp di creazione
+    ];
+
+    $jsonData = json_encode($lobbyData, JSON_PRETTY_PRINT);
+    if (file_put_contents($fileName, $jsonData) === false) {
+        throw new Exception("Errore nella creazione del file della lobby: $fileName.");
+    }
+}
+
 // Definisce il percorso del file JSON
 $lobbyFile = 'lobby.json';
 
@@ -110,8 +125,15 @@ try {
         if ($lobbyEsistente) {
             echo json_encode(['status' => 'fail', 'message' => 'Lobby già esistente']);
         } else {
-            $lobbyList[] = new Lobby($lobbyName, $id); // Aggiungi la nuova lobby
-            salvaLobby($lobbyFile, $lobbyList); // Salva l'array aggiornato
+            // Aggiungi la nuova lobby all'elenco
+            $lobbyList[] = new Lobby($lobbyName, $id);
+
+            // Salva l'elenco delle lobby
+            salvaLobby($lobbyFile, $lobbyList);
+
+            // Crea un file specifico per la nuova lobby
+            creaFileLobby($lobbyName, $id);
+
             echo json_encode(['status' => 'success', 'message' => 'Creazione riuscita']);
         }
     } else {
