@@ -259,6 +259,14 @@ public class Controller {
     }
 
     /**
+     * Controlla se il gioco è terminato.
+     * @return true se uno dei due giocatori ha esaurito le vite, false altrimenti.
+     */
+    public boolean isGameOver() {
+        return player1.getHP() <= 0 || player2.getHP() <= 0;
+    }
+
+    /**
      * Intelligenza Artificiale che segue la tabella del BlackJack
      */
 
