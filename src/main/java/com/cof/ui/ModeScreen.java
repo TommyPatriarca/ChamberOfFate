@@ -7,6 +7,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
@@ -28,7 +29,7 @@ public class ModeScreen {
         // Layout principale
         VBox mainLayout = new VBox(30); // Spaziatura tra i pulsanti
         mainLayout.setAlignment(Pos.CENTER); // Allinea inizialmente al centro
-        mainLayout.setPadding(new Insets(50, 0, 0, 0)); // Aggiungi un margine superiore di 50px per spostare tutto più in basso
+        mainLayout.setPadding(new Insets(550, 0, 0, 0));
 
         Button onlineButton = createButton("Online");
         Button offlineButton = createButton("Offline");
@@ -39,12 +40,12 @@ public class ModeScreen {
         Image backgroundImage = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/images/ModeBackground.jpg")));
         ImageView backgroundView = new ImageView(backgroundImage);
 
-        // Configura l'immagine di sfondo per riempire completamente l'area
-        backgroundView.setPreserveRatio(false); // Disattiva il rapporto d'aspetto
+
+        backgroundView.setPreserveRatio(false);
         backgroundView.setFitWidth(primaryStage.getWidth());
         backgroundView.setFitHeight(primaryStage.getHeight());
 
-        // Aggiungi listener per aggiornare dinamicamente
+
         primaryStage.widthProperty().addListener((obs, oldVal, newVal) -> backgroundView.setFitWidth(newVal.doubleValue()));
         primaryStage.heightProperty().addListener((obs, oldVal, newVal) -> backgroundView.setFitHeight(newVal.doubleValue()));
 
@@ -67,22 +68,45 @@ public class ModeScreen {
     private HBox createCustomTitleBar(Stage stage) {
         HBox titleBar = new HBox();
         titleBar.setAlignment(Pos.CENTER_LEFT);
-        titleBar.setStyle("-fx-background-color: black; -fx-padding: 2;");
-        titleBar.setPrefHeight(20);
+        titleBar.setStyle("-fx-background-color: linear-gradient(to right, #1E1E1E, #333333); -fx-padding: 4; -fx-border-color: #444; -fx-border-width: 0 0 1 0;");
+        titleBar.setPrefHeight(40);
 
+        // Title label
+        Label titleLabel = new Label("Chamber of Fate");
+        titleLabel.setStyle("-fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold; -fx-font-family: 'Arial';");
+        titleLabel.setPadding(new Insets(0, 10, 0, 10));
+
+        // Bottone per minimizzare la finestra
+        Button minimizeButton = new Button("_");
+        minimizeButton.setStyle(
+                "-fx-background-color: transparent;" +
+                        "-fx-text-fill: white;" +
+                        "-fx-font-size: 14px;" +
+                        "-fx-padding: 2 10 2 10;" +
+                        "-fx-cursor: hand;" +
+                        "-fx-border-color: transparent;" +
+                        "-fx-border-radius: 5;"
+        );
+        minimizeButton.setOnMouseEntered(e -> minimizeButton.setStyle("-fx-background-color: #555; -fx-text-fill: white; -fx-border-radius: 5;"));
+        minimizeButton.setOnMouseExited(e -> minimizeButton.setStyle("-fx-background-color: transparent; -fx-text-fill: white; -fx-border-radius: 5;"));
+        minimizeButton.setOnAction(e -> stage.setIconified(true));
+
+        // Bottone per chiudere il gioco
         Button closeButton = new Button("X");
         closeButton.setStyle(
-                "-fx-background-color: red;" +
+                "-fx-background-color: transparent;" +
                         "-fx-text-fill: white;" +
-                        "-fx-font-size: 12px;" +
-                        "-fx-cursor: hand;"
+                        "-fx-font-size: 14px;" +
+                        "-fx-padding: 2 10 2 10;" +
+                        "-fx-cursor: hand;" +
+                        "-fx-border-color: transparent;" +
+                        "-fx-border-radius: 5;"
         );
+        closeButton.setOnMouseEntered(e -> closeButton.setStyle("-fx-background-color: #FF5C5C; -fx-text-fill: white; -fx-border-radius: 5;"));
+        closeButton.setOnMouseExited(e -> closeButton.setStyle("-fx-background-color: transparent; -fx-text-fill: white; -fx-border-radius: 5;"));
         closeButton.setOnAction(e -> System.exit(0));
 
-        titleBar.getChildren().add(closeButton);
-        HBox.setMargin(closeButton, new Insets(0, 10, 0, 10));
-
-        // Aggiungi drag event per spostare la finestra
+        // Funzione per trascinare la finestra
         titleBar.setOnMousePressed(e -> {
             xOffset = e.getSceneX();
             yOffset = e.getSceneY();
@@ -92,8 +116,13 @@ public class ModeScreen {
             stage.setY(e.getScreenY() - yOffset);
         });
 
+        HBox spacer = new HBox();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+
+        titleBar.getChildren().addAll(titleLabel, spacer, minimizeButton, closeButton);
         return titleBar;
     }
+
 
     private Button createButton(String text) {
         Button button = new Button(text);

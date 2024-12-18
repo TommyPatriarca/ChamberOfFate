@@ -24,6 +24,8 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 
 public class GameScreen {
+    private double xOffset = 0;
+    private double yOffset = 0;
     private SoundManager soundManager = new SoundManager();
     private Controller controller;
     private HBox playerHandDisplay, opponentHandDisplay;
@@ -48,23 +50,59 @@ public class GameScreen {
         ImageView backgroundView = createBackground(primaryStage);
 
         root = new StackPane();
-        BorderPane gameLayout = new BorderPane();
 
-        VBox topBar = createCustomTopBar(primaryStage);
-        gameLayout.setTop(topBar);
+        // Barra del titolo personalizzata
+        HBox titleBar = createCustomTitleBar(primaryStage);
+
+        // Posizionamento delle vite dei giocatori
+        BorderPane healthPane = new BorderPane();
+        healthPane.setPadding(new Insets(10));
+
+        // Vite del Player 1
+        player1HP = new Label("Player 1 HP: 5");
+        styleHealthLabel(player1HP, Color.LIGHTGREEN, "rgba(0, 100, 0, 0.8)", "lightgreen");
+        BorderPane.setAlignment(player1HP, Pos.TOP_LEFT);
+        BorderPane.setMargin(player1HP, new Insets(10));
+
+        // Vite del Player 2
+        player2HP = new Label("Player 2 HP: 5");
+        styleHealthLabel(player2HP, Color.RED, "rgba(100, 0, 0, 0.8)", "red");
+        BorderPane.setAlignment(player2HP, Pos.TOP_RIGHT);
+        BorderPane.setMargin(player2HP, new Insets(10));
+
+        healthPane.setLeft(player1HP);
+        healthPane.setRight(player2HP);
 
         VBox gameArea = createGameArea();
-        gameLayout.setCenter(gameArea);
+        gameArea.setAlignment(Pos.CENTER);
 
         HBox bottomControls = createBottomControls();
-        gameLayout.setBottom(bottomControls);
 
-        root.getChildren().addAll(backgroundView, gameLayout);
+        // Crea il menu e aggiungilo al layout
+        VBox menu = createMenu();
+        menu.setVisible(false); // Menu nascosto inizialmente
 
-        // Aggiungi il menu
-        createMenu();
+        // Layout principale
+        BorderPane mainLayout = new BorderPane();
+        mainLayout.setTop(healthPane);
+        mainLayout.setCenter(gameArea);
+        mainLayout.setBottom(bottomControls);
 
+        VBox fullLayout = new VBox();
+        fullLayout.getChildren().addAll(titleBar, mainLayout);
+        VBox.setVgrow(mainLayout, Priority.ALWAYS);
+
+        // Aggiungi tutto al root
+        root.getChildren().addAll(backgroundView, fullLayout, menu);
+
+        // Scene e gestione ESC
         Scene scene = new Scene(root);
+        scene.setOnKeyPressed(event -> {
+            if (event.getCode() == KeyCode.ESCAPE) {
+                menu.setVisible(!menu.isVisible());
+            }
+        });
+
         primaryStage.setScene(scene);
         primaryStage.setTitle("Chamber of Fate - Round " + currentRound);
 
@@ -83,7 +121,7 @@ public class GameScreen {
              backgroundImage = new Image(getClass().getResourceAsStream("/images/Table1.jpg"));
         }
         else{
-             backgroundImage = new Image(getClass().getResourceAsStream("/images/Table2.jpg"));
+             backgroundImage = new Image(getClass().getResourceAsStream("/images/Table1" +".jpg"));
         }
         ImageView backgroundView = new ImageView(backgroundImage);
         backgroundView.setPreserveRatio(false);
@@ -96,38 +134,6 @@ public class GameScreen {
                 backgroundView.setFitHeight(newValue.doubleValue()));
 
         return backgroundView;
-    }
-
-    /**
-     * Funzione per creare una top bar con stile custom
-     * @return La top bar stilizzata
-     */
-
-    private VBox createCustomTopBar(Stage primaryStage) {
-        VBox topBar = new VBox();
-        topBar.setStyle("-fx-background-color: #333333;");
-        topBar.setPadding(new Insets(10));
-
-        HBox barContent = new HBox();
-        barContent.setAlignment(Pos.CENTER);
-        barContent.setSpacing(20);
-
-        Label titleLabel = new Label("Chamber of Fate");
-        titleLabel.setFont(Font.font("Arial", FontWeight.BOLD, 20));
-        titleLabel.setTextFill(Color.WHITE);
-
-        player1HP = new Label("Player 1 HP: 5");
-        player1HP.setFont(Font.font("Arial", FontWeight.BOLD, 14));
-        player1HP.setTextFill(Color.LIGHTGREEN);
-
-        player2HP = new Label("Player 2 HP: 5");
-        player2HP.setFont(Font.font("Arial", FontWeight.BOLD, 14));
-        player2HP.setTextFill(Color.RED);
-
-        barContent.getChildren().addAll(titleLabel, player1HP, player2HP);
-        topBar.getChildren().add(barContent);
-
-        return topBar;
     }
 
     /**
@@ -198,16 +204,32 @@ public class GameScreen {
      */
 
     private void initializePlayerHands() {
+        // Aggiorna la mano del giocatore
         playerHandDisplay.getChildren().clear();
-        controller.getPlayer1().getPlayDeck().forEach(card -> {
-            if (card != null) {
-                playerHandDisplay.getChildren().add(createCardView(card));
-            }
-        });
+        int playerDeckSize = controller.getPlayer1().getPlayDeck().size();
 
+        for (int i = 0; i < playerDeckSize; i++) {
+            boolean animate = (i == playerDeckSize - 1) || currentRound == 1; // Anima l'ultima carta o tutte nel primo round
+            playerHandDisplay.getChildren().add(createCardView(controller.getPlayer1().getPlayDeck().get(i), animate));
+        }
+
+        // Aggiorna la mano dell'avversario
         opponentHandDisplay.getChildren().clear();
-        opponentHandDisplay.getChildren().add(createBackCardView());
+        int opponentDeckSize = controller.getPlayer2().getPlayDeck().size();
+
+        for (int i = 0; i < opponentDeckSize; i++) {
+            if (i == 0) {
+                // Mostra la prima carta dell'avversario
+                boolean animate = currentRound == 1; // Anima solo nel primo round
+                opponentHandDisplay.getChildren().add(createCardView(controller.getPlayer2().getPlayDeck().get(i), animate));
+            } else {
+                // Mostra il retro per tutte le altre carte
+                opponentHandDisplay.getChildren().add(createBackCardView());
+            }
+        }
     }
+
+
 
     /**
      * Funzione per risolvere il risultato del round
@@ -219,7 +241,10 @@ public class GameScreen {
         int player1Score = controller.checkCards(controller.getPlayer1(), false);
         int player2Score = controller.checkCards(controller.getPlayer2(), false);
 
-        if (message == null) {
+        if (message == "You Busted! Opponent Wins.") {
+            controller.getPlayer1().shoot(6);
+        }
+        else if (message == null) {
             if (player1Score > 21) {
                 message = "You Busted! Opponent Wins.";
                 controller.getPlayer1().shoot(6);
@@ -253,12 +278,12 @@ public class GameScreen {
     private void revealAllCards() {
         opponentHandDisplay.getChildren().clear();
         controller.getPlayer2().getPlayDeck().forEach(card -> {
-            opponentHandDisplay.getChildren().add(createCardView(card));
+            opponentHandDisplay.getChildren().add(createCardView(card,true));
         });
 
         playerHandDisplay.getChildren().clear();
         controller.getPlayer1().getPlayDeck().forEach(card -> {
-            playerHandDisplay.getChildren().add(createCardView(card));
+            playerHandDisplay.getChildren().add(createCardView(card,true));
         });
 
         updatePlayerHP();
@@ -303,21 +328,33 @@ public class GameScreen {
      */
 
     private void updateGameDisplay() {
-        initializePlayerHands();
-        updatePlayerHP();
+        // Aggiorna la mano del giocatore
+        playerHandDisplay.getChildren().clear();
+        int playerDeckSize = controller.getPlayer1().getPlayDeck().size();
 
+        for (int i = 0; i < playerDeckSize; i++) {
+            boolean animate = (i == playerDeckSize - 1); // Anima solo l'ultima carta
+            playerHandDisplay.getChildren().add(createCardView(controller.getPlayer1().getPlayDeck().get(i), animate));
+        }
+
+        // Aggiorna la mano dell'avversario
         opponentHandDisplay.getChildren().clear();
-        boolean isFirstCard = true;
+        int opponentDeckSize = controller.getPlayer2().getPlayDeck().size();
 
-        for (CardObj card : controller.getPlayer2().getPlayDeck()) {
-            if (isFirstCard) {
-                opponentHandDisplay.getChildren().add(createCardView(card));
-                isFirstCard = false;
+        for (int i = 0; i < opponentDeckSize; i++) {
+            if (i == 0) {
+                // Mostra la prima carta dell'avversario
+                opponentHandDisplay.getChildren().add(createCardView(controller.getPlayer2().getPlayDeck().get(i), false));
             } else {
+                // Mostra il retro per tutte le altre carte
                 opponentHandDisplay.getChildren().add(createBackCardView());
             }
         }
+
+        updatePlayerHP();
     }
+
+
 
     /**
      * Funzione per aggiornare la vita dei player
@@ -345,14 +382,19 @@ public class GameScreen {
      * @return Un imageview da usare come faccia delle carte
      */
 
-    private ImageView createCardView(CardObj card) {
+    private ImageView createCardView(CardObj card, boolean animate) {
         ImageView cardView = createBackCardView();
         String imagePath = card.getImagePath();
 
-        playCardFlipAnimation(cardView, imagePath);
+        if (animate) {
+            playCardFlipAnimation(cardView, imagePath);
+        } else {
+            cardView.setImage(new Image(getClass().getResourceAsStream(imagePath)));
+        }
 
         return cardView;
     }
+
 
     /**
      * Funzione per creare un animazione di rotazione per le carte
@@ -383,12 +425,12 @@ public class GameScreen {
      * Funzione per creare il menu
      */
 
-    private void createMenu() {
+    private VBox createMenu() {
         // Creazione del menu
         VBox menu = new VBox(15);
         menu.setStyle("-fx-background-color: rgba(20, 20, 20, 0.95); -fx-border-color: gold; -fx-border-width: 3; -fx-padding: 20;");
         menu.setAlignment(Pos.CENTER);
-        menu.setVisible(false);
+        menu.setVisible(false); // Menu nascosto inizialmente
 
         FadeTransition fadeIn = new FadeTransition(Duration.seconds(0.5), menu);
         fadeIn.setFromValue(0);
@@ -407,7 +449,7 @@ public class GameScreen {
 
         menu.getChildren().addAll(rulesButton, creditsButton, volumeButton, surrenderButton, exitButton);
 
-        // Pulsante per aprire
+        // Pulsante per aprire/chiudere il menu
         Button toggleMenuButton = createStyledButton("Menu", "#333333");
         toggleMenuButton.setStyle("-fx-background-color: rgba(40, 40, 40, 0.8); -fx-border-color: gold; -fx-border-width: 2; -fx-font-size: 16px; -fx-text-fill: gold;");
         toggleMenuButton.setOnAction(e -> {
@@ -420,26 +462,8 @@ public class GameScreen {
             }
         });
 
-        // Listener per il tasto ESC
-        root.sceneProperty().addListener((observable, oldScene, newScene) -> {
-            if (newScene != null) {
-                newScene.setOnKeyPressed(event -> {
-                    if (event.getCode() == KeyCode.ESCAPE) {
-                        if (menu.isVisible()) {
-                            fadeOut.setOnFinished(ev -> menu.setVisible(false));
-                            fadeOut.play();
-                        } else {
-                            System.exit(0); // Esci dal gioco
-                        }
-                    }
-                });
-            }
-        });
-
-        root.getChildren().add(menu);
-
-        BorderPane.setAlignment(toggleMenuButton, Pos.TOP_RIGHT);
-        ((BorderPane) root.getChildren().get(1)).setRight(toggleMenuButton);
+        // Ritorna il menu per poterlo aggiungere al layout
+        return menu;
     }
 
 
@@ -554,5 +578,76 @@ public class GameScreen {
         if (alert.showAndWait().get() == ButtonType.OK) {
             System.exit(0);
         }
+    }
+
+    private void styleHealthLabel(Label label, Color textColor, String bgColor, String borderColor) {
+        label.setFont(Font.font("Arial", FontWeight.BOLD, 16));
+        label.setTextFill(textColor);
+        label.setStyle("-fx-background-color: " + bgColor + "; " +
+                "-fx-border-color: " + borderColor + "; " +
+                "-fx-border-width: 2px; " +
+                "-fx-padding: 8 16; " +
+                "-fx-border-radius: 10; " +
+                "-fx-background-radius: 10; " +
+                "-fx-effect: dropshadow(gaussian, " + borderColor + ", 10, 0.5, 0, 0);");
+    }
+
+
+    private HBox createCustomTitleBar(Stage stage) {
+        HBox titleBar = new HBox();
+        titleBar.setAlignment(Pos.CENTER_LEFT);
+        titleBar.setStyle("-fx-background-color: linear-gradient(to right, #1E1E1E, #333333); -fx-padding: 4; -fx-border-color: #444; -fx-border-width: 0 0 1 0;");
+        titleBar.setPrefHeight(40);
+
+        // Title label
+        Label titleLabel = new Label("Chamber of Fate");
+        titleLabel.setStyle("-fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold; -fx-font-family: 'Arial';");
+        titleLabel.setPadding(new Insets(0, 10, 0, 10));
+
+        // Bottone per minimizzare la finestra
+        Button minimizeButton = new Button("_");
+        minimizeButton.setStyle(
+                "-fx-background-color: transparent;" +
+                        "-fx-text-fill: white;" +
+                        "-fx-font-size: 14px;" +
+                        "-fx-padding: 2 10 2 10;" +
+                        "-fx-cursor: hand;" +
+                        "-fx-border-color: transparent;" +
+                        "-fx-border-radius: 5;"
+        );
+        minimizeButton.setOnMouseEntered(e -> minimizeButton.setStyle("-fx-background-color: #555; -fx-text-fill: white; -fx-border-radius: 5;"));
+        minimizeButton.setOnMouseExited(e -> minimizeButton.setStyle("-fx-background-color: transparent; -fx-text-fill: white; -fx-border-radius: 5;"));
+        minimizeButton.setOnAction(e -> stage.setIconified(true));
+
+        // Bottone per chiudere il gioco
+        Button closeButton = new Button("X");
+        closeButton.setStyle(
+                "-fx-background-color: transparent;" +
+                        "-fx-text-fill: white;" +
+                        "-fx-font-size: 14px;" +
+                        "-fx-padding: 2 10 2 10;" +
+                        "-fx-cursor: hand;" +
+                        "-fx-border-color: transparent;" +
+                        "-fx-border-radius: 5;"
+        );
+        closeButton.setOnMouseEntered(e -> closeButton.setStyle("-fx-background-color: #FF5C5C; -fx-text-fill: white; -fx-border-radius: 5;"));
+        closeButton.setOnMouseExited(e -> closeButton.setStyle("-fx-background-color: transparent; -fx-text-fill: white; -fx-border-radius: 5;"));
+        closeButton.setOnAction(e -> System.exit(0));
+
+        // Funzione per trascinare la finestra
+        titleBar.setOnMousePressed(e -> {
+            xOffset = e.getSceneX();
+            yOffset = e.getSceneY();
+        });
+        titleBar.setOnMouseDragged(e -> {
+            stage.setX(e.getScreenX() - xOffset);
+            stage.setY(e.getScreenY() - yOffset);
+        });
+
+        HBox spacer = new HBox();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+
+        titleBar.getChildren().addAll(titleLabel, spacer, minimizeButton, closeButton);
+        return titleBar;
     }
 }

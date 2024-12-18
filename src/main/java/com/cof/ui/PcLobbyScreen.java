@@ -17,11 +17,18 @@ import java.util.Objects;
 
 public class PcLobbyScreen {
 
+    private double xOffset = 0;
+    private double yOffset = 0;
+
     private final List<String> lobbies = new ArrayList<>();
     private ListView<String> lobbyListView;
-    private StackPane overlayPane; // For popups over the content
+    private StackPane overlayPane;
 
     public void show(Stage primaryStage) {
+
+        //Barra superiore
+        HBox titleBar = createCustomTitleBar(primaryStage);
+
         // Background image
         Image backgroundImage = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/images/LobbyBackground.jpg")));
         ImageView backgroundView = new ImageView(backgroundImage);
@@ -95,6 +102,7 @@ public class PcLobbyScreen {
         // Buttons
         Button createLobbyButton = createStyledButton("Create Lobby");
         Button joinLobbyButton = createStyledButton("Join Lobby");
+        Button backButton = createStyledButton("Back");
         joinLobbyButton.setDisable(true);
 
         // Enable "Join Lobby" button only when a lobby is selected
@@ -118,8 +126,23 @@ public class PcLobbyScreen {
             }
         });
 
+
+        backButton.setOnAction(e -> {
+            ModeScreen modeScreen = new ModeScreen();
+            modeScreen.show(primaryStage);
+        });
+
         HBox buttonBox = new HBox(20, createLobbyButton, joinLobbyButton);
         buttonBox.setAlignment(Pos.CENTER);
+
+        StackPane root = new StackPane(backgroundView);
+
+        BorderPane mainPane = new BorderPane();
+        mainPane.setCenter(mainLayout);
+        mainPane.setBottom(backButton);
+
+        BorderPane.setAlignment(backButton, Pos.BOTTOM_RIGHT);
+        BorderPane.setMargin(backButton, new Insets(10));
 
         mainLayout.getChildren().addAll(lobbyLabel, lobbyListView, buttonBox);
 
@@ -127,8 +150,12 @@ public class PcLobbyScreen {
         overlayPane.setMouseTransparent(true); // By default, passes events to below layers
         overlayPane.setPickOnBounds(false); // Only interact with visible children
 
-        StackPane root = new StackPane(backgroundView, mainLayout, overlayPane);
-        Scene scene = new Scene(root);
+        root.getChildren().addAll(mainPane, overlayPane);
+
+        // Aggiungere la barra superiore al layout principale
+        VBox layoutWithBar = new VBox(titleBar, root);
+        Scene scene = new Scene(layoutWithBar, primaryStage.getWidth(), primaryStage.getHeight(), Color.BLACK);
+
         primaryStage.setScene(scene);
     }
 
@@ -323,4 +350,62 @@ public class PcLobbyScreen {
                 "-fx-border-radius: 6;" +
                 "-fx-effect: dropshadow(gaussian, #111111, 30, 1.0, 0, 0);";
     }
+    private HBox createCustomTitleBar(Stage stage) {
+        HBox titleBar = new HBox();
+        titleBar.setAlignment(Pos.CENTER_LEFT);
+        titleBar.setStyle("-fx-background-color: linear-gradient(to right, #1E1E1E, #333333); -fx-padding: 4; -fx-border-color: #444; -fx-border-width: 0 0 1 0;");
+        titleBar.setPrefHeight(40);
+
+        // Title label
+        Label titleLabel = new Label("Chamber of Fate");
+        titleLabel.setStyle("-fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold; -fx-font-family: 'Arial';");
+        titleLabel.setPadding(new Insets(0, 10, 0, 10));
+
+        // Bottone per minimizzare la finestra
+        Button minimizeButton = new Button("_");
+        minimizeButton.setStyle(
+                "-fx-background-color: transparent;" +
+                        "-fx-text-fill: white;" +
+                        "-fx-font-size: 14px;" +
+                        "-fx-padding: 2 10 2 10;" +
+                        "-fx-cursor: hand;" +
+                        "-fx-border-color: transparent;" +
+                        "-fx-border-radius: 5;"
+        );
+        minimizeButton.setOnMouseEntered(e -> minimizeButton.setStyle("-fx-background-color: #555; -fx-text-fill: white; -fx-border-radius: 5;"));
+        minimizeButton.setOnMouseExited(e -> minimizeButton.setStyle("-fx-background-color: transparent; -fx-text-fill: white; -fx-border-radius: 5;"));
+        minimizeButton.setOnAction(e -> stage.setIconified(true));
+
+        // Bottone per chiudere il gioco
+        Button closeButton = new Button("X");
+        closeButton.setStyle(
+                "-fx-background-color: transparent;" +
+                        "-fx-text-fill: white;" +
+                        "-fx-font-size: 14px;" +
+                        "-fx-padding: 2 10 2 10;" +
+                        "-fx-cursor: hand;" +
+                        "-fx-border-color: transparent;" +
+                        "-fx-border-radius: 5;"
+        );
+        closeButton.setOnMouseEntered(e -> closeButton.setStyle("-fx-background-color: #FF5C5C; -fx-text-fill: white; -fx-border-radius: 5;"));
+        closeButton.setOnMouseExited(e -> closeButton.setStyle("-fx-background-color: transparent; -fx-text-fill: white; -fx-border-radius: 5;"));
+        closeButton.setOnAction(e -> System.exit(0));
+
+        // Funzione per trascinare la finestra
+        titleBar.setOnMousePressed(e -> {
+            xOffset = e.getSceneX();
+            yOffset = e.getSceneY();
+        });
+        titleBar.setOnMouseDragged(e -> {
+            stage.setX(e.getScreenX() - xOffset);
+            stage.setY(e.getScreenY() - yOffset);
+        });
+
+        HBox spacer = new HBox();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+
+        titleBar.getChildren().addAll(titleLabel, spacer, minimizeButton, closeButton);
+        return titleBar;
+    }
+
 }
