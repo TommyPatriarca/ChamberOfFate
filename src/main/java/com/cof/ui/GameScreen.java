@@ -45,6 +45,8 @@ public class GameScreen {
      * Funzione per mostrare la schermata di gioco
      */
 
+    private Label resultOverlay; // Overlay per i risultati
+
     public void show(Stage primaryStage) {
         primaryStage.setMaximized(true);
         controller.startGame("Player 1");
@@ -81,11 +83,7 @@ public class GameScreen {
 
         HBox bottomControls = createBottomControls();
 
-        // Crea il menu e aggiungilo al layout
-        VBox menu = createMenu();
-        menu.setVisible(false); // Menu nascosto inizialmente
-
-        // Layout principale
+        // Crea il layout principale
         BorderPane mainLayout = new BorderPane();
         mainLayout.setTop(healthPane);
         mainLayout.setCenter(gameArea);
@@ -95,23 +93,22 @@ public class GameScreen {
         fullLayout.getChildren().addAll(titleBar, mainLayout);
         VBox.setVgrow(mainLayout, Priority.ALWAYS);
 
+        // Overlay dei risultati
+        resultOverlay = createResultOverlay();
+        resultOverlay.setVisible(false);
+
         // Aggiungi tutto al root
-        root.getChildren().addAll(backgroundView, fullLayout, menu);
+        root.getChildren().addAll(backgroundView, fullLayout, resultOverlay);
 
         // Scene e gestione ESC
         Scene scene = new Scene(root);
-        scene.setOnKeyPressed(event -> {
-            if (event.getCode() == KeyCode.ESCAPE) {
-                menu.setVisible(!menu.isVisible());
-            }
-        });
-
         primaryStage.setScene(scene);
         primaryStage.setTitle("Chamber of Fate - Round " + currentRound);
 
         initializePlayerHands();
         primaryStage.show();
     }
+
 
     /**
      * Funzione per impostare l'immagine di sfondo in modo "responsive"
@@ -352,24 +349,26 @@ public class GameScreen {
                 message = "Entrambi avete sballato!";
             } else if (player1Score > 21) {
                 message = "Hai sballato! Vince il bot.";
-                controller.getPlayer1().shoot(1); // Perdi una vita
+                controller.getPlayer1().shoot(6); // Perdi una vita
             } else if (player2Score > 21) {
                 message = "Il bot ha sballato! Hai vinto.";
-                controller.getPlayer2().shoot(1); // Il bot perde una vita
+                controller.getPlayer2().shoot(6); // Il bot perde una vita
             } else if (player1Score > player2Score) {
                 message = "Hai vinto!";
-                controller.getPlayer2().shoot(1);
+                controller.getPlayer2().shoot(6);
             } else if (player1Score < player2Score) {
                 message = "Hai perso!";
-                controller.getPlayer1().shoot(1);
+                controller.getPlayer1().shoot(6);
             } else {
                 message = "Pareggio!";
             }
         }
 
         updatePlayerHP();
-        showRoundResult(message);
+        showResultOverlay(message); // Mostra l'overlay e prepara il nuovo round
     }
+
+
 
     /**
      * Funzione per far girare tutte le carte sul tavolo
@@ -759,5 +758,60 @@ public class GameScreen {
         drawCardButton.setDisable(!enabled);
         passTurnButton.setDisable(!enabled);
     }
+
+    private Label createResultOverlay() {
+        Label overlay = new Label();
+        overlay.setStyle(
+                "-fx-background-color: rgba(0, 0, 0, 0.8);" +
+                        "-fx-text-fill: white;" +
+                        "-fx-font-size: 36px;" +
+                        "-fx-font-weight: bold;" +
+                        "-fx-padding: 20;" +
+                        "-fx-border-color: gold;" +
+                        "-fx-border-width: 5;" +
+                        "-fx-border-radius: 10;" +
+                        "-fx-background-radius: 11;" +
+                        "-fx-alignment: center;"
+        );
+        overlay.setAlignment(Pos.CENTER);
+        overlay.setMaxWidth(400);
+        overlay.setWrapText(true); //per mettere il testo in colonne
+        StackPane.setAlignment(overlay, Pos.CENTER);
+        return overlay;
+    }
+
+    private void showResultOverlay(String message) {
+        resultOverlay.setText(message);
+        resultOverlay.setVisible(true);
+
+        FadeTransition fadeIn = new FadeTransition(Duration.seconds(0.5), resultOverlay);
+        fadeIn.setFromValue(0);
+        fadeIn.setToValue(1);
+        fadeIn.setOnFinished(event -> {
+            PauseTransition pause = new PauseTransition(Duration.seconds(3)); // Mostra il messaggio per 3 secondi
+            pause.setOnFinished(e -> hideResultOverlay());
+            pause.play();
+        });
+        fadeIn.play();
+    }
+
+    private void hideResultOverlay() {
+        FadeTransition fadeOut = new FadeTransition(Duration.seconds(0.5), resultOverlay);
+        fadeOut.setFromValue(1);
+        fadeOut.setToValue(0);
+        fadeOut.setOnFinished(event -> {
+            resultOverlay.setVisible(false);
+            startNewRound(); // Avvia un nuovo round
+        });
+        fadeOut.play();
+    }
+
+    private void startNewRound() {
+        controller.turn(); // Resetta il controller per un nuovo round
+        updateGameDisplay(); // Aggiorna la schermata per riflettere il nuovo stato
+        startPlayerTurn(); // Inizia il turno del giocatore
+    }
+
+
 
 }
