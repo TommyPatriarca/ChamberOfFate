@@ -1,10 +1,13 @@
 package com.controller;
 
+import com.cof.player.Player;
 import com.controller.managers.cardManager.Deck;
 import com.controller.objects.CardObj;
 import com.controller.objects.PlayerObj;
+import okhttp3.*;
 
 import javax.smartcardio.Card;
+import java.util.ArrayList;
 
 public class Controller {
 
@@ -19,7 +22,7 @@ public class Controller {
 
     /**
      * Il controller è usato per gestire tutta la parte logica del gioco
-     * @param onOrOff Se true, la partita sarà online, se false offline
+     * @param onOrOff Se true il gioco sarà online, se false offline
      */
     public Controller (boolean onOrOff){
 
@@ -38,136 +41,296 @@ public class Controller {
      * Funzione per gestire la versione online del gioco
      */
     public void onlineGame(){
-
+        //OkHttpClient client;
     }
 
     /**
-     * Funzione per gestire la versione offline del gioco. DA AGGIUNGERE AI CHE SEGUE LA TABELLA DEL BLACKJACK
+     * Funzione per gestire la versione offline del gioco con AI
      */
     public void offlineGame(){
         deck = new Deck();
-
     }
 
     public void startGame(String playerName){
         this.playerName = playerName;
         player1 = new PlayerObj(playerName);
         player2 = new PlayerObj("CPU");
-
         turn();
-
     }
 
     /**
-     * Funzione per gestire il turno del giocatore
-     * DA SISTEMARE ED INTEGRARE CON LA GRAFICA
+     * Funzione per gestire ogni turno
      */
-    public void turn(){
-        turnCount++;
+    public void turn() {
+        player1.resetPlayer();
+        player2.resetPlayer();
 
-        //DA AGGIUNGERE LE CARTE DELL'AVVERSARIO
-
-        //PRIME DUE CARTE DEL PLAYER 1
         player1.addCard(deck.hitCard());
         player1.addCard(deck.hitCard());
 
-        //PRIME DUE CARTE DEL PLAYER 2
         player2.addCard(deck.hitCard());
         player2.addCard(deck.hitCard());
-
-        checkCards(player1);
-        checkCards(player2);
-
-        //CARTE SCELTE DAL GIOCATORE
-
     }
 
-    /**
-     * Hit carta
-     * @param firstOrSec Se true player1, se false player2
-     */
-    public int hitCard(boolean firstOrSec){
-        if(firstOrSec){
-            player1.addCard(deck.hitCard());
-            return checkCards(player1);
-        }
-        else {
-            player2.addCard(deck.hitCard());
-            return checkCards(player2);
+
+    public boolean AITurn(Runnable updateDisplayCallback) {
+        int firstCard1 = checkCards(player1, true);
+        int runCount2 = checkCards(player2, false);
+
+        System.out.println("AI Turn Start - Player 1 First Card: " + firstCard1 + ", AI Total: " + runCount2);
+
+        while (runCount2 < 17) {
+            if (deckHasCards()) {
+                hitCard(false);
+                runCount2 = checkCards(player2, false);
+                System.out.println("AI Draws a Card - New AI Total: " + runCount2);
+
+                // Callback per aggiornare la GUI
+                updateDisplayCallback.run();
+            } else {
+                System.out.println("Deck is empty. AI cannot draw more cards.");
+                break;
+            }
         }
 
-
+        System.out.println("AI Turn End - Final AI Total: " + runCount2);
+        return true;
     }
 
+
     /**
-     * Funzione per calcolare il totale delle carte del giocare, e controllare se ha sballato
+     *
+     * @param player Il giocatore a cui controllare le carte
+     * @param firstOrAll Se true, controllo solo la prima, se false le controllo tutte
      * @return
      */
-    public int checkCards(PlayerObj player){
+    public int checkCards(PlayerObj player, boolean firstOrAll){
+        int runCount = 0;
+        int aces = 0;
+        String card;
+        ArrayList<CardObj> mazzo = player.getPlayDeck();
 
-        int totCards = 0;
-        boolean busted = false;
-        int ace = 0;
+        for(int i=0;i<mazzo.size();i++){
+            card = mazzo.get(i).getTipo();
 
-        for(int i=0;i<player.getPlayDeck().size();i++){
+            card = card.substring(0 , card.length() -1);
 
-            String stringCarta = player.getPlayDeck().get(i).getTipo();
-            stringCarta = stringCarta.substring(0, stringCarta.length() -1);
-
-            if(stringCarta.equals("J") || stringCarta.equals("Q") || stringCarta.equals("K") || stringCarta.equals("10")){
-                totCards = totCards + 10;
-
+            if(card.equals("J") || card.equals("Q") || card.equals("K")){
+                runCount = runCount + 10;
+            }
+            else if(card.equals("A")){
+                runCount = runCount +11;
+                aces++;
+            }
+            else{
+                runCount = runCount + Integer.parseInt(card);
             }
 
-            //Conto quanti assi ho, dato che può valere sia 11 che 1
-            else if(stringCarta.equals("A")){
-                ace ++;
-
-                totCards = totCards + 11;
-
-            }
-
-            else {
-                totCards = totCards + Integer.parseInt(stringCarta);
-            }
-
-            if(totCards > 21){
-                if(ace>0){
-                    for(i=0;i<ace;i++){
-                        totCards = totCards - 10;
-                    }
-
-                }
-
-                if(totCards>21){
-                    busted = true;
-
-                }
-                else{
-
-                }
+            if(firstOrAll){
+                break;
             }
 
         }
 
-        if(busted){
-            return totCards;
+        if(runCount >21) {
+            for (int i = 0; i < aces; i++) {
+                runCount = runCount - 10;
+            }
+            return runCount;
+
         }
-        else {
-            return totCards;
+        else{
+            return runCount;
         }
 
     }
+
+    /**
+     * Funzione per controllare il risultato di entrambi i Blackjack
+     * @return Se 1, si spara il giocatore 1, se 2 il secondo,  se -1 pari
+     */
+    public int checkResult(){
+        int runCountP1, runCountP2;
+
+        runCountP1 = checkCards(player1, false);
+        runCountP2 = checkCards(player2, false);
+
+        //Controllo se non siano uguali
+        if(runCountP1!=runCountP2){
+            //Controllo se siano minori di 22
+            if(runCountP1<22 && runCountP2<22){
+
+                //Controllo se P1>P2
+                if(runCountP1>runCountP2){
+
+                    //Si spara il P2
+                    return 2;
+                }
+
+                //Altrimenti se P2>P1
+                else{
+
+                    //Si spara il P1
+                    return 1;
+                }
+            }
+
+            //Controllo se P1 non ha sballato
+            else if(runCountP1>21){
+                //Alrimenti si spara P1
+                return 1;
+
+            }
+
+            //Controllo se P2 non ha sballato
+            else if(runCountP2>21){
+                //Alrimenti si spara P2
+                return 2;
+
+            }
+
+            //Entrambi hanno sballato
+            else{
+                //Nessuno si spara, pari
+                return -1;
+            }
+
+        }
+
+        //Altrimenti sono pari
+        else{
+            //Nessuno si spara
+            return -1;
+        }
+
+    }
+
+    /**
+     *
+     */
+    public boolean shootPlayer(){
+        int result = checkResult();
+
+        //Il running count del giocatore che ha vinto
+        int runCount;
+
+        if(result==1){
+            runCount = checkCards(player2, false);
+            //CONTROLLARE SE E' STATO FATTO BLACKJACK E NON SOLO 21
+            //OTTIMIZZARE MEGLIO GLI IF, SE POSSIBILE FARE UN UNICO IF PER TUTTI E DUE I CASi
+            if(runCount==21){
+                if(player1.shoot(3)){
+                    return true;
+                }
+            }
+            else {
+                if(player1.shoot(1)){
+                    return false;
+                }
+            }
+        }
+        else if(result==2){
+            runCount = checkCards(player1, false);
+            if(runCount==21){
+                if(player2.shoot(3)){
+                    return true;
+                }
+            }
+            else {
+                if(player2.shoot(1)){
+                    return false;
+                }
+            }
+        }
+            return false;
+    }
+
+    /**
+     *
+     * @param firstOrSec Se true player1, se false player2
+     */
+    public void hitCard(boolean firstOrSec){
+        if(firstOrSec){
+            player1.addCard(deck.hitCard());
+        }
+        else{
+            player2.addCard(deck.hitCard());
+        }
+    }
+
+    /**
+     * Controlla se il gioco è terminato.
+     * @return true se uno dei due giocatori ha esaurito le vite, false altrimenti.
+     */
+    public boolean isGameOver() {
+        return player1.getHP() <= 0 || player2.getHP() <= 0;
+    }
+
+    /**
+     * Intelligenza Artificiale che segue la tabella del BlackJack
+     */
+
+    public boolean AI() {
+        int firstCard1 = checkCards(player1, true); // Prima carta del giocatore umano
+        int runCount2 = checkCards(player2, false); // Totale punteggio del bot
+
+        System.out.println("AI Turn Start - Player 1 First Card: " + firstCard1 + ", AI Total: " + runCount2);
+
+        while (runCount2 < 17) { // L'AI pesca fino a un punteggio minimo di 17
+            System.out.println("AI Decision - AI Total: " + runCount2);
+
+            // Pescare una carta
+            if (deckHasCards()) { // Controlla che il mazzo non sia vuoto
+                hitCard(false);
+                runCount2 = checkCards(player2, false); // Aggiorna il punteggio dopo la pesca
+                System.out.println("AI Draws a Card - New AI Total: " + runCount2);
+            } else {
+                System.out.println("Deck is empty. AI cannot draw more cards.");
+                break; // Termina il ciclo se non ci sono più carte
+            }
+        }
+
+        System.out.println("AI Turn End - Final AI Total: " + runCount2);
+        return true; // Turno completato
+    }
+
+    /**
+     * Controlla se il mazzo ha ancora carte.
+     * @return true se il mazzo contiene carte, false altrimenti.
+     */
+    private boolean deckHasCards() {
+        return !deck.isEmpty();
+    }
+
+
 
 
     //GET FUNCTIONS
 
+    //ANDRANNO SOSTITUITE CON IL GETPLAYER GENERALe
     public PlayerObj getPlayer1(){
         return player1;
     }
 
     public PlayerObj getPlayer2(){
         return player2;
+    }
+
+    /**
+     *
+     * @param player Se 1, player1, se 2 player2
+     * @return il giocatore richiesto
+     */
+    public PlayerObj getPlayer(int player){
+        if(player == 1){
+            return player1;
+        }
+        else if(player==2){
+            return player2;
+        }
+        else {
+            return null;
+        }
     }
 
 }

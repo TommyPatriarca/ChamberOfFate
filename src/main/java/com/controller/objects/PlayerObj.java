@@ -6,10 +6,13 @@ public class PlayerObj {
 
     private ArrayList<CardObj> playDeck;
     private int HP = 5;
-    private int runningCount =0;
     private String name;
+    private int revAMMO;
+
+    private int[] caricatore = new int[6];
 
     /**
+     * L'oggetto giocatore
      * @param name Il nome del giocatore
      */
     public PlayerObj(String name){
@@ -18,48 +21,74 @@ public class PlayerObj {
     }
 
     /**
-     * Aggiungi carta al mazzo del giocatore
-     * @param cardObj La carta da aggiungere
+     * @param cardObj La carta da aggiungere alle carte del giocatore
      */
-    public void addCard(CardObj cardObj){
-        playDeck.add(cardObj);
+    public void addCard(CardObj cardObj) {
+        if (cardObj != null) {
+            playDeck.add(cardObj);
+        } else {
+            System.out.println("Attempted to add a null card to the player's deck.");
+        }
+    }
+
+
+    /**
+     * Funzione per farsi sparare
+     * @param revAMMO Proiettili nel caricatore
+     * @return Se true, si è sparato, se false no
+     */
+    public boolean shoot(int revAMMO){
+        this.revAMMO = revAMMO;
+
+        for(int i=0;i<6;i++) {
+            if(i<revAMMO){
+                caricatore[i] = 1;
+
+            }
+            else{
+                caricatore[i] = 0;
+            }
+            /*for (int j = 0; j < revAMMO; j++) {
+                caricatore[i] = 1;
+            }*/
+        }
+
+        double randomN = Math.random() * 6;
+
+        int randomN2 = (int) randomN;
+
+        System.out.println("Colpo " + randomN2);
+
+        for(int i=0;i<6;i++){
+            if(caricatore[i] == 1 && randomN2 == i){
+                HP--;
+                return true;
+            }
+
+        }
+        return false;
     }
 
     /**
-     * @return L'Arraylist contenente il mazzo del giocare
+     * Funzione per resettare mazzo e HP alla fine di ogni turno
+     *
+     */
+    public void resetPlayer(){
+        playDeck = new ArrayList<>();
+    }
+
+    /**
+     * @return L'Arraylist di CardObj con le carte del giocatore
      */
     public ArrayList<CardObj> getPlayDeck(){
         return playDeck;
     }
 
-    /**
-     * Funzione per resettare le carte ed il runinng count del giocatore alla fine di un turno
-     */
-    public void resetPlayerCard(){
-        playDeck = new ArrayList<>();
-        runningCount = 0;
-    }
-
-    /**
-     * @return Nome del Giocatore
-     */
-    public String getName(){
-        return name;
-    }
-
-    /**
-     * @return Gli HP del giocatore
-     */
     public int getHP(){
         return HP;
     }
 
-    /**
-     * @return Il running count (totale delle carte in mano) del giocatore
-     */
-    public int getRunningCount(){
-        return runningCount;
+    public void decrementHP() {
+        HP--;
     }
-
-
 }

@@ -1,391 +1,411 @@
 package com.cof.ui;
 
 import com.cof.utils.FontUtils;
-import javafx.animation.FadeTransition;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.effect.DropShadow;
-import javafx.scene.effect.Glow;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
-import javafx.scene.paint.LinearGradient;
-import javafx.scene.paint.Stop;
 import javafx.stage.Stage;
-import javafx.util.Duration;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class PcLobbyScreen {
-    private final DropShadow dropShadow = new DropShadow(20, Color.RED);
-    private final Glow glow = new Glow(0.8);
+
+    private double xOffset = 0;
+    private double yOffset = 0;
+
     private final List<String> lobbies = new ArrayList<>();
     private ListView<String> lobbyListView;
+    private StackPane overlayPane;
 
     public void show(Stage primaryStage) {
-        // Create main container with gradient background
-        VBox mainLayout = new VBox(40);
+
+        //Barra superiore
+        HBox titleBar = createCustomTitleBar(primaryStage);
+
+        // Background image
+        Image backgroundImage = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/images/LobbyBackground.jpg")));
+        ImageView backgroundView = new ImageView(backgroundImage);
+        backgroundView.setPreserveRatio(false);
+        backgroundView.setFitWidth(primaryStage.getWidth());
+        backgroundView.setFitHeight(primaryStage.getHeight());
+
+        // Dynamic resizing of the background
+        primaryStage.widthProperty().addListener((obs, oldVal, newVal) -> backgroundView.setFitWidth(newVal.doubleValue()));
+        primaryStage.heightProperty().addListener((obs, oldVal, newVal) -> backgroundView.setFitHeight(newVal.doubleValue()));
+
+        // Main Layout
+        VBox mainLayout = new VBox(20);
         mainLayout.setAlignment(Pos.CENTER);
-        mainLayout.setPadding(new Insets(60));
+        mainLayout.setPadding(new Insets(20));
 
-        // Create gradient background
-        Stop[] stops = new Stop[] {
-                new Stop(0, Color.rgb(20, 20, 20)),
-                new Stop(1, Color.rgb(40, 0, 0))
-        };
-        LinearGradient gradient = new LinearGradient(0, 0, 0, 1, true, javafx.scene.paint.CycleMethod.NO_CYCLE, stops);
-        mainLayout.setBackground(new Background(new BackgroundFill(gradient, CornerRadii.EMPTY, Insets.EMPTY)));
+        // Lobby Label
+        Label lobbyLabel = new Label("Available Lobbies");
+        lobbyLabel.setStyle("-fx-font-size: 28px; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-family: '" + FontUtils.SUBTITLE_FONT + "';");
 
-        // Title with enhanced styling
-        Label title = new Label("CHAMBER OF FATE");
-        title.setStyle("-fx-font-size: 56px; -fx-text-fill: linear-gradient(to bottom, #ffffff, #ff0000); -fx-font-weight: bold; -fx-font-family: '" + FontUtils.TITLE_FONT + "';");
-        title.setEffect(new DropShadow(30, Color.RED));
-
-        // Create containers for lobby sections with glass effect
-        HBox sectionsContainer = new HBox(50);
-        sectionsContainer.setAlignment(Pos.CENTER);
-
-        // Create Lobby Section
-        VBox createLobbyBox = createGlassPane();
-        createLobbyBox.setPrefWidth(450);
-
-        Label createSectionLabel = new Label("CREATE NEW LOBBY");
-        createSectionLabel.setStyle("-fx-font-size: 28px; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-family: '" + FontUtils.SUBTITLE_FONT + "';");
-        createSectionLabel.setEffect(new DropShadow(10, Color.RED));
-
-        TextField lobbyNameField = createStyledTextField("Lobby Name");
-        PasswordField passwordField = createStyledPasswordField();
-
-        // Enhanced radio buttons
-        VBox radioBox = new VBox(15);
-        radioBox.setAlignment(Pos.CENTER);
-        RadioButton publicLobby = createStyledRadioButton("Public Lobby");
-        RadioButton privateLobby = createStyledRadioButton("Private Lobby");
-
-        ToggleGroup lobbyTypeGroup = new ToggleGroup();
-        publicLobby.setToggleGroup(lobbyTypeGroup);
-        privateLobby.setToggleGroup(lobbyTypeGroup);
-        publicLobby.setSelected(true);
-
-        radioBox.getChildren().addAll(publicLobby, privateLobby);
-
-        Button createLobbyButton = createStyledButton("Create Lobby");
-        createLobbyButton.setOnAction(e -> {
-            if (!lobbyNameField.getText().isEmpty()) {
-                String lobbyType = publicLobby.isSelected() ? "[Public] " : "[Private] ";
-                lobbies.add(lobbyType + lobbyNameField.getText());
-                lobbyListView.getItems().setAll(lobbies);
-                lobbyNameField.clear();
-                passwordField.clear();
-            }
-        });
-
-        createLobbyBox.getChildren().addAll(
-                createSectionLabel,
-                new Separator(javafx.geometry.Orientation.HORIZONTAL),
-                lobbyNameField,
-                passwordField,
-                radioBox,
-                createLobbyButton
-        );
-
-        // Join Lobby Section
-        VBox joinLobbyBox = createGlassPane();
-        joinLobbyBox.setPrefWidth(450);
-
-        Label joinSectionLabel = new Label("AVAILABLE LOBBIES");
-        joinSectionLabel.setStyle("-fx-font-size: 28px; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-family: '" + FontUtils.SUBTITLE_FONT + "';");
-        joinSectionLabel.setEffect(new DropShadow(10, Color.RED));
-
+// Lobby List View
         lobbyListView = new ListView<>();
         lobbyListView.setPrefHeight(300);
         lobbyListView.setStyle(
-                "-fx-background-color: rgba(60, 60, 60, 0.5);" +
+                "-fx-background-color: rgba(40, 40, 40, 0.8);" +
                         "-fx-control-inner-background: transparent;" +
+                        "-fx-border-color: #555;" +
+                        "-fx-border-width: 2px;" +
+                        "-fx-border-radius: 8px;" +
                         "-fx-text-fill: white;" +
-                        "-fx-background-radius: 5;" +
-                        "-fx-font-family: '" + FontUtils.BODY_FONT + "';"
+                        "-fx-font-family: '" + FontUtils.BODY_FONT + "';" +
+                        "-fx-font-size: 16px;"
         );
 
-        HBox buttonBox = new HBox(25);
-        buttonBox.setAlignment(Pos.CENTER);
-        Button refreshButton = createStyledButton("Refresh");
-        Button joinButton = createStyledButton("Join");
+// Add hover effect and selection effect to list items
+        lobbyListView.setCellFactory(lv -> new ListCell<>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
 
-        refreshButton.setOnAction(e -> lobbyListView.getItems().setAll(lobbies));
-        joinButton.setOnAction(e -> {
-            String selected = lobbyListView.getSelectionModel().getSelectedItem();
-            if (selected != null) {
-                if (selected.startsWith("[Private]")) {
-                    showPasswordDialog(primaryStage);  // Passa primaryStage come parametro
+                // Reset cell style
+                if (empty || item == null) {
+                    setText(null);
+                    setStyle("-fx-background-color: transparent; -fx-text-fill: white;");
                 } else {
-                    // Per lobby pubbliche, vai direttamente alla GameScreen
-                    startGame(primaryStage);
+                    setText(item);
+
+                    // Check if the cell is selected
+                    if (lobbyListView.getSelectionModel().getSelectedItems().contains(item)) {
+                        setStyle("-fx-background-color: rgba(240, 149, 14, 0.7); -fx-text-fill: white; -fx-font-weight: bold;");
+                    } else {
+                        setStyle("-fx-background-color: transparent; -fx-text-fill: white;");
+                    }
+
+                    // Hover effect
+                    setOnMouseEntered(e -> {
+                        if (!lobbyListView.getSelectionModel().getSelectedItems().contains(item)) {
+                            setStyle("-fx-background-color: rgba(255, 255, 255, 0.2); -fx-text-fill: white;");
+                        }
+                    });
+
+                    setOnMouseExited(e -> {
+                        if (!lobbyListView.getSelectionModel().getSelectedItems().contains(item)) {
+                            setStyle("-fx-background-color: transparent; -fx-text-fill: white;");
+                        }
+                    });
                 }
             }
         });
 
-        buttonBox.getChildren().addAll(refreshButton, joinButton);
+        // Buttons
+        Button createLobbyButton = createStyledButton("Create Lobby");
+        Button joinLobbyButton = createStyledButton("Join Lobby");
+        Button backButton = createStyledButton("Back");
+        joinLobbyButton.setDisable(true);
 
-        joinLobbyBox.getChildren().addAll(
-                joinSectionLabel,
-                new Separator(javafx.geometry.Orientation.HORIZONTAL),
-                lobbyListView,
-                buttonBox
-        );
-
-        sectionsContainer.getChildren().addAll(createLobbyBox, joinLobbyBox);
-
-        // Back button with fixed position
-        Button backButton = createStyledButton("Back to Menu");
-        backButton.setOnAction(e -> {
-            fadeToLoadingScreen(primaryStage);
+        // Enable "Join Lobby" button only when a lobby is selected
+        lobbyListView.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
+            joinLobbyButton.setDisable(newSelection == null);
         });
 
-        mainLayout.getChildren().addAll(title, sectionsContainer, backButton);
+        // Button Actions
+        createLobbyButton.setOnAction(e -> showCreateLobbyDialog());
+        joinLobbyButton.setOnAction(e -> {
+            String selectedLobby = lobbyListView.getSelectionModel().getSelectedItem();
+            if (selectedLobby != null) {
+                System.out.println("Selected Lobby: " + selectedLobby); // Debugging
+                if (selectedLobby.startsWith("[Private]")) {
+                    showPasswordDialog(); // Show the password dialog for private lobbies
+                } else {
+                    startGame(primaryStage); // Start the game for public lobbies
+                }
+            } else {
+                System.out.println("No lobby selected."); // Debugging message
+            }
+        });
 
-        // Create scene with fade-in animation
-        Scene scene = new Scene(mainLayout);
-        scene.setFill(Color.BLACK);
 
-        FadeTransition fadeIn = new FadeTransition(Duration.seconds(1), mainLayout);
-        fadeIn.setFromValue(0);
-        fadeIn.setToValue(1);
+        backButton.setOnAction(e -> {
+            ModeScreen modeScreen = new ModeScreen();
+            modeScreen.show(primaryStage);
+        });
+
+        HBox buttonBox = new HBox(20, createLobbyButton, joinLobbyButton);
+        buttonBox.setAlignment(Pos.CENTER);
+
+        StackPane root = new StackPane(backgroundView);
+
+        BorderPane mainPane = new BorderPane();
+        mainPane.setCenter(mainLayout);
+        mainPane.setBottom(backButton);
+
+        BorderPane.setAlignment(backButton, Pos.BOTTOM_RIGHT);
+        BorderPane.setMargin(backButton, new Insets(10));
+
+        mainLayout.getChildren().addAll(lobbyLabel, lobbyListView, buttonBox);
+
+        overlayPane = new StackPane(); // For popups
+        overlayPane.setMouseTransparent(true); // By default, passes events to below layers
+        overlayPane.setPickOnBounds(false); // Only interact with visible children
+
+        root.getChildren().addAll(mainPane, overlayPane);
+
+        // Aggiungere la barra superiore al layout principale
+        VBox layoutWithBar = new VBox(titleBar, root);
+        Scene scene = new Scene(layoutWithBar, primaryStage.getWidth(), primaryStage.getHeight(), Color.BLACK);
 
         primaryStage.setScene(scene);
-        primaryStage.setFullScreen(true);
-        fadeIn.play();
     }
 
-    private VBox createGlassPane() {
-        VBox pane = new VBox(20);
-        pane.setAlignment(Pos.TOP_CENTER);
-        pane.setPadding(new Insets(30));
-        pane.setStyle(
-                "-fx-background-color: rgba(255, 255, 255, 0.1);" +
-                        "-fx-background-radius: 15;" +
-                        "-fx-border-radius: 15;" +
-                        "-fx-border-color: rgba(255, 255, 255, 0.2);" +
-                        "-fx-border-width: 1px;" +
-                        "-fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.3), 10, 0, 0, 0);"
-        );
-        return pane;
-    }
+    private void showCreateLobbyDialog() {
+        // Create the dimmed overlay
+        Pane dimBackground = new Pane();
+        dimBackground.setStyle("-fx-background-color: rgba(0, 0, 0, 0.6);");
 
-    private TextField createStyledTextField(String promptText) {
-        TextField textField = new TextField();
-        textField.setPromptText(promptText);
-        textField.setStyle(
-                "-fx-background-color: rgba(60, 60, 60, 0.5);" +
-                        "-fx-text-fill: white;" +
-                        "-fx-prompt-text-fill: gray;" +
-                        "-fx-background-radius: 5;" +
-                        "-fx-border-color: rgba(255, 255, 255, 0.2);" +
-                        "-fx-border-radius: 5;" +
-                        "-fx-font-family: '" + FontUtils.BODY_FONT + "';"
-        );
-        textField.setPrefWidth(350);
-        return textField;
-    }
+        Scene scene = overlayPane.getScene();
+        if (scene != null) {
+            dimBackground.prefWidthProperty().bind(scene.widthProperty());
+            dimBackground.prefHeightProperty().bind(scene.heightProperty());
+        } else {
+            dimBackground.setPrefSize(overlayPane.getWidth(), overlayPane.getHeight());
+        }
 
-    private PasswordField createStyledPasswordField() {
+        VBox popup = new VBox(10);
+        popup.setAlignment(Pos.CENTER);
+        popup.setStyle("-fx-background-color: rgba(0, 0, 0, 0.9); -fx-padding: 20; -fx-background-radius: 10;");
+        popup.setMaxWidth(300);
+
+        Label titleLabel = new Label("Create Lobby");
+        titleLabel.setStyle("-fx-font-size: 20px; -fx-text-fill: white; -fx-font-weight: bold;");
+
+        TextField lobbyNameField = new TextField();
+        lobbyNameField.setPromptText("Lobby Name");
+        lobbyNameField.setStyle("-fx-font-size: 16px; -fx-border-width: 2px;");
+
         PasswordField passwordField = new PasswordField();
         passwordField.setPromptText("Password (optional)");
-        passwordField.setStyle(
-                "-fx-background-color: rgba(60, 60, 60, 0.5);" +
-                        "-fx-text-fill: white;" +
-                        "-fx-prompt-text-fill: gray;" +
-                        "-fx-background-radius: 5;" +
-                        "-fx-border-color: rgba(255, 255, 255, 0.2);" +
-                        "-fx-border-radius: 5;" +
-                        "-fx-font-family: '" + FontUtils.BODY_FONT + "';"
-        );
-        passwordField.setPrefWidth(350);
-        return passwordField;
+        passwordField.setStyle("-fx-font-size: 16px; -fx-border-width: 2px;");
+
+        Button createButton = new Button("Create");
+        createButton.setStyle("-fx-font-size: 16px; -fx-background-color: #555; -fx-text-fill: white;");
+        createButton.setDisable(true);
+
+        // Validate lobby name and password
+        lobbyNameField.textProperty().addListener((obs, oldText, newText) -> {
+            if (newText.length() > 15) {
+                lobbyNameField.setText(newText.substring(0, 15));
+            }
+
+            boolean isValidName = newText.matches("[a-zA-Z0-9 ]+");
+            if (isValidName) {
+                lobbyNameField.setStyle("-fx-font-size: 16px; -fx-border-width: 2px; -fx-border-color: green;");
+            } else {
+                lobbyNameField.setStyle("-fx-font-size: 16px; -fx-border-width: 2px; -fx-border-color: red;");
+            }
+
+            // Enable create button only if name is valid
+            createButton.setDisable(!isValidName || newText.isEmpty());
+        });
+
+        passwordField.textProperty().addListener((obs, oldText, newText) -> {
+            if (newText.length() > 20) {
+                passwordField.setText(newText.substring(0, 20));
+            }
+
+            boolean isValidPassword = newText.matches("[a-zA-Z0-9]*"); // Optional field, but if filled must be valid
+            if (isValidPassword || newText.isEmpty()) {
+                passwordField.setStyle("-fx-font-size: 16px; -fx-border-width: 2px; -fx-border-color: green;");
+            } else {
+                passwordField.setStyle("-fx-font-size: 16px; -fx-border-width: 2px; -fx-border-color: red;");
+            }
+        });
+
+        createButton.setOnAction(e -> {
+            String lobbyType = passwordField.getText().isEmpty() ? "[Public] " : "[Private] ";
+            lobbies.add(lobbyType + lobbyNameField.getText());
+            lobbyListView.getItems().setAll(lobbies);
+            overlayPane.getChildren().removeAll(dimBackground, popup);
+            overlayPane.setMouseTransparent(true);
+        });
+
+        Button cancelButton = new Button("Cancel");
+        cancelButton.setStyle("-fx-font-size: 16px; -fx-background-color: #555; -fx-text-fill: white;");
+        cancelButton.setOnAction(e -> {
+            overlayPane.getChildren().removeAll(dimBackground, popup);
+            overlayPane.setMouseTransparent(true);
+        });
+
+        HBox buttonBox = new HBox(10, createButton, cancelButton);
+        buttonBox.setAlignment(Pos.CENTER);
+
+        popup.getChildren().addAll(titleLabel, lobbyNameField, passwordField, buttonBox);
+
+        overlayPane.getChildren().addAll(dimBackground, popup);
+        overlayPane.setMouseTransparent(false);
     }
 
-    private RadioButton createStyledRadioButton(String text) {
-        RadioButton radioButton = new RadioButton(text);
-        radioButton.setStyle(
-                "-fx-text-fill: white;" +
-                        "-fx-font-size: 16px;" +
-                        "-fx-font-family: '" + FontUtils.BODY_FONT + "';"
-        );
-        return radioButton;
+
+    private void showPasswordDialog() {
+        // Create the dimmed overlay
+        Pane dimBackground = new Pane();
+        dimBackground.setStyle("-fx-background-color: rgba(0, 0, 0, 0.6);");
+
+        // Bind to the scene's width and height to ensure proper resizing
+        Scene scene = overlayPane.getScene();
+        if (scene != null) {
+            dimBackground.prefWidthProperty().bind(scene.widthProperty());
+            dimBackground.prefHeightProperty().bind(scene.heightProperty());
+        } else {
+            dimBackground.setPrefSize(overlayPane.getWidth(), overlayPane.getHeight());
+        }
+
+        VBox popup = new VBox(10);
+        popup.setAlignment(Pos.CENTER);
+        popup.setStyle("-fx-background-color: rgba(0, 0, 0, 0.9); -fx-padding: 20; -fx-background-radius: 10;");
+        popup.setMaxWidth(300);
+
+        Label titleLabel = new Label("Enter Password");
+        titleLabel.setStyle("-fx-font-size: 20px; -fx-text-fill: white; -fx-font-weight: bold;");
+
+        PasswordField passwordField = new PasswordField();
+        passwordField.setPromptText("Password");
+        passwordField.setStyle("-fx-font-size: 16px;");
+
+        Button joinButton = new Button("Join");
+        joinButton.setStyle("-fx-font-size: 16px; -fx-background-color: #555; -fx-text-fill: white;");
+        joinButton.setOnAction(e -> {
+            // Placeholder for password validation
+            System.out.println("Password entered: " + passwordField.getText());
+            overlayPane.getChildren().removeAll(dimBackground, popup); // Remove popup and dimmed background
+            overlayPane.setMouseTransparent(true); // Re-enable interactions
+        });
+
+        Button cancelButton = new Button("Cancel");
+        cancelButton.setStyle("-fx-font-size: 16px; -fx-background-color: #555; -fx-text-fill: white;");
+        cancelButton.setOnAction(e -> {
+            overlayPane.getChildren().removeAll(dimBackground, popup);
+            overlayPane.setMouseTransparent(true); // Re-enable interactions
+        });
+
+        HBox buttonBox = new HBox(10, joinButton, cancelButton);
+        buttonBox.setAlignment(Pos.CENTER);
+
+        popup.getChildren().addAll(titleLabel, passwordField, buttonBox);
+
+        overlayPane.getChildren().addAll(dimBackground, popup);
+        overlayPane.setMouseTransparent(false); // Block interactions below the popup
+    }
+
+    private void startGame(Stage primaryStage) {
+        System.out.println("Game starting...");
     }
 
     private Button createStyledButton(String text) {
         Button button = new Button(text);
-        button.setMinWidth(140);
-        button.setStyle(
-                "-fx-background-color: #8B0000;" +
-                        "-fx-text-fill: white;" +
-                        "-fx-font-size: 18px;" +
-                        "-fx-padding: 12px 24px;" +
-                        "-fx-background-radius: 5;" +
-                        "-fx-cursor: hand;" +
-                        "-fx-border-color: transparent;" +
-                        "-fx-border-width: 2px;" +
-                        "-fx-border-radius: 5;" +
-                        "-fx-font-family: '" + FontUtils.BODY_FONT + "';"
-        );
-        button.setEffect(dropShadow);
-
-        // Hover effect without size change
-        button.setOnMouseEntered(e -> {
-            button.setEffect(glow);
-            button.setStyle(
-                    "-fx-background-color: #A52A2A;" +
-                            "-fx-text-fill: white;" +
-                            "-fx-font-size: 18px;" +
-                            "-fx-padding: 12px 24px;" +
-                            "-fx-background-radius: 5;" +
-                            "-fx-cursor: hand;" +
-                            "-fx-border-color: #FFD700;" +
-                            "-fx-border-width: 2px;" +
-                            "-fx-border-radius: 5;" +
-                            "-fx-font-family: '" + FontUtils.BODY_FONT + "';"
-            );
-        });
-
-        button.setOnMouseExited(e -> {
-            button.setEffect(dropShadow);
-            button.setStyle(
-                    "-fx-background-color: #8B0000;" +
-                            "-fx-text-fill: white;" +
-                            "-fx-font-size: 18px;" +
-                            "-fx-padding: 12px 24px;" +
-                            "-fx-background-radius: 5;" +
-                            "-fx-cursor: hand;" +
-                            "-fx-border-color: transparent;" +
-                            "-fx-border-width: 2px;" +
-                            "-fx-border-radius: 5;" +
-                            "-fx-font-family: '" + FontUtils.BODY_FONT + "';"
-            );
-        });
-
+        styleButton(button);
+        button.setOnMouseEntered(e -> button.setStyle(getHoverStyle()));
+        button.setOnMouseExited(e -> styleButton(button));
+        button.setOnMousePressed(e -> button.setStyle(getPressedStyle()));
+        button.setOnMouseReleased(e -> styleButton(button));
         return button;
     }
 
-    private void fadeToLoadingScreen(Stage stage) {
-        VBox root = (VBox) stage.getScene().getRoot();
-
-        FadeTransition fadeOut = new FadeTransition(Duration.seconds(1), root);
-        fadeOut.setFromValue(1);
-        fadeOut.setToValue(0);
-        fadeOut.setOnFinished(e -> {
-
-        });
-
-        fadeOut.play();
+    private void styleButton(Button button) {
+        button.setStyle(
+                "-fx-background-color: #333333;" +
+                        "-fx-text-fill: #cccccc;" +
+                        "-fx-padding: 12px;" +
+                        "-fx-background-radius: 6;" +
+                        "-fx-border-color: #555555;" +
+                        "-fx-border-width: 3px;" +
+                        "-fx-border-radius: 6;" +
+                        "-fx-effect: dropshadow(gaussian, #222222, 15, 0.5, 0, 0);" +
+                        "-fx-cursor: hand;"
+        );
+        button.setFont(FontUtils.PIXEL_HORROR);
+        button.setMinWidth(220);
+        button.setMinHeight(60);
     }
 
-    private void showPasswordDialog() {
-        Dialog<String> dialog = new Dialog<>();
-        dialog.setTitle("Enter Lobby Password");
-        dialog.setHeaderText(null);
-
-        DialogPane dialogPane = dialog.getDialogPane();
-        dialogPane.setStyle(
-                "-fx-background-color: rgba(40, 40, 40, 0.95);" +
-                        "-fx-background-radius: 10;" +
-                        "-fx-border-radius: 10;" +
-                        "-fx-border-color: rgba(255, 255, 255, 0.2);"
-        );
-
-        PasswordField passwordField = createStyledPasswordField();
-        passwordField.setPromptText("Password");
-        dialogPane.setContent(passwordField);
-
-        ButtonType joinButtonType = new ButtonType("Join", ButtonBar.ButtonData.OK_DONE);
-        dialogPane.getButtonTypes().addAll(joinButtonType, ButtonType.CANCEL);
-
-        // Style dialog buttons
-        dialogPane.lookupButton(joinButtonType).setStyle(
-                "-fx-background-color: #8B0000;" +
-                        "-fx-text-fill: white;" +
-                        "-fx-background-radius: 5;" +
-                        "-fx-font-family: '" + FontUtils.BODY_FONT + "';"
-        );
-        dialogPane.lookupButton(ButtonType.CANCEL).setStyle(
-                "-fx-background-color: #4a4a4a;" +
-                        "-fx-text-fill: white;" +
-                        "-fx-background-radius: 5;" +
-                        "-fx-font-family: '" + FontUtils.BODY_FONT + "';"
-        );
-
-        dialog.setResultConverter(dialogButton -> {
-            if (dialogButton == joinButtonType) {
-                return passwordField.getText();
-            }
-            return null;
-        });
-
-        dialog.showAndWait().ifPresent(password -> {
-            System.out.println("Joining private lobby with password: " + password);
-        });
+    private String getHoverStyle() {
+        return "-fx-background-color: #555555;" +
+                "-fx-text-fill: #ffffff;" +
+                "-fx-padding: 12px;" +
+                "-fx-background-radius: 6;" +
+                "-fx-border-color: #888888;" +
+                "-fx-border-width: 3px;" +
+                "-fx-border-radius: 6;" +
+                "-fx-effect: dropshadow(gaussian, #444444, 20, 0.8, 0, 0);";
     }
 
-    private void showPasswordDialog(Stage primaryStage) {
-        Dialog<String> dialog = new Dialog<>();
-        dialog.setTitle("Enter Lobby Password");
-        dialog.setHeaderText(null);
+    private String getPressedStyle() {
+        return "-fx-background-color: #222222;" +
+                "-fx-text-fill: #aaaaaa;" +
+                "-fx-padding: 12px;" +
+                "-fx-background-radius: 6;" +
+                "-fx-border-color: #444444;" +
+                "-fx-border-width: 3px;" +
+                "-fx-border-radius: 6;" +
+                "-fx-effect: dropshadow(gaussian, #111111, 30, 1.0, 0, 0);";
+    }
+    private HBox createCustomTitleBar(Stage stage) {
+        HBox titleBar = new HBox();
+        titleBar.setAlignment(Pos.CENTER_LEFT);
+        titleBar.setStyle("-fx-background-color: linear-gradient(to right, #1E1E1E, #333333); -fx-padding: 4; -fx-border-color: #444; -fx-border-width: 0 0 1 0;");
+        titleBar.setPrefHeight(40);
 
-        DialogPane dialogPane = dialog.getDialogPane();
-        dialogPane.setStyle(
-                "-fx-background-color: rgba(40, 40, 40, 0.95);" +
-                        "-fx-background-radius: 10;" +
-                        "-fx-border-radius: 10;" +
-                        "-fx-border-color: rgba(255, 255, 255, 0.2);"
-        );
+        // Title label
+        Label titleLabel = new Label("Chamber of Fate");
+        titleLabel.setStyle("-fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold; -fx-font-family: 'Arial';");
+        titleLabel.setPadding(new Insets(0, 10, 0, 10));
 
-        PasswordField passwordField = createStyledPasswordField();
-        passwordField.setPromptText("Password");
-        dialogPane.setContent(passwordField);
-
-        ButtonType joinButtonType = new ButtonType("Join", ButtonBar.ButtonData.OK_DONE);
-        dialogPane.getButtonTypes().addAll(joinButtonType, ButtonType.CANCEL);
-
-        dialogPane.lookupButton(joinButtonType).setStyle(
-                "-fx-background-color: #8B0000;" +
+        // Bottone per minimizzare la finestra
+        Button minimizeButton = new Button("_");
+        minimizeButton.setStyle(
+                "-fx-background-color: transparent;" +
                         "-fx-text-fill: white;" +
-                        "-fx-background-radius: 5;" +
-                        "-fx-font-family: '" + FontUtils.BODY_FONT + "';"
+                        "-fx-font-size: 14px;" +
+                        "-fx-padding: 2 10 2 10;" +
+                        "-fx-cursor: hand;" +
+                        "-fx-border-color: transparent;" +
+                        "-fx-border-radius: 5;"
         );
-        dialogPane.lookupButton(ButtonType.CANCEL).setStyle(
-                "-fx-background-color: #4a4a4a;" +
-                        "-fx-text-fill: white;" +
-                        "-fx-background-radius: 5;" +
-                        "-fx-font-family: '" + FontUtils.BODY_FONT + "';"
-        );
+        minimizeButton.setOnMouseEntered(e -> minimizeButton.setStyle("-fx-background-color: #555; -fx-text-fill: white; -fx-border-radius: 5;"));
+        minimizeButton.setOnMouseExited(e -> minimizeButton.setStyle("-fx-background-color: transparent; -fx-text-fill: white; -fx-border-radius: 5;"));
+        minimizeButton.setOnAction(e -> stage.setIconified(true));
 
-        dialog.setResultConverter(dialogButton -> {
-            if (dialogButton == joinButtonType) {
-                return passwordField.getText();
-            }
-            return null;
+        // Bottone per chiudere il gioco
+        Button closeButton = new Button("X");
+        closeButton.setStyle(
+                "-fx-background-color: transparent;" +
+                        "-fx-text-fill: white;" +
+                        "-fx-font-size: 14px;" +
+                        "-fx-padding: 2 10 2 10;" +
+                        "-fx-cursor: hand;" +
+                        "-fx-border-color: transparent;" +
+                        "-fx-border-radius: 5;"
+        );
+        closeButton.setOnMouseEntered(e -> closeButton.setStyle("-fx-background-color: #FF5C5C; -fx-text-fill: white; -fx-border-radius: 5;"));
+        closeButton.setOnMouseExited(e -> closeButton.setStyle("-fx-background-color: transparent; -fx-text-fill: white; -fx-border-radius: 5;"));
+        closeButton.setOnAction(e -> System.exit(0));
+
+        // Funzione per trascinare la finestra
+        titleBar.setOnMousePressed(e -> {
+            xOffset = e.getSceneX();
+            yOffset = e.getSceneY();
+        });
+        titleBar.setOnMouseDragged(e -> {
+            stage.setX(e.getScreenX() - xOffset);
+            stage.setY(e.getScreenY() - yOffset);
         });
 
-        dialog.showAndWait().ifPresent(password -> {
-            // Verifica password qui se necessario
-            startGame(primaryStage);
-        });
+        HBox spacer = new HBox();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+
+        titleBar.getChildren().addAll(titleLabel, spacer, minimizeButton, closeButton);
+        return titleBar;
     }
 
-    private void startGame(Stage primaryStage) {
-        // Crea una transizione di dissolvenza
-        VBox root = (VBox) primaryStage.getScene().getRoot();
-        FadeTransition fadeOut = new FadeTransition(Duration.seconds(1), root);
-        fadeOut.setFromValue(1);
-        fadeOut.setToValue(0);
-
-        fadeOut.setOnFinished(e -> {
-            // Avvia la GameScreen
-            GameScreen gameScreen = new GameScreen();
-            gameScreen.show(primaryStage);
-        });
-
-        fadeOut.play();
-    }
 }

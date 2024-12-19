@@ -22,6 +22,20 @@ public class SoundManager {
 
     }
 
+    public static void FlipCardSound() {
+        try {
+            InputStream file = SoundManager.class.getResourceAsStream("/audio/FlipCard.wav");
+            AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(new BufferedInputStream(file));
+            clip = AudioSystem.getClip();
+            clip.open(audioInputStream);
+        } catch (UnsupportedAudioFileException | IOException | LineUnavailableException e) {
+            e.printStackTrace();
+        }
+
+        clip.start();
+
+    }
+
     public static void error() {
         try {
             InputStream file = SoundManager.class.getResourceAsStream("/audio/error.wav");

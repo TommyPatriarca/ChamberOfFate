@@ -1,4 +1,3 @@
-
 package com.cof.managers;
 
 import javax.sound.sampled.*;
@@ -53,16 +52,18 @@ public class MusicManager {
 
     public static void setVolume(double value) {
         if (volumeControl != null) {
-            float dB = (float) (Math.log10(value) * 20);
+            // Scala il valore dello slider (0-1) in decibel accettati da volumeControl
+            float dB = (float) (20 * Math.log10(Math.max(value, 0.01))); // Evita valore 0 per evitare eccezioni
             volumeControl.setValue(dB);
         }
     }
 
     public static double getVolume() {
         if (volumeControl != null) {
+            // Ottieni il volume attuale in decibel e converti in scala lineare (0-1)
             float dB = volumeControl.getValue();
             return Math.pow(10, dB / 20.0);
         }
-        return 1.0;
+        return 1.0; // Volume massimo di default
     }
 }

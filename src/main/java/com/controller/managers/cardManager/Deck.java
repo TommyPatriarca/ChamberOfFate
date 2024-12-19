@@ -1,6 +1,7 @@
 package com.controller.managers.cardManager;
 
 import com.controller.objects.CardObj;
+import com.controller.objects.PlayerObj;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -19,6 +20,9 @@ public class Deck {
 
 */
 
+    /**
+     * Il mazzo completo della partita, composto da 52 carte
+     */
     public Deck(){
         //Creo 1 mazzo da 52
 
@@ -76,10 +80,11 @@ public class Deck {
 
     }
 
+
     /**
-     * Funzione per stampare l'intero il mazzo
+     * Funzione per stampare l'intero mazzo
      */
-    public void printDeck(){
+    /*public void printDeck(){
 
         System.out.println("||||||||||||");
         System.out.println("DECK:");
@@ -89,25 +94,59 @@ public class Deck {
         }
         System.out.println("||||||||||||");
 
-    }
+    }*/
 
     /**
-     * Funzione usata per mischiare il mazzo
+     * Funzione per mischiare il mazzo
      */
     public void shuffleDeck(){
         Collections.shuffle(deckArr);
         //printDeck();
     }
 
-    /**
-     * Funzione che corrisponde all'opzione "Carta" del blackjack
-     */
     public CardObj hitCard() {
-        CardObj tempC = deckArr.getLast();
-        deckArr.removeLast();
+        if (deckArr.isEmpty()) {
+            System.out.println("Deck is empty. Regenerating the deck...");
+            regenerateDeck(); // Rigenera il mazzo
+        }
 
-        return tempC;
+        if (!deckArr.isEmpty()) {
+            CardObj tempC = deckArr.get(deckArr.size() - 1); // Ultima carta del mazzo
+            deckArr.remove(deckArr.size() - 1); // Rimuovi la carta pescata
+            return tempC;
+        } else {
+            return null; // Restituisci null se il mazzo non è rigenerabile
+        }
+    }
+
+    /**
+     * Rigenera un nuovo mazzo completo e lo mescola.
+     */
+    private void regenerateDeck() {
+        deckArr.clear();
+        String[] suits = {clubs, diamonds, hearts, spades};
+        for (String suit : suits) {
+            for (int i = 0; i < 13; i++) {
+                String cardValue;
+                if (i == 0) cardValue = "A"; // Assi
+                else if (i == 10) cardValue = "J"; // Fanti
+                else if (i == 11) cardValue = "Q"; // Regine
+                else if (i == 12) cardValue = "K"; // Re
+                else cardValue = String.valueOf(i + 1); // Numeri
+                deckArr.add(new CardObj(cardValue + suit));
+            }
+        }
+        shuffleDeck(); // Mischia il mazzo appena creato
     }
 
 
+
+    public boolean isEmpty() {
+        if(deckArr.isEmpty()){
+            return true;
+        }
+        else{
+            return false;
+        }
+    }
 }

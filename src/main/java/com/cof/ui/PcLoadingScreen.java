@@ -2,251 +2,206 @@ package com.cof.ui;
 
 import com.cof.managers.MusicManager;
 import com.cof.managers.SoundManager;
-import javafx.animation.*;
+import javafx.animation.FadeTransition;
 import javafx.application.Application;
 import javafx.geometry.Pos;
+import javafx.scene.ImageCursor;
 import javafx.scene.Scene;
-import javafx.scene.effect.*;
+import javafx.scene.control.Label;
+import javafx.scene.effect.Glow;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
-import javafx.scene.control.Button;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 import javafx.geometry.Insets;
+import javafx.scene.control.Button;
 import javafx.util.Duration;
 
 import java.util.Objects;
 
-public class PcLoadingScreen extends Application{
+public class PcLoadingScreen extends Application {
 
     private MusicManager musicManager;
     private SoundManager soundManager;
-    private Button muteButton;
+    private ImageView muteIcon;
     private boolean alreadyStarted;
     private final Glow glow = new Glow(0.8);
-    private final DropShadow dropShadow = new DropShadow(20, Color.RED);
-
+    private double xOffset = 0;
+    private double yOffset = 0;
 
     @Override
     public void start(Stage primaryStage) {
         musicManager = new MusicManager();
         soundManager = new SoundManager();
 
-        // Background statico
-        Image backgroundImage = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/images/LoadingScreen.png")));
+        // Static background
+        Image backgroundImage = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/images/LoadingBackground.jpg")));
         ImageView backgroundView = new ImageView(backgroundImage);
-        backgroundView.setPreserveRatio(true);
 
-        Button startButton = createButton("Start");
-        Button exitButton = createButton("Exit");
-        muteButton = createMuteButton();
+        // Rimuovi il mantenimento del rapporto d'aspetto
+        backgroundView.setPreserveRatio(false);
 
-        // Aggiungi pulsazione ai pulsanti
-        addPulseAnimation(startButton);
-        addPulseAnimation(exitButton);
+        // Adatta l'immagine alle dimensioni della finestra
+        handleBackgroundResize(primaryStage, backgroundView);
 
+        // Icon
+        Image appIcon = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/icons/Icon1.png")));
+        primaryStage.getIcons().add(appIcon);
+
+        muteIcon = createMuteIcon();
+
+        // Barra superiore personalizzata
+        HBox titleBar = createCustomTitleBar(primaryStage);
+
+        // Layout principale
+        StackPane root = new StackPane();
+        root.getChildren().add(backgroundView);
+
+        // Posiziona la barra sopra lo sfondo
         VBox mainLayout = new VBox();
-        mainLayout.setAlignment(Pos.CENTER);
-        mainLayout.setSpacing(20);
+        mainLayout.getChildren().addAll(titleBar, root);
 
-        // Box per i pulsanti principali senza sfondo
-        HBox buttonBox = new HBox(30);
-        buttonBox.setAlignment(Pos.CENTER);
-        buttonBox.getChildren().addAll(startButton, exitButton);
+        // Posiziona il bottone mute
+        StackPane.setAlignment(muteIcon, Pos.BOTTOM_RIGHT);
+        StackPane.setMargin(muteIcon, new Insets(0, 20, 20, 0));
+        root.getChildren().add(muteIcon);
 
-        Region topSpacer = new Region();
-        VBox.setVgrow(topSpacer, Priority.ALWAYS);
+        // Custom cursor
+        Image cursorImage = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/images/crosshair.png")));
+        ImageCursor customCursor = new ImageCursor(cursorImage, cursorImage.getWidth() / 2, cursorImage.getHeight() / 2);
+        root.setCursor(customCursor);
 
-        HBox muteContainer = new HBox(muteButton);
-        muteContainer.setAlignment(Pos.BOTTOM_RIGHT);
-        muteContainer.setPadding(new Insets(0, 20, 20, 0));
+        Scene scene = new Scene(mainLayout);
 
-        mainLayout.getChildren().addAll(topSpacer, buttonBox, muteContainer);
-
-        // Aggiungi effetto nebbia/particelle
-        Region fogEffect = createFogEffect();
-
-        StackPane root = new StackPane(backgroundView, fogEffect, mainLayout);
-
-        Scene scene = new Scene(root);
-
-        // Gestione del ridimensionamento
-        scene.widthProperty().addListener((obs, oldVal, newVal) -> {
-            backgroundView.setFitWidth(newVal.doubleValue());
-            fogEffect.setPrefWidth(newVal.doubleValue());
-            double newButtonSize = Math.min(newVal.doubleValue() * 0.15, 200);
-            startButton.setPrefWidth(newButtonSize);
-            exitButton.setPrefWidth(newButtonSize);
-            muteButton.setPrefWidth(newButtonSize * 0.8);
-        });
-
-        scene.heightProperty().addListener((obs, oldVal, newVal) -> {
-            backgroundView.setFitHeight(newVal.doubleValue());
-            fogEffect.setPrefHeight(newVal.doubleValue());
-            double newButtonHeight = Math.min(newVal.doubleValue() * 0.1, 80);
-            startButton.setPrefHeight(newButtonHeight);
-            exitButton.setPrefHeight(newButtonHeight);
-            muteButton.setPrefHeight(newButtonHeight * 0.8);
-        });
-
+        // Rimuovi la barra di sistema
+        primaryStage.initStyle(StageStyle.UNDECORATED);
         primaryStage.setScene(scene);
-        primaryStage.setFullScreen(true);
+        primaryStage.setMaximized(true);
         primaryStage.show();
 
-        if(alreadyStarted==false)
-        {
+        if (!alreadyStarted) {
             musicManager.play();
-            alreadyStarted=true;
+            alreadyStarted = true;
         }
-    }
 
-    private Region createFogEffect() {
-        Region fog = new Region();
-        fog.setStyle(
-                "-fx-background-color: rgba(0, 0, 0, 0.1);" +
-                        "-fx-effect: dropshadow(gaussian, rgba(255,002,0.3), 50, 0, 0, 0);"
-        );
-
-        // Animazione della nebbia
-        Timeline fogAnimation = new Timeline(
-                new KeyFrame(Duration.ZERO, new KeyValue(fog.opacityProperty(), 0.1)),
-                new KeyFrame(Duration.seconds(3), new KeyValue(fog.opacityProperty(), 0.3)),
-                new KeyFrame(Duration.seconds(6), new KeyValue(fog.opacityProperty(), 0.1))
-        );
-        fogAnimation.setCycleCount(Timeline.INDEFINITE);
-        fogAnimation.play();
-
-        return fog;
-    }
-
-    private void addPulseAnimation(Button button) {
-        ScaleTransition pulse = new ScaleTransition(Duration.seconds(2), button);
-        pulse.setFromX(1.0);
-        pulse.setFromY(1.0);
-        pulse.setToX(1.05);
-        pulse.setToY(1.05);
-        pulse.setCycleCount(Timeline.INDEFINITE);
-        pulse.setAutoReverse(true);
-        pulse.play();
-    }
-
-    private Button createButton(String text) {
-        Button button = new Button(text);
-        styleButton(button);
-
-        button.setOnMouseEntered(e -> {
-            button.setEffect(glow);
-            button.setStyle(getHoverStyle());
-            button.setScaleX(1.1);
-            button.setScaleY(1.1);
-        });
-
-        button.setOnMouseExited(e -> {
-            button.setEffect(dropShadow);
-            styleButton(button);
-            button.setScaleX(1.0);
-            button.setScaleY(1.0);
-        });
-
-        button.setOnMousePressed(e -> {
-            button.setStyle(getPressedStyle());
-        });
-
-        if (text.equals("Exit")) {
-            button.setOnAction(e -> System.exit(0));
-        } else if (text.equals("Start")) {
-            button.setOnAction(e -> {
+        // Avvio gioco al click
+        root.setOnMouseClicked(event -> {
+            if (!muteIcon.isHover() && !titleBar.isHover()) {
                 soundManager.ShotgunSound();
-                playStartGameAnimation(button);
-            });
-        }
-
-        return button;
-    }
-
-    private void playStartGameAnimation(Button button) {
-        FadeTransition fade = new FadeTransition(Duration.seconds(1), button.getScene().getRoot());
-        fade.setFromValue(1);
-        fade.setToValue(0);
-        fade.setOnFinished(e -> {
-            PcLobbyScreen lobbyScreen = new PcLobbyScreen();
-            lobbyScreen.show((Stage) button.getScene().getWindow());
+                fadeToModeScreen(primaryStage);
+            }
         });
-        fade.play();
     }
 
-
-
-    private String getHoverStyle() {
-        return "-fx-background-color: #A52A2A;" +
-                "-fx-text-fill: white;" +
-                "-fx-font-size: 18px;" +
-                "-fx-padding: 15px 30px;" +
-                "-fx-background-radius: 10px;" +
-                "-fx-cursor: hand;" +
-                "-fx-border-color: #FFD700;" +
-                "-fx-border-width: 2px;" +
-                "-fx-border-radius: 10px;";
+    private void handleBackgroundResize(Stage stage, ImageView backgroundView) {
+        // Adatta lo sfondo a riempire sempre l'intera finestra
+        stage.widthProperty().addListener((obs, oldVal, newVal) -> backgroundView.setFitWidth(newVal.doubleValue()));
+        stage.heightProperty().addListener((obs, oldVal, newVal) -> backgroundView.setFitHeight(newVal.doubleValue()));
     }
 
-    private String getPressedStyle() {
-        return "-fx-background-color: #800000;" +
-                "-fx-text-fill: white;" +
-                "-fx-font-size: 18px;" +
-                "-fx-padding: 15px 30px;" +
-                "-fx-background-radius: 10px;" +
-                "-fx-cursor: hand;" +
-                "-fx-border-color: #FFA500;" +
-                "-fx-border-width: 2px;" +
-                "-fx-border-radius: 10px;";
-    }
+    private ImageView createMuteIcon() {
+        // Carica le immagini per mute e unmute
+        Image muteImage = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/icons/mute.png")));
+        Image unmuteImage = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/icons/unmute.png")));
 
-    private Button createMuteButton() {
-        Button button = new Button("Mute");
-        styleButton(button);
+        ImageView imageView = new ImageView(MusicManager.isMuted() ? muteImage : unmuteImage);
+        imageView.setFitWidth(50);
+        imageView.setFitHeight(50);
 
-        button.setOnMouseEntered(e -> {
-            button.setEffect(glow);
-            button.setStyle(getHoverStyle());
-            button.setScaleX(1.1);
-            button.setScaleY(1.1);
+        // Aggiungi effetto hover
+        imageView.setOnMouseEntered(e -> imageView.setEffect(glow));
+        imageView.setOnMouseExited(e -> imageView.setEffect(null));
+
+        // Gestisci il click per alternare tra mute e unmute
+        imageView.setOnMouseClicked(e -> {
+            if (MusicManager.isMuted()) {
+                MusicManager.unmute();
+                imageView.setImage(unmuteImage);
+            } else {
+                MusicManager.mute();
+                imageView.setImage(muteImage);
+            }
         });
 
-        button.setOnMouseExited(e -> {
-            button.setEffect(null);
-            styleButton(button);
-            button.setScaleX(1.0);
-            button.setScaleY(1.0);
-        });
-
-        button.setOnAction(e -> {
-            toggleMusicState();
-            button.setText(MusicManager.isMuted() ? "Unmute" : "Mute");
-        });
-
-        return button;
+        return imageView;
     }
 
-    private void styleButton(Button button) {
-        button.setStyle(
-                "-fx-background-color: #8B0000;" +
+    private HBox createCustomTitleBar(Stage stage) {
+        HBox titleBar = new HBox();
+        titleBar.setAlignment(Pos.CENTER_LEFT);
+        titleBar.setStyle("-fx-background-color: linear-gradient(to right, #1E1E1E, #333333); -fx-padding: 4; -fx-border-color: #444; -fx-border-width: 0 0 1 0;");
+        titleBar.setPrefHeight(40);
+
+        // Title label
+        Label titleLabel = new Label("Chamber of Fate");
+        titleLabel.setStyle("-fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold; -fx-font-family: 'Arial';");
+        titleLabel.setPadding(new Insets(0, 10, 0, 10));
+
+        // Bottone per minimizzare la finestra
+        Button minimizeButton = new Button("_");
+        minimizeButton.setStyle(
+                "-fx-background-color: transparent;" +
                         "-fx-text-fill: white;" +
-                        "-fx-font-size: 18px;" +
-                        "-fx-padding: 15px 30px;" +
-                        "-fx-background-radius: 10px;" +
-                        "-fx-cursor: hand;"
+                        "-fx-font-size: 14px;" +
+                        "-fx-padding: 2 10 2 10;" +
+                        "-fx-cursor: hand;" +
+                        "-fx-border-color: transparent;" +
+                        "-fx-border-radius: 5;"
         );
-        button.setEffect(dropShadow);
-        button.setMinWidth(100);
-        button.setMinHeight(40);
+        minimizeButton.setOnMouseEntered(e -> minimizeButton.setStyle("-fx-background-color: #555; -fx-text-fill: white; -fx-border-radius: 5;"));
+        minimizeButton.setOnMouseExited(e -> minimizeButton.setStyle("-fx-background-color: transparent; -fx-text-fill: white; -fx-border-radius: 5;"));
+        minimizeButton.setOnAction(e -> stage.setIconified(true));
+
+        // Bottone per chiudere il gioco
+        Button closeButton = new Button("X");
+        closeButton.setStyle(
+                "-fx-background-color: transparent;" +
+                        "-fx-text-fill: white;" +
+                        "-fx-font-size: 14px;" +
+                        "-fx-padding: 2 10 2 10;" +
+                        "-fx-cursor: hand;" +
+                        "-fx-border-color: transparent;" +
+                        "-fx-border-radius: 5;"
+        );
+        closeButton.setOnMouseEntered(e -> closeButton.setStyle("-fx-background-color: #FF5C5C; -fx-text-fill: white; -fx-border-radius: 5;"));
+        closeButton.setOnMouseExited(e -> closeButton.setStyle("-fx-background-color: transparent; -fx-text-fill: white; -fx-border-radius: 5;"));
+        closeButton.setOnAction(e -> System.exit(0));
+
+        // Funzione per trascinare la finestra
+        titleBar.setOnMousePressed(e -> {
+            xOffset = e.getSceneX();
+            yOffset = e.getSceneY();
+        });
+        titleBar.setOnMouseDragged(e -> {
+            stage.setX(e.getScreenX() - xOffset);
+            stage.setY(e.getScreenY() - yOffset);
+        });
+
+        HBox spacer = new HBox();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+
+        titleBar.getChildren().addAll(titleLabel, spacer, minimizeButton, closeButton);
+        return titleBar;
     }
 
-    private void toggleMusicState() {
-        if (MusicManager.isMuted()) {
-            MusicManager.unmute();
-        } else {
-            MusicManager.mute();
-        }
+
+
+    private void fadeToModeScreen(Stage stage) {
+        VBox root = (VBox) stage.getScene().getRoot();
+        FadeTransition fadeOut = new FadeTransition(Duration.seconds(1), root);
+        fadeOut.setFromValue(1);
+        fadeOut.setToValue(0);
+        fadeOut.setOnFinished(e -> {
+            ModeScreen modeScreen = new ModeScreen();
+            modeScreen.show(stage);
+        });
+        fadeOut.play();
+    }
+
+    public static void main(String[] args) {
+        launch(args);
     }
 }

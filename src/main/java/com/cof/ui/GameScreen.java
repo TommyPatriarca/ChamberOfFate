@@ -1,485 +1,817 @@
+
 package com.cof.ui;
 
 import com.cof.managers.MusicManager;
-import com.cof.utils.FontUtils;
-import javafx.animation.*;
+import com.cof.managers.SoundManager;
+import com.controller.Controller;
+import com.controller.objects.CardObj;
+import javafx.animation.FadeTransition;
+import javafx.animation.PauseTransition;
+import javafx.animation.RotateTransition;
+import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.effect.DropShadow;
-import javafx.scene.effect.GaussianBlur;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Rectangle;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
+import javafx.scene.transform.Rotate;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
-import java.util.Objects;
-
 public class GameScreen {
-    private boolean isMuted = false;
-    private final DropShadow dropShadow = new DropShadow(10, Color.BLACK);
+    private double xOffset = 0;
+    private double yOffset = 0;
+    private boolean isPlayerTurn = true; // True: turno del giocatore, False: turno del bot
+    private SoundManager soundManager = new SoundManager();
+    private Controller controller;
+    private HBox playerHandDisplay, opponentHandDisplay;
+    private Label currentPlayerLabel, player1HP, player2HP;
+    private Button drawCardButton, passTurnButton;
     private StackPane root;
-    private VBox menuOverlay;
-    private boolean isMenuOpen = false;
+    private int currentRound = 1;
+
+    public GameScreen(Controller controller) {
+        this.controller = controller;
+    }
+
+    /**
+     * Funzione per mostrare la schermata di gioco
+     */
+
+    private Label resultOverlay; // Overlay per i risultati
 
     public void show(Stage primaryStage) {
+        primaryStage.setMaximized(true);
+        controller.startGame("Player 1");
+
+        // Immagine di sfondo
+        ImageView backgroundView = createBackground(primaryStage);
+
         root = new StackPane();
 
-        Image backgroundImage = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/images/GameBackground.png")));
-        BackgroundImage background = new BackgroundImage(
-                backgroundImage,
-                BackgroundRepeat.NO_REPEAT,
-                BackgroundRepeat.NO_REPEAT,
-                BackgroundPosition.CENTER,
-                new BackgroundSize(100, 100, true, true, true, true)
-        );
-        root.setBackground(new Background(background));
+        // Barra del titolo personalizzata
+        HBox titleBar = createCustomTitleBar(primaryStage);
 
-        BorderPane gameLayout = new BorderPane();
+        // Posizionamento delle vite dei giocatori
+        BorderPane healthPane = new BorderPane();
+        healthPane.setPadding(new Insets(10));
 
-        Button menuButton = createMenuButton();
-        HBox topRightContainer = new HBox(10);
-        topRightContainer.setAlignment(Pos.TOP_RIGHT);
-        topRightContainer.setPadding(new Insets(20));
-        topRightContainer.getChildren().add(menuButton);
-        gameLayout.setTop(topRightContainer);
+        // Vite del Player 1
+        player1HP = new Label("Player 1 HP: 5");
+        styleHealthLabel(player1HP, Color.LIGHTGREEN, "rgba(0, 100, 0, 0.8)", "lightgreen");
+        BorderPane.setAlignment(player1HP, Pos.TOP_LEFT);
+        BorderPane.setMargin(player1HP, new Insets(10));
+
+        // Vite del Player 2
+        player2HP = new Label("Player 2 HP: 5");
+        styleHealthLabel(player2HP, Color.RED, "rgba(100, 0, 0, 0.8)", "red");
+        BorderPane.setAlignment(player2HP, Pos.TOP_RIGHT);
+        BorderPane.setMargin(player2HP, new Insets(10));
+
+        healthPane.setLeft(player1HP);
+        healthPane.setRight(player2HP);
 
         VBox gameArea = createGameArea();
-        gameLayout.setCenter(gameArea);
+        gameArea.setAlignment(Pos.CENTER);
 
         HBox bottomControls = createBottomControls();
-        gameLayout.setBottom(bottomControls);
 
-        menuOverlay = createMenuOverlay();
-        menuOverlay.setVisible(false);
-        menuOverlay.setMouseTransparent(true); // Correzione: setManageableWhen non esiste
+        // Crea il layout principale
+        BorderPane mainLayout = new BorderPane();
+        mainLayout.setTop(healthPane);
+        mainLayout.setCenter(gameArea);
+        mainLayout.setBottom(bottomControls);
 
-        root.getChildren().addAll(gameLayout, menuOverlay);
+        VBox fullLayout = new VBox();
+        fullLayout.getChildren().addAll(titleBar, mainLayout);
+        VBox.setVgrow(mainLayout, Priority.ALWAYS);
 
+        // Overlay dei risultati
+        resultOverlay = createResultOverlay();
+        resultOverlay.setVisible(false);
+
+        // Aggiungi tutto al root
+        root.getChildren().addAll(backgroundView, fullLayout, resultOverlay);
+
+        // Scene e gestione ESC
         Scene scene = new Scene(root);
-        FadeTransition fadeIn = new FadeTransition(Duration.seconds(1), root);
-        fadeIn.setFromValue(0);
-        fadeIn.setToValue(1);
-
         primaryStage.setScene(scene);
-        primaryStage.setFullScreen(true);
-        fadeIn.play();
+        primaryStage.setTitle("Chamber of Fate - Round " + currentRound);
+
+        initializePlayerHands();
+        primaryStage.show();
     }
+
+
+    /**
+     * Funzione per impostare l'immagine di sfondo in modo "responsive"
+     * @return L'imageview da usare come sfondo
+     */
+
+    private ImageView createBackground(Stage primaryStage) {
+        Image backgroundImage;
+        if(Math.random()/2 == 0){
+             backgroundImage = new Image(getClass().getResourceAsStream("/images/Table1.jpg"));
+        }
+        else{
+             backgroundImage = new Image(getClass().getResourceAsStream("/images/Table1" +".jpg"));
+        }
+        ImageView backgroundView = new ImageView(backgroundImage);
+        backgroundView.setPreserveRatio(false);
+        backgroundView.setFitWidth(primaryStage.getWidth());
+        backgroundView.setFitHeight(primaryStage.getHeight());
+
+        primaryStage.widthProperty().addListener((observable, oldValue, newValue) ->
+                backgroundView.setFitWidth(newValue.doubleValue()));
+        primaryStage.heightProperty().addListener((observable, oldValue, newValue) ->
+                backgroundView.setFitHeight(newValue.doubleValue()));
+
+        return backgroundView;
+    }
+
+    /**
+     * Funzione per creare il vbox da usare come campo di gioco
+     * @return Il box utilizzato come "campo di gioco"
+     */
 
     private VBox createGameArea() {
         VBox gameArea = new VBox(20);
         gameArea.setAlignment(Pos.CENTER);
         gameArea.setPadding(new Insets(20));
 
-        // Opponent area
-        VBox opponentArea = createGameSection("Opponent's Area");
+        opponentHandDisplay = new HBox(10);
+        opponentHandDisplay.setAlignment(Pos.CENTER);
 
-        // Table area
-        VBox tableArea = createGameSection("Game Table");
+        playerHandDisplay = new HBox(10);
+        playerHandDisplay.setAlignment(Pos.CENTER);
 
-        // Player area
-        VBox playerArea = createGameSection("Player's Area (Max 5 cards)");
-
-        gameArea.getChildren().addAll(opponentArea, tableArea, playerArea);
+        gameArea.getChildren().addAll(opponentHandDisplay, playerHandDisplay);
         return gameArea;
     }
 
-    private VBox createGameSection(String title) {
-        VBox section = new VBox(10);
-        section.setAlignment(Pos.CENTER);
-        section.setStyle(
-                "-fx-background-color: rgba(0, 0, 0, 0.3);" +
-                        "-fx-padding: 20px;" +
-                        "-fx-min-height: 200px;" +
-                        "-fx-background-radius: 10px;" + // Aggiunto bordi arrotondati
-                        "-fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.3), 10, 0, 0, 0);" // Aggiunto ombra
-        );
-
-        Label label = new Label(title);
-        label.setStyle(
-                "-fx-text-fill: white;" +
-                        "-fx-font-size: 18px;" +
-                        "-fx-font-weight: bold"
-        );
-
-        section.getChildren().add(label);
-        return section;
-    }
+    /**
+     * Funzione per creare il box con i pulsanti "draw card" e "stand"
+     * @return Il box contenente i comandi per la partita
+     */
 
     private HBox createBottomControls() {
         HBox controls = new HBox(20);
-        controls.setAlignment(Pos.BOTTOM_RIGHT);
+        controls.setAlignment(Pos.CENTER);
         controls.setPadding(new Insets(20));
 
-        Button muteButton = new Button();
-        ImageView soundIcon = new ImageView(getClass().getResource("/images/GameBackground.png").toExternalForm());
-        soundIcon.setFitWidth(30);
-        soundIcon.setFitHeight(30);
-        muteButton.setGraphic(soundIcon);
-        muteButton.setStyle(
-                "-fx-background-color: rgba(40, 40, 40, 0.8);" +
-                        "-fx-background-radius: 30;" +
-                        "-fx-min-width: 60px;" +
-                        "-fx-min-height: 60px;" +
-                        "-fx-cursor: hand"
-        );
-        muteButton.setEffect(dropShadow);
+        currentPlayerLabel = new Label("Your Turn");
+        currentPlayerLabel.setFont(Font.font("Arial", FontWeight.BOLD, 16));
+        currentPlayerLabel.setTextFill(Color.WHITE);
 
-        muteButton.setOnAction(e -> {
-            isMuted = !isMuted;
-            ImageView newIcon = new ImageView(new Image(Objects.requireNonNull(getClass().getResourceAsStream("/images/GameBackground.png"))));
-            newIcon.setFitWidth(30);
-            newIcon.setFitHeight(30);
-            muteButton.setGraphic(newIcon);
+        drawCardButton = createStyledButton("PESCA", "#4CAF50");
+        passTurnButton = createStyledButton("STA", "#f44336");
+
+        drawCardButton.setOnAction(e -> {
+            if (isPlayerTurn) {
+                controller.hitCard(true); // Il giocatore pesca una carta
+                updateGameDisplay();
+
+                // Controlla se il giocatore ha perso
+                if (controller.checkCards(controller.getPlayer1(), false) > 21) {
+                    resolveRound("Hai sballato! Vince l'avversario.");
+                } else {
+                    endPlayerTurn(false); // Passa il turno al bot, senza che il giocatore stia
+                }
+            }
         });
 
-        controls.getChildren().add(muteButton);
+        passTurnButton.setOnAction(e -> {
+            if (isPlayerTurn) {
+                endPlayerTurn(true); // Il giocatore decide di stare
+            }
+        });
+
+
+        controls.getChildren().addAll(currentPlayerLabel, drawCardButton, passTurnButton);
         return controls;
     }
 
-    private Button createMenuButton() {
-        Button menuButton = new Button("☰");
-        menuButton.setStyle(
-                "-fx-background-color: rgba(40, 40, 40, 0.8);" +
-                        "-fx-text-fill: white;" +
-                        "-fx-font-size: 20px;" +
-                        "-fx-background-radius: 50%;" +
-                        "-fx-min-width: 50px;" +
-                        "-fx-min-height: 50px;" +
-                        "-fx-cursor: hand"
-        );
-        menuButton.setEffect(dropShadow);
-        menuButton.setOnAction(e -> toggleMenu());
-        return menuButton;
+
+    private void botTurn(boolean completeTurn) {
+        setPlayerControlsEnabled(false); // Disabilita i controlli del giocatore
+        currentPlayerLabel.setText("Bot's Turn");
+
+        PauseTransition pause = new PauseTransition(Duration.seconds(1.5)); // Ritardo per simulare la giocata del bot
+        pause.setOnFinished(e -> {
+            boolean botDecidesToHit = controller.checkCards(controller.getPlayer2(), false) < 17;
+
+            if (botDecidesToHit) {
+                controller.hitCard(false); // Il bot pesca una carta
+                updateGameDisplay();
+
+                // Se il bot ha sballato
+                if (controller.checkCards(controller.getPlayer2(), false) > 21) {
+                    checkRoundCompletion(); // Controlla se il round è finito
+                } else if (completeTurn) {
+                    botTurn(true); // Continua a giocare solo se il giocatore ha premuto "Stai"
+                } else {
+                    startPlayerTurn(); // Torna al giocatore
+                }
+            } else {
+                // Il bot decide di stare
+                if (completeTurn) {
+                    checkRoundCompletion(); // Verifica se il round è terminato
+                } else {
+                    startPlayerTurn(); // Torna al giocatore
+                }
+            }
+        });
+
+        pause.play(); // Avvia il ritardo
     }
 
-    private VBox createMenuOverlay() {
-        VBox overlay = new VBox(15);
-        overlay.setAlignment(Pos.CENTER);
-        overlay.setStyle(
-                "-fx-background-color: rgba(0, 0, 0, 0.85);" +
-                        "-fx-padding: 20px"
-        );
 
-        overlay.getChildren().addAll(
-                createMenuButton("Game Rules", this::showRules),
-                createMenuButton("Settings", this::showSettingsDialog),
-                createMenuButton("Surrender", this::showSurrenderDialog),
-                createMenuButton("Exit to Lobby", this::showExitConfirmation),
-                createMenuButton("Close Menu", () -> toggleMenu())
-        );
 
-        return overlay;
+    private void endRoundIfNecessary() {
+        int player1Score = controller.checkCards(controller.getPlayer1(), false);
+        int player2Score = controller.checkCards(controller.getPlayer2(), false);
+
+        boolean player1Finished = player1Score > 21 || !isPlayerTurn; // Il giocatore ha sballato o deciso di stare
+        boolean player2Finished = player2Score > 21 || controller.checkCards(controller.getPlayer2(), false) >= 17;
+
+        if (player1Finished && player2Finished) {
+            resolveRound(null); // Termina il round
+        }
     }
+
+    private void startPlayerTurn() {
+        isPlayerTurn = true;
+        currentPlayerLabel.setText("Your Turn");
+        setPlayerControlsEnabled(true); // Abilita i controlli del giocatore
+    }
+
+
+
+    private void endPlayerTurn(boolean playerStands) {
+        isPlayerTurn = false;
+
+        if (controller.checkCards(controller.getPlayer1(), false) > 21) {
+            // Il giocatore ha sballato
+            currentPlayerLabel.setText("Bot's Turn");
+            botTurn(true); // Il bot completa tutte le sue giocate
+        } else if (playerStands) {
+            // Il giocatore ha deciso di stare
+            currentPlayerLabel.setText("Bot's Turn");
+            botTurn(true); // Il bot completa tutte le sue giocate
+        } else {
+            // Il giocatore pesca una carta
+            currentPlayerLabel.setText("Bot's Turn");
+            botTurn(false); // Il bot esegue solo una mossa
+        }
+    }
+
+
+
+
+    private void checkRoundCompletion() {
+        int player1Score = controller.checkCards(controller.getPlayer1(), false);
+        int player2Score = controller.checkCards(controller.getPlayer2(), false);
+
+        boolean player1Finished = player1Score > 21 || !isPlayerTurn; // Il giocatore ha sballato o deciso di stare
+        boolean player2Finished = player2Score > 21 || controller.checkCards(controller.getPlayer2(), false) >= 17;
+
+        if (player1Finished && player2Finished) {
+            resolveRound(null); // Termina il round
+        }
+    }
+
+
+
+
+    /**
+     * Funzione per creare i bottoni stilizzati passandogli il testo e il colore di sfondo
+     * @return Ritorna i bottoni stilizzati
+     */
+
+    private Button createStyledButton(String text, String backgroundColor) {
+        Button button = new Button(text);
+        button.setStyle("-fx-background-color: " + backgroundColor + "; -fx-text-fill: white; -fx-font-size: 14px; " +
+                "-fx-font-weight: bold; -fx-background-radius: 10px;");
+        return button;
+    }
+
+    /**
+     * Funzione per inizializzare le mani dei giocatori
+     */
+
+    private void initializePlayerHands() {
+        // Aggiorna la mano del giocatore
+        playerHandDisplay.getChildren().clear();
+        int playerDeckSize = controller.getPlayer1().getPlayDeck().size();
+
+        for (int i = 0; i < playerDeckSize; i++) {
+            boolean animate = (i == playerDeckSize - 1) || currentRound == 1; // Anima l'ultima carta o tutte nel primo round
+            playerHandDisplay.getChildren().add(createCardView(controller.getPlayer1().getPlayDeck().get(i), animate));
+        }
+
+        // Aggiorna la mano dell'avversario
+        opponentHandDisplay.getChildren().clear();
+        int opponentDeckSize = controller.getPlayer2().getPlayDeck().size();
+
+        for (int i = 0; i < opponentDeckSize; i++) {
+            if (i == 0) {
+                // Mostra la prima carta dell'avversario
+                boolean animate = currentRound == 1; // Anima solo nel primo round
+                opponentHandDisplay.getChildren().add(createCardView(controller.getPlayer2().getPlayDeck().get(i), animate));
+            } else {
+                // Mostra il retro per tutte le altre carte
+                opponentHandDisplay.getChildren().add(createBackCardView());
+            }
+        }
+    }
+
+
+
+    /**
+     * Funzione per risolvere il risultato del round
+     */
+
+    private void resolveRound(String message) {
+        revealAllCards();
+
+        int player1Score = controller.checkCards(controller.getPlayer1(), false);
+        int player2Score = controller.checkCards(controller.getPlayer2(), false);
+
+        if (message == null) {
+            if (player1Score > 21 && player2Score > 21) {
+                message = "Entrambi avete sballato!";
+            } else if (player1Score > 21) {
+                message = "Hai sballato! Vince il bot.";
+                controller.getPlayer1().shoot(6); // Perdi una vita
+            } else if (player2Score > 21) {
+                message = "Il bot ha sballato! Hai vinto.";
+                controller.getPlayer2().shoot(6); // Il bot perde una vita
+            } else if (player1Score > player2Score) {
+                message = "Hai vinto!";
+                controller.getPlayer2().shoot(6);
+            } else if (player1Score < player2Score) {
+                message = "Hai perso!";
+                controller.getPlayer1().shoot(6);
+            } else {
+                message = "Pareggio!";
+            }
+        }
+
+        updatePlayerHP();
+        showResultOverlay(message); // Mostra l'overlay e prepara il nuovo round
+    }
+
+
+
+    /**
+     * Funzione per far girare tutte le carte sul tavolo
+     */
+
+    private void revealAllCards() {
+        opponentHandDisplay.getChildren().clear();
+        controller.getPlayer2().getPlayDeck().forEach(card -> {
+            opponentHandDisplay.getChildren().add(createCardView(card,true));
+        });
+
+        playerHandDisplay.getChildren().clear();
+        controller.getPlayer1().getPlayDeck().forEach(card -> {
+            playerHandDisplay.getChildren().add(createCardView(card,true));
+        });
+
+        updatePlayerHP();
+    }
+
+    /**
+     * Funzione per mostrare i risultati dei round
+     */
+
+    private void showRoundResult(String message) {
+        Platform.runLater(() -> {
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Round Result");
+            alert.setHeaderText(null);
+            alert.setContentText(message);
+            alert.showAndWait();
+
+            if (controller.isGameOver()) {
+                endGame();
+            } else {
+                controller.turn(); // Inizia un nuovo turno
+                updateGameDisplay();
+                startPlayerTurn();
+            }
+        });
+    }
+
+
+    /**
+     * Funzione per mostrare il risultato della partita
+     */
+
+    private void endGame() {
+        String winner = controller.getPlayer1().getHP() > 0 ? "Player 1 Wins!" : "Player 2 Wins!";
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Game Over");
+        alert.setHeaderText(null);
+        alert.setContentText(winner);
+        alert.showAndWait();
+        System.exit(0);
+    }
+
+    /**
+     * Funzione per aggiornare la schermata di gioco
+     */
+
+    private void updateGameDisplay() {
+        // Aggiorna la mano del giocatore
+        playerHandDisplay.getChildren().clear();
+        int playerDeckSize = controller.getPlayer1().getPlayDeck().size();
+
+        for (int i = 0; i < playerDeckSize; i++) {
+            boolean animate = (i == playerDeckSize - 1); // Anima solo l'ultima carta
+            playerHandDisplay.getChildren().add(createCardView(controller.getPlayer1().getPlayDeck().get(i), animate));
+        }
+
+        // Aggiorna la mano dell'avversario
+        opponentHandDisplay.getChildren().clear();
+        int opponentDeckSize = controller.getPlayer2().getPlayDeck().size();
+
+        for (int i = 0; i < opponentDeckSize; i++) {
+            if (i == 0) {
+                // Mostra la prima carta dell'avversario
+                opponentHandDisplay.getChildren().add(createCardView(controller.getPlayer2().getPlayDeck().get(i), false));
+            } else {
+                // Mostra il retro per tutte le altre carte
+                opponentHandDisplay.getChildren().add(createBackCardView());
+            }
+        }
+
+        updatePlayerHP();
+    }
+
+
+
+
+    /**
+     * Funzione per aggiornare la vita dei player
+     */
+
+    private void updatePlayerHP() {
+        player1HP.setText("Player 1 HP: " + controller.getPlayer1().getHP());
+        player2HP.setText("Player 2 HP: " + controller.getPlayer2().getHP());
+    }
+
+    /**
+     * Funzione per creare la prospettiva del retro delle carte
+     * @return Un imageview da usare come retro della carta
+     */
+
+    private ImageView createBackCardView() {
+        ImageView backImageView = new ImageView(new Image(getClass().getResourceAsStream("/Cards/Back_1.png")));
+        backImageView.setFitWidth(100);
+        backImageView.setFitHeight(150);
+        return backImageView;
+    }
+
+    /**
+     * Funzione per creare la prospettiva della faccia delle carte
+     * @return Un imageview da usare come faccia delle carte
+     */
+
+    private ImageView createCardView(CardObj card, boolean animate) {
+        ImageView cardView = createBackCardView();
+        String imagePath = card.getImagePath();
+
+        if (animate) {
+            playCardFlipAnimation(cardView, imagePath);
+        } else {
+            cardView.setImage(new Image(getClass().getResourceAsStream(imagePath)));
+        }
+
+        return cardView;
+    }
+
+
+    /**
+     * Funzione per creare un animazione di rotazione per le carte
+     */
+
+    private void playCardFlipAnimation(ImageView cardView, String newImagePath) {
+        SoundManager.FlipCardSound();
+
+        RotateTransition rotateToSide = new RotateTransition(Duration.seconds(0.3), cardView);
+        rotateToSide.setFromAngle(0);
+        rotateToSide.setToAngle(90);
+        rotateToSide.setAxis(Rotate.Y_AXIS);
+
+        RotateTransition rotateToFront = new RotateTransition(Duration.seconds(0.3), cardView);
+        rotateToFront.setFromAngle(90);
+        rotateToFront.setToAngle(0);
+        rotateToFront.setAxis(Rotate.Y_AXIS);
+
+        rotateToSide.setOnFinished(event -> {
+            cardView.setImage(new Image(getClass().getResourceAsStream(newImagePath)));
+            rotateToFront.play();
+        });
+
+        rotateToSide.play();
+    }
+
+    /**
+     * Funzione per creare il menu
+     */
+
+    private VBox createMenu() {
+        // Creazione del menu
+        VBox menu = new VBox(15);
+        menu.setStyle("-fx-background-color: rgba(20, 20, 20, 0.95); -fx-border-color: gold; -fx-border-width: 3; -fx-padding: 20;");
+        menu.setAlignment(Pos.CENTER);
+        menu.setVisible(false); // Menu nascosto inizialmente
+
+        FadeTransition fadeIn = new FadeTransition(Duration.seconds(0.5), menu);
+        fadeIn.setFromValue(0);
+        fadeIn.setToValue(1);
+
+        FadeTransition fadeOut = new FadeTransition(Duration.seconds(0.5), menu);
+        fadeOut.setFromValue(1);
+        fadeOut.setToValue(0);
+
+        // Pulsanti del menu
+        Button rulesButton = createMenuButton("Regole", this::showRules);
+        Button creditsButton = createMenuButton("Crediti", this::showCredits);
+        Button volumeButton = createMenuButton("Volume", this::showVolumeControl);
+        Button surrenderButton = createMenuButton("Arrenditi", this::surrender);
+        Button exitButton = createMenuButton("Esci", () -> System.exit(0));
+
+        menu.getChildren().addAll(rulesButton, creditsButton, volumeButton, surrenderButton, exitButton);
+
+        // Pulsante per aprire/chiudere il menu
+        Button toggleMenuButton = createStyledButton("Menu", "#333333");
+        toggleMenuButton.setStyle("-fx-background-color: rgba(40, 40, 40, 0.8); -fx-border-color: gold; -fx-border-width: 2; -fx-font-size: 16px; -fx-text-fill: gold;");
+        toggleMenuButton.setOnAction(e -> {
+            if (menu.isVisible()) {
+                fadeOut.setOnFinished(ev -> menu.setVisible(false));
+                fadeOut.play();
+            } else {
+                menu.setVisible(true);
+                fadeIn.play();
+            }
+        });
+
+        // Ritorna il menu per poterlo aggiungere al layout
+        return menu;
+    }
+
+
+    /**
+     * Funzione per creare dei bottoni stilizzati da usare nel menu
+     * @return Il bottone da utilizzare nel menu
+     */
 
     private Button createMenuButton(String text, Runnable action) {
         Button button = new Button(text);
-
-        button.setStyle(
-                "-fx-background-color: transparent;" +
-                        "-fx-text-fill: white;" +
-                        "-fx-font-size: 18px;" +
-                        "-fx-min-width: 200px;" +
-                        "-fx-cursor: hand;" +
-                        "-fx-padding: 10px;"
-        );
-
-        button.setOnMouseEntered(e ->
-                button.setStyle(button.getStyle() + "-fx-background-color: rgba(255, 255, 255, 0.1);")
-        );
-
-        button.setOnMouseExited(e ->
-                button.setStyle(button.getStyle() + "-fx-background-color: transparent;")
-        );
-
+        button.setStyle("-fx-background-color: rgba(30, 30, 30, 0.9); -fx-border-color: gold; -fx-border-width: 2; -fx-font-size: 14px; -fx-text-fill: gold;");
         button.setOnAction(e -> action.run());
         return button;
     }
 
-    private void toggleMenu() {
-        if (!isMenuOpen) {
-            root.getChildren().get(0).setEffect(new GaussianBlur(10));
-            menuOverlay.setVisible(true);
-            menuOverlay.setMouseTransparent(false);
+    /**
+     * Funzione per mostrare il regolamento del gioco
+     */
 
-            FadeTransition fadeIn = new FadeTransition(Duration.millis(200), menuOverlay);
-            fadeIn.setFromValue(0);
-            fadeIn.setToValue(1);
-            fadeIn.play();
-        } else {
-            FadeTransition fadeOut = new FadeTransition(Duration.millis(200), menuOverlay);
-            fadeOut.setFromValue(1);
-            fadeOut.setToValue(0);
-            fadeOut.setOnFinished(e -> {
-                menuOverlay.setVisible(false);
-                menuOverlay.setMouseTransparent(true);
-                root.getChildren().get(0).setEffect(null);
-            });
-            fadeOut.play();
-        }
-        isMenuOpen = !isMenuOpen;
+    private void showRules() {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Regole del Gioco");
+        alert.setHeaderText("Regole");
+        alert.setContentText("Devo mettere le regole");
+        alert.showAndWait();
     }
 
-    private enum DialogType {
-        CONFIRMATION,
-        INFORMATION
+    /**
+     * Funzione per mostrare i crediti del gioco
+     */
+
+    private void showCredits() {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Crediti");
+        alert.setHeaderText("Crediti");
+        alert.setContentText("Creato da Tommaso Patriarca, Alessandro Anastasio, Michele Comalli e Marco Barlascini");
+        alert.showAndWait();
     }
 
-    private void showDialog(String title, String content, DialogType type) {
-        if (isMenuOpen) toggleMenu();
+    /**
+     * Funzione per mostrare i controlli del volume
+     */
 
-        VBox dialogBox = new VBox(20);
-        dialogBox.setStyle(
-                "-fx-background-color: rgba(40, 40, 40, 0.95);" +
-                        "-fx-padding: 30px;" +
-                        "-fx-background-radius: 10px;" +
-                        "-fx-max-width: 400px;" +
-                        "-fx-max-height: 400px;" +
-                        "-fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.5), 20, 0, 0, 0)"
+    private void showVolumeControl() {
+        Stage volumeStage = new Stage();
+        volumeStage.setTitle("Regolazione Volume");
+
+        VBox volumeLayout = new VBox(20);
+        volumeLayout.setAlignment(Pos.CENTER);
+        volumeLayout.setPadding(new Insets(20));
+        volumeLayout.setStyle("-fx-background-color: rgba(30, 30, 30, 0.95); -fx-border-color: gold; -fx-border-width: 3;");
+
+        Label volumeLabel = new Label("Regolazione Volume");
+        volumeLabel.setTextFill(Color.GOLD);
+        volumeLabel.setFont(Font.font("Arial", FontWeight.BOLD, 18));
+
+        // Slider per il volume
+        Slider volumeSlider = new Slider(0, 1, MusicManager.getVolume());
+        volumeSlider.setShowTickMarks(true);
+        volumeSlider.setShowTickLabels(true);
+        volumeSlider.setMajorTickUnit(0.25);
+        volumeSlider.setMinorTickCount(4);
+        volumeSlider.setBlockIncrement(0.05);
+        volumeSlider.setStyle(
+                "-fx-control-inner-background: #222; " +
+                        "-fx-accent: gold; " +
+                        "-fx-track-color: #555;" +
+                        "-fx-thumb-color: #FFD700;" // Colore del thumb
         );
-        dialogBox.setAlignment(Pos.CENTER);
 
-        Label titleLabel = new Label(title);
-        titleLabel.setStyle(
-                "-fx-text-fill: white;" +
-                        "-fx-font-size: 24px;" +
-                        "-fx-font-weight: bold"
+        // Etichetta dinamica per mostrare il valore del volume
+        Label volumeValueLabel = new Label(String.format("Volume: %.0f%%", MusicManager.getVolume() * 100));
+        volumeValueLabel.setTextFill(Color.LIGHTGRAY);
+        volumeValueLabel.setFont(Font.font("Arial", FontWeight.BOLD, 14));
+
+        // Listener per aggiornare il valore dinamico del volume
+        volumeSlider.valueProperty().addListener((observable, oldValue, newValue) -> {
+            MusicManager.setVolume(newValue.doubleValue());
+            volumeValueLabel.setText(String.format("Volume: %.0f%%", newValue.doubleValue() * 100));
+        });
+
+        // Pulsante di chiusura
+        Button closeButton = new Button("Chiudi");
+        closeButton.setStyle(
+                "-fx-background-color: rgba(30, 30, 30, 0.8); " +
+                        "-fx-border-color: gold; " +
+                        "-fx-border-width: 2; " +
+                        "-fx-font-size: 14px; " +
+                        "-fx-text-fill: gold; " +
+                        "-fx-background-radius: 10px;"
         );
+        closeButton.setOnAction(e -> volumeStage.close());
 
-        Label contentLabel = new Label(content);
-        contentLabel.setStyle(
-                "-fx-text-fill: white;" +
-                        "-fx-font-size: 16px;" +
-                        "-fx-wrap-text: true"
-        );
+        // Layout pulsanti
+        HBox buttonLayout = new HBox(closeButton);
+        buttonLayout.setAlignment(Pos.CENTER);
+        volumeLayout.getChildren().addAll(volumeLabel, volumeSlider, volumeValueLabel, buttonLayout);
+        Scene volumeScene = new Scene(volumeLayout, 400, 250);
+        volumeStage.setScene(volumeScene);
+        volumeStage.show();
+    }
 
-        HBox buttons = new HBox(10);
-        buttons.setAlignment(Pos.CENTER);
-        buttons.setPadding(new Insets(20, 0, 0, 0));
+    /**
+     * Funzione per mostrare la schermata per arrendersi
+     */
 
-        if (type == DialogType.CONFIRMATION) {
-            Button confirmButton = new Button("Confirm");
-            Button cancelButton = new Button("Cancel");
-            styleDialogButton(confirmButton, true);
-            styleDialogButton(cancelButton, false);
-
-            confirmButton.setOnAction(e -> closeDialog(dialogBox));
-            cancelButton.setOnAction(e -> closeDialog(dialogBox));
-
-            buttons.getChildren().addAll(confirmButton, cancelButton);
-        } else {
-            Button closeButton = new Button("Close");
-            styleDialogButton(closeButton, false);
-            closeButton.setOnAction(e -> closeDialog(dialogBox));
-            buttons.getChildren().add(closeButton);
+    private void surrender() {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Arrendersi");
+        alert.setHeaderText("Vuoi arrenderti?");
+        alert.setContentText("Questa azione terminerà la partita.");
+        if (alert.showAndWait().get() == ButtonType.OK) {
+            System.exit(0);
         }
+    }
 
-        dialogBox.getChildren().addAll(titleLabel, contentLabel, buttons);
+    private void styleHealthLabel(Label label, Color textColor, String bgColor, String borderColor) {
+        label.setFont(Font.font("Arial", FontWeight.BOLD, 16));
+        label.setTextFill(textColor);
+        label.setStyle("-fx-background-color: " + bgColor + "; " +
+                "-fx-border-color: " + borderColor + "; " +
+                "-fx-border-width: 2px; " +
+                "-fx-padding: 8 16; " +
+                "-fx-border-radius: 10; " +
+                "-fx-background-radius: 10; " +
+                "-fx-effect: dropshadow(gaussian, " + borderColor + ", 10, 0.5, 0, 0);");
+    }
 
-        root.getChildren().get(0).setEffect(new GaussianBlur(10));
-        dialogBox.setOpacity(0);
-        root.getChildren().add(dialogBox);
 
-        FadeTransition fadeIn = new FadeTransition(Duration.millis(200), dialogBox);
+    private HBox createCustomTitleBar(Stage stage) {
+        HBox titleBar = new HBox();
+        titleBar.setAlignment(Pos.CENTER_LEFT);
+        titleBar.setStyle("-fx-background-color: linear-gradient(to right, #1E1E1E, #333333); -fx-padding: 4; -fx-border-color: #444; -fx-border-width: 0 0 1 0;");
+        titleBar.setPrefHeight(40);
+
+        // Title label
+        Label titleLabel = new Label("Chamber of Fate");
+        titleLabel.setStyle("-fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold; -fx-font-family: 'Arial';");
+        titleLabel.setPadding(new Insets(0, 10, 0, 10));
+
+        // Bottone per minimizzare la finestra
+        Button minimizeButton = new Button("_");
+        minimizeButton.setStyle(
+                "-fx-background-color: transparent;" +
+                        "-fx-text-fill: white;" +
+                        "-fx-font-size: 14px;" +
+                        "-fx-padding: 2 10 2 10;" +
+                        "-fx-cursor: hand;" +
+                        "-fx-border-color: transparent;" +
+                        "-fx-border-radius: 5;"
+        );
+        minimizeButton.setOnMouseEntered(e -> minimizeButton.setStyle("-fx-background-color: #555; -fx-text-fill: white; -fx-border-radius: 5;"));
+        minimizeButton.setOnMouseExited(e -> minimizeButton.setStyle("-fx-background-color: transparent; -fx-text-fill: white; -fx-border-radius: 5;"));
+        minimizeButton.setOnAction(e -> stage.setIconified(true));
+
+        // Bottone per chiudere il gioco
+        Button closeButton = new Button("X");
+        closeButton.setStyle(
+                "-fx-background-color: transparent;" +
+                        "-fx-text-fill: white;" +
+                        "-fx-font-size: 14px;" +
+                        "-fx-padding: 2 10 2 10;" +
+                        "-fx-cursor: hand;" +
+                        "-fx-border-color: transparent;" +
+                        "-fx-border-radius: 5;"
+        );
+        closeButton.setOnMouseEntered(e -> closeButton.setStyle("-fx-background-color: #FF5C5C; -fx-text-fill: white; -fx-border-radius: 5;"));
+        closeButton.setOnMouseExited(e -> closeButton.setStyle("-fx-background-color: transparent; -fx-text-fill: white; -fx-border-radius: 5;"));
+        closeButton.setOnAction(e -> System.exit(0));
+
+        // Funzione per trascinare la finestra
+        titleBar.setOnMousePressed(e -> {
+            xOffset = e.getSceneX();
+            yOffset = e.getSceneY();
+        });
+        titleBar.setOnMouseDragged(e -> {
+            stage.setX(e.getScreenX() - xOffset);
+            stage.setY(e.getScreenY() - yOffset);
+        });
+
+        HBox spacer = new HBox();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+
+        titleBar.getChildren().addAll(titleLabel, spacer, minimizeButton, closeButton);
+        return titleBar;
+    }
+
+    private void setPlayerControlsEnabled(boolean enabled) {
+        drawCardButton.setDisable(!enabled);
+        passTurnButton.setDisable(!enabled);
+    }
+
+    private Label createResultOverlay() {
+        Label overlay = new Label();
+        overlay.setStyle(
+                "-fx-background-color: rgba(0, 0, 0, 0.8);" +
+                        "-fx-text-fill: white;" +
+                        "-fx-font-size: 36px;" +
+                        "-fx-font-weight: bold;" +
+                        "-fx-padding: 20;" +
+                        "-fx-border-color: gold;" +
+                        "-fx-border-width: 5;" +
+                        "-fx-border-radius: 10;" +
+                        "-fx-background-radius: 11;" +
+                        "-fx-alignment: center;"
+        );
+        overlay.setAlignment(Pos.CENTER);
+        overlay.setMaxWidth(400);
+        overlay.setWrapText(true); //per mettere il testo in colonne
+        StackPane.setAlignment(overlay, Pos.CENTER);
+        return overlay;
+    }
+
+    private void showResultOverlay(String message) {
+        resultOverlay.setText(message);
+        resultOverlay.setVisible(true);
+
+        FadeTransition fadeIn = new FadeTransition(Duration.seconds(0.5), resultOverlay);
         fadeIn.setFromValue(0);
         fadeIn.setToValue(1);
+        fadeIn.setOnFinished(event -> {
+            PauseTransition pause = new PauseTransition(Duration.seconds(3)); // Mostra il messaggio per 3 secondi
+            pause.setOnFinished(e -> hideResultOverlay());
+            pause.play();
+        });
         fadeIn.play();
     }
 
-    private void styleDialogButton(Button button, boolean isPrimary) {
-        String baseColor = isPrimary ? "#4CAF50" : "#757575";
-        String hoverColor = isPrimary ? "#45a049" : "#666666";
-
-        button.setStyle(
-                "-fx-background-color: " + baseColor + ";" +
-                        "-fx-text-fill: white;" +
-                        "-fx-font-size: 14px;" +
-                        "-fx-padding: 10px 20px;" +
-                        "-fx-background-radius: 5px;" +
-                        "-fx-cursor: hand"
-        );
-
-        button.setOnMouseEntered(e -> button.setStyle(
-                button.getStyle().replace(baseColor, hoverColor)
-        ));
-
-        button.setOnMouseExited(e -> button.setStyle(
-                button.getStyle().replace(hoverColor, baseColor)
-        ));
-    }
-
-    private void closeDialog(VBox dialogBox) {
-        FadeTransition fadeOut = new FadeTransition(Duration.millis(200), dialogBox);
+    private void hideResultOverlay() {
+        FadeTransition fadeOut = new FadeTransition(Duration.seconds(0.5), resultOverlay);
         fadeOut.setFromValue(1);
         fadeOut.setToValue(0);
-        fadeOut.setOnFinished(e -> {
-            root.getChildren().remove(dialogBox);
-            root.getChildren().get(0).setEffect(null);
+        fadeOut.setOnFinished(event -> {
+            resultOverlay.setVisible(false);
+            startNewRound(); // Avvia un nuovo round
         });
         fadeOut.play();
     }
 
-    private void showSurrenderDialog() {
-
-            VBox dialogBox = new VBox(20);
-            dialogBox.setStyle(
-                    "-fx-background-color: rgba(40, 40, 40, 0.95);" +
-                            "-fx-padding: 30px;" +
-                            "-fx-background-radius: 10px;" +
-                            "-fx-max-width: 400px;" +
-                            "-fx-max-height: 400px;" +
-                            "-fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.5), 20, 0, 0, 0)"
-            );
-            dialogBox.setAlignment(Pos.CENTER);
-
-            Label titleLabel = new Label("Surrender");
-            titleLabel.setStyle(
-                    "-fx-text-fill: white;" +
-                            "-fx-font-size: 24px;" +
-                            "-fx-font-weight: bold"
-            );
-
-            Label messageLabel = new Label("Are you sure you want to surrender? This will count as a loss.");
-            messageLabel.setStyle("-fx-text-fill: white; -fx-font-size: 16px;");
-
-            Button confirmButton = new Button("Confirm");
-            Button cancelButton = new Button("Cancel");
-            styleDialogButton(confirmButton, true);
-            styleDialogButton(cancelButton, false);
-
-            confirmButton.setOnAction(e -> {
-                // Logic to handle surrendering
-                System.exit(0); // Placeholder for surrender logic
-            });
-
-            cancelButton.setOnAction(e -> closeDialog(dialogBox));
-
-            HBox buttons = new HBox(10, confirmButton, cancelButton);
-            buttons.setAlignment(Pos.CENTER);
-
-            dialogBox.getChildren().addAll(titleLabel, messageLabel, buttons);
-
-            root.getChildren().get(0).setEffect(new GaussianBlur(10));
-            dialogBox.setOpacity(0);
-            root.getChildren().add(dialogBox);
-
-            FadeTransition fadeIn = new FadeTransition(Duration.millis(200), dialogBox);
-            fadeIn.setFromValue(0);
-            fadeIn.setToValue(1);
-            fadeIn.play();
-    }
-
-    private void showSettingsDialog() {
-        VBox dialogBox = new VBox(20);
-        dialogBox.setStyle(
-                "-fx-background-color: rgba(40, 40, 40, 0.95);" +
-                        "-fx-padding: 30px;" +
-                        "-fx-background-radius: 10px;" +
-                        "-fx-max-width: 400px;" +
-                        "-fx-max-height: 400px;" +
-                        "-fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.5), 20, 0, 0, 0)"
-        );
-        dialogBox.setAlignment(Pos.CENTER);
-
-        Label titleLabel = new Label("Settings");
-        titleLabel.setStyle(
-                "-fx-text-fill: white;" +
-                        "-fx-font-size: 24px;" +
-                        "-fx-font-weight: bold"
-        );
-
-        Label volumeLabel = new Label("Volume:");
-        volumeLabel.setStyle(
-                "-fx-text-fill: white;" +
-                        "-fx-font-size: 16px;"
-        );
-
-        Slider volumeSlider = new Slider(0, 1, MusicManager.getVolume());
-        volumeSlider.setShowTickLabels(true);
-        volumeSlider.setShowTickMarks(true);
-        volumeSlider.setMajorTickUnit(0.5);
-        volumeSlider.setMinorTickCount(4);
-        volumeSlider.setBlockIncrement(0.1);
-
-        volumeSlider.valueProperty().addListener((observable, oldValue, newValue) -> {
-            MusicManager.setVolume(newValue.doubleValue());
-        });
-
-        Button closeButton = new Button("Close");
-        styleDialogButton(closeButton, false);
-        closeButton.setOnAction(e -> closeDialog(dialogBox));
-
-        dialogBox.getChildren().addAll(titleLabel, volumeLabel, volumeSlider, closeButton);
-
-        root.getChildren().get(0).setEffect(new GaussianBlur(10));
-        dialogBox.setOpacity(0);
-        root.getChildren().add(dialogBox);
-
-        FadeTransition fadeIn = new FadeTransition(Duration.millis(200), dialogBox);
-        fadeIn.setFromValue(0);
-        fadeIn.setToValue(1);
-        fadeIn.play();
+    private void startNewRound() {
+        controller.turn(); // Resetta il controller per un nuovo round
+        updateGameDisplay(); // Aggiorna la schermata per riflettere il nuovo stato
+        startPlayerTurn(); // Inizia il turno del giocatore
     }
 
 
-    private void showExitConfirmation() {
 
-            VBox dialogBox = new VBox(20);
-            dialogBox.setStyle(
-                    "-fx-background-color: rgba(40, 40, 40, 0.95);" +
-                            "-fx-padding: 30px;" +
-                            "-fx-background-radius: 10px;" +
-                            "-fx-max-width: 400px;" +
-                            "-fx-max-height: 400px;" +
-                            "-fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.5), 20, 0, 0, 0)"
-            );
-            dialogBox.setAlignment(Pos.CENTER);
-
-            Label titleLabel = new Label("Exit to Lobby");
-            titleLabel.setStyle(
-                    "-fx-text-fill: white;" +
-                            "-fx-font-size: 24px;" +
-                            "-fx-font-weight: bold"
-            );
-
-            Label messageLabel = new Label("Are you sure you want to exit to lobby? Current game progress will be lost.");
-            messageLabel.setStyle("-fx-text-fill: white; -fx-font-size: 16px;");
-
-            Button confirmButton = new Button("Confirm");
-            Button cancelButton = new Button("Cancel");
-            styleDialogButton(confirmButton, true);
-            styleDialogButton(cancelButton, false);
-
-            confirmButton.setOnAction(e -> {
-                // Logic to handle exiting to the lobby
-                System.exit(0); // Placeholder for exit logic
-            });
-
-            cancelButton.setOnAction(e -> closeDialog(dialogBox));
-
-            HBox buttons = new HBox(10, confirmButton, cancelButton);
-            buttons.setAlignment(Pos.CENTER);
-
-            dialogBox.getChildren().addAll(titleLabel, messageLabel, buttons);
-
-            root.getChildren().get(0).setEffect(new GaussianBlur(10));
-            dialogBox.setOpacity(0);
-            root.getChildren().add(dialogBox);
-
-            FadeTransition fadeIn = new FadeTransition(Duration.millis(200), dialogBox);
-            fadeIn.setFromValue(0);
-            fadeIn.setToValue(1);
-            fadeIn.play();
-    }
-
-    private void showRules() {
-        showDialog(
-                "Game Rules",
-                "• Each player can have maximum 5 cards\n• Yf suttix is gay sutti gay",
-                DialogType.INFORMATION
-        );
-    }
 }
