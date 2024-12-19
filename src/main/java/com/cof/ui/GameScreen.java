@@ -65,13 +65,13 @@ public class GameScreen {
 
         // Vite del Player 1
         player1HP = new Label("Player 1 HP: 5");
-        styleHealthLabel(player1HP, Color.LIGHTGREEN, "rgba(0, 100, 0, 0.8)", "lightgreen");
+        styleHealthLabel(player1HP, Color.LIGHTGREEN);
         BorderPane.setAlignment(player1HP, Pos.TOP_LEFT);
         BorderPane.setMargin(player1HP, new Insets(10));
 
         // Vite del Player 2
         player2HP = new Label("Player 2 HP: 5");
-        styleHealthLabel(player2HP, Color.RED, "rgba(100, 0, 0, 0.8)", "red");
+        styleHealthLabel(player2HP, Color.RED);
         BorderPane.setAlignment(player2HP, Pos.TOP_RIGHT);
         BorderPane.setMargin(player2HP, new Insets(10));
 
@@ -104,6 +104,22 @@ public class GameScreen {
         Scene scene = new Scene(root);
         primaryStage.setScene(scene);
         primaryStage.setTitle("Chamber of Fate - Round " + currentRound);
+
+        // Creazione del menu e aggiunta al layout
+        VBox menu = createMenu();
+        root.getChildren().add(menu); // Aggiunto il menu al layout principale
+
+        // Listener se premo esc
+        scene.setOnKeyPressed(event -> {
+            if (event.getCode() == KeyCode.ESCAPE) {
+                if (menu.isVisible()) {
+                    menu.setVisible(false); // Nascondi il menu se è visibile
+                } else {
+                    menu.setVisible(true); // Mostra il menu se è nascosto
+                }
+            }
+        });
+
 
         initializePlayerHands();
         primaryStage.show();
@@ -377,53 +393,31 @@ public class GameScreen {
     private void revealAllCards() {
         opponentHandDisplay.getChildren().clear();
         controller.getPlayer2().getPlayDeck().forEach(card -> {
-            opponentHandDisplay.getChildren().add(createCardView(card,true));
+            opponentHandDisplay.getChildren().add(createCardView(card, true));
         });
 
         playerHandDisplay.getChildren().clear();
         controller.getPlayer1().getPlayDeck().forEach(card -> {
-            playerHandDisplay.getChildren().add(createCardView(card,true));
+            playerHandDisplay.getChildren().add(createCardView(card, true));
         });
 
         updatePlayerHP();
     }
 
     /**
-     * Funzione per mostrare i risultati dei round
-     */
-
-    private void showRoundResult(String message) {
-        Platform.runLater(() -> {
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("Round Result");
-            alert.setHeaderText(null);
-            alert.setContentText(message);
-            alert.showAndWait();
-
-            if (controller.isGameOver()) {
-                endGame();
-            } else {
-                controller.turn(); // Inizia un nuovo turno
-                updateGameDisplay();
-                startPlayerTurn();
-            }
-        });
-    }
-
-
-    /**
      * Funzione per mostrare il risultato della partita
      */
 
-    private void endGame() {
-        String winner = controller.getPlayer1().getHP() > 0 ? "Player 1 Wins!" : "Player 2 Wins!";
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Game Over");
-        alert.setHeaderText(null);
-        alert.setContentText(winner);
-        alert.showAndWait();
-        System.exit(0);
+    private void endGame(Stage stage) {
+        if(controller.getPlayer1().getHP() == 0){
+            EndScreen endScreen = new EndScreen();
+            endScreen.show(stage, false);
+        } else if (controller.getPlayer2().getHP() == 0) {
+            EndScreen endScreen = new EndScreen();
+            endScreen.show(stage, true);
+        }
     }
+
 
     /**
      * Funzione per aggiornare la schermata di gioco
@@ -466,7 +460,13 @@ public class GameScreen {
     private void updatePlayerHP() {
         player1HP.setText("Player 1 HP: " + controller.getPlayer1().getHP());
         player2HP.setText("Player 2 HP: " + controller.getPlayer2().getHP());
+
+        // Controlla se il gioco deve terminare
+        if (controller.getPlayer1().getHP() == 0 || controller.getPlayer2().getHP() == 0) {
+            endGame((Stage) player1HP.getScene().getWindow());
+        }
     }
+
 
     /**
      * Funzione per creare la prospettiva del retro delle carte
@@ -530,11 +530,19 @@ public class GameScreen {
 
     private VBox createMenu() {
         // Creazione del menu
-        VBox menu = new VBox(15);
-        menu.setStyle("-fx-background-color: rgba(20, 20, 20, 0.95); -fx-border-color: gold; -fx-border-width: 3; -fx-padding: 20;");
+        VBox menu = new VBox(20);
+        menu.setStyle(
+                "-fx-background-color: rgba(15, 15, 15, 0.95);" + // Sfondo scuro semi-trasparente
+                        "-fx-border-color: gold;" +                      // Bordo dorato
+                        "-fx-border-width: 3;" +                         // Larghezza bordo
+                        "-fx-border-radius: 15;" +                       // Angoli arrotondati del bordo
+                        "-fx-background-radius: 15;" +                   // Angoli arrotondati dello sfondo
+                        "-fx-padding: 30;" +                             // Spaziatura interna
+                        "-fx-effect: dropshadow(gaussian, gold, 20, 0.5, 0, 0);" // Glow dorato attorno al menu
+        );
         menu.setAlignment(Pos.CENTER);
-        menu.setVisible(false); // Menu nascosto inizialmente
 
+        // Transizioni per il menu
         FadeTransition fadeIn = new FadeTransition(Duration.seconds(0.5), menu);
         fadeIn.setFromValue(0);
         fadeIn.setToValue(1);
@@ -544,17 +552,26 @@ public class GameScreen {
         fadeOut.setToValue(0);
 
         // Pulsanti del menu
-        Button rulesButton = createMenuButton("Regole", this::showRules);
-        Button creditsButton = createMenuButton("Crediti", this::showCredits);
+
+        Button rulesButton = createMenuButton("Rules", this::showRules);
+        Button creditsButton = createMenuButton("Credits", this::showCredits);
         Button volumeButton = createMenuButton("Volume", this::showVolumeControl);
-        Button surrenderButton = createMenuButton("Arrenditi", this::surrender);
-        Button exitButton = createMenuButton("Esci", () -> System.exit(0));
+        Button surrenderButton = createMenuButton("Surrender", this::surrender);
+        Button exitButton = createMenuButton("Exit", () -> System.exit(0)); // Funzione per uscire
 
-        menu.getChildren().addAll(rulesButton, creditsButton, volumeButton, surrenderButton, exitButton);
+        menu.getChildren().addAll(rulesButton, creditsButton, volumeButton, exitButton);
 
-        // Pulsante per aprire/chiudere il menu
+        // Pulsante toggle per mostrare/nascondere il menu
         Button toggleMenuButton = createStyledButton("Menu", "#333333");
-        toggleMenuButton.setStyle("-fx-background-color: rgba(40, 40, 40, 0.8); -fx-border-color: gold; -fx-border-width: 2; -fx-font-size: 16px; -fx-text-fill: gold;");
+        toggleMenuButton.setStyle(
+                "-fx-background-color: rgba(40, 40, 40, 0.8);" +
+                        "-fx-border-color: gold;" +
+                        "-fx-border-width: 2;" +
+                        "-fx-font-size: 16px;" +
+                        "-fx-text-fill: gold;" +
+                        "-fx-border-radius: 10;" +
+                        "-fx-background-radius: 10;"
+        );
         toggleMenuButton.setOnAction(e -> {
             if (menu.isVisible()) {
                 fadeOut.setOnFinished(ev -> menu.setVisible(false));
@@ -565,20 +582,48 @@ public class GameScreen {
             }
         });
 
-        // Ritorna il menu per poterlo aggiungere al layout
         return menu;
     }
 
-
-    /**
-     * Funzione per creare dei bottoni stilizzati da usare nel menu
-     * @return Il bottone da utilizzare nel menu
-     */
-
     private Button createMenuButton(String text, Runnable action) {
         Button button = new Button(text);
-        button.setStyle("-fx-background-color: rgba(30, 30, 30, 0.9); -fx-border-color: gold; -fx-border-width: 2; -fx-font-size: 14px; -fx-text-fill: gold;");
-        button.setOnAction(e -> action.run());
+        button.setStyle(
+                "-fx-background-color: rgba(30, 30, 30, 0.95);" + // Sfondo scuro opaco
+                        "-fx-text-fill: gold;" +                          // Testo dorato
+                        "-fx-font-size: 16px;" +                          // Dimensione font
+                        "-fx-font-family: 'Times New Roman';" +           // Font gotico
+                        "-fx-border-color: gold;" +                       // Bordo dorato
+                        "-fx-border-width: 2;" +
+                        "-fx-border-radius: 10;" +
+                        "-fx-background-radius: 10;" +
+                        "-fx-effect: dropshadow(gaussian, gold, 10, 0.8, 0, 0);" // Glow dorato attorno al pulsante
+        );
+
+        button.setOnAction(e -> action.run()); // Collegamento alla funzione passata
+
+        button.setOnMouseEntered(e -> button.setStyle(
+                "-fx-background-color: rgba(50, 50, 50, 1);" +    // Sfondo più chiaro al passaggio del mouse
+                        "-fx-text-fill: white;" +                         // Testo bianco
+                        "-fx-font-size: 16px;" +
+                        "-fx-font-family: 'Times New Roman';" +
+                        "-fx-border-color: gold;" +
+                        "-fx-border-width: 2;" +
+                        "-fx-border-radius: 10;" +
+                        "-fx-background-radius: 10;" +
+                        "-fx-effect: dropshadow(gaussian, gold, 20, 0.9, 0, 0);" // Glow più intenso
+        ));
+        button.setOnMouseExited(e -> button.setStyle(
+                "-fx-background-color: rgba(30, 30, 30, 0.95);" +
+                        "-fx-text-fill: gold;" +
+                        "-fx-font-size: 16px;" +
+                        "-fx-font-family: 'Times New Roman';" +
+                        "-fx-border-color: gold;" +
+                        "-fx-border-width: 2;" +
+                        "-fx-border-radius: 10;" +
+                        "-fx-background-radius: 10;" +
+                        "-fx-effect: dropshadow(gaussian, gold, 10, 0.8, 0, 0);"
+        ));
+
         return button;
     }
 
@@ -683,16 +728,17 @@ public class GameScreen {
         }
     }
 
-    private void styleHealthLabel(Label label, Color textColor, String bgColor, String borderColor) {
-        label.setFont(Font.font("Arial", FontWeight.BOLD, 16));
+    private void styleHealthLabel(Label label, Color textColor) {
+        label.setFont(Font.font("Times New Roman", FontWeight.BOLD, 18)); // Font classico e gotico
         label.setTextFill(textColor);
-        label.setStyle("-fx-background-color: " + bgColor + "; " +
-                "-fx-border-color: " + borderColor + "; " +
-                "-fx-border-width: 2px; " +
-                "-fx-padding: 8 16; " +
-                "-fx-border-radius: 10; " +
-                "-fx-background-radius: 10; " +
-                "-fx-effect: dropshadow(gaussian, " + borderColor + ", 10, 0.5, 0, 0);");
+        label.setStyle(
+                "-fx-background-color: rgba(30, 30, 30, 0.9); " +
+                        "-fx-border-color: black; " +
+                        "-fx-border-width: 2px; " +
+                        "-fx-padding: 8 16; " +
+                        "-fx-border-radius: 5; " +
+                        "-fx-background-radius: 5;"
+        );
     }
 
 
