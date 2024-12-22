@@ -132,7 +132,9 @@ public class PcLoadingScreen extends Application {
     private HBox createCustomTitleBar(Stage stage) {
         HBox titleBar = new HBox();
         titleBar.setAlignment(Pos.CENTER_LEFT);
-        titleBar.setStyle("-fx-background-color: linear-gradient(to right, #1E1E1E, #333333); -fx-padding: 4; -fx-border-color: #444; -fx-border-width: 0 0 1 0;");
+        titleBar.setStyle("-fx-background-color: linear-gradient(to right, #1E1E1E, #333333); "
+                + "-fx-padding: 4; -fx-border-color: #444; -fx-border-width: 0 0 1 0; "
+                + "-fx-effect: dropshadow(gaussian, #000000, 10, 0.7, 0, 1);");
         titleBar.setPrefHeight(40);
 
         // Title label
@@ -184,6 +186,11 @@ public class PcLoadingScreen extends Application {
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
         titleBar.getChildren().addAll(titleLabel, spacer, minimizeButton, closeButton);
+        ImageView icon = new ImageView(new Image(Objects.requireNonNull(getClass().getResourceAsStream("/icons/Icon1.png"))));
+        icon.setFitHeight(20);
+        icon.setFitWidth(20);
+        titleBar.getChildren().add(0, icon);
+
         return titleBar;
     }
 

@@ -3,6 +3,7 @@ package com.cof.ui;
 
 import com.cof.managers.MusicManager;
 import com.cof.managers.SoundManager;
+import com.cof.utils.FontUtils;
 import com.controller.Controller;
 import com.controller.objects.CardObj;
 import javafx.animation.FadeTransition;
@@ -24,6 +25,8 @@ import javafx.scene.text.FontWeight;
 import javafx.scene.transform.Rotate;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+
+import java.util.Objects;
 
 public class GameScreen {
     private double xOffset = 0;
@@ -529,16 +532,15 @@ public class GameScreen {
      */
 
     private VBox createMenu() {
-        // Creazione del menu
         VBox menu = new VBox(20);
         menu.setStyle(
-                "-fx-background-color: rgba(15, 15, 15, 0.95);" + // Sfondo scuro semi-trasparente
-                        "-fx-border-color: gold;" +                      // Bordo dorato
-                        "-fx-border-width: 3;" +                         // Larghezza bordo
-                        "-fx-border-radius: 15;" +                       // Angoli arrotondati del bordo
-                        "-fx-background-radius: 15;" +                   // Angoli arrotondati dello sfondo
-                        "-fx-padding: 30;" +                             // Spaziatura interna
-                        "-fx-effect: dropshadow(gaussian, gold, 20, 0.5, 0, 0);" // Glow dorato attorno al menu
+                "-fx-background-color: rgba(42, 42, 42, 0.6);" + // Sfondo scuro opaco
+                        "-fx-border-color: #666666;" +                  // Bordo grigio scuro
+                        "-fx-border-width: 2;" +                       // Spessore del bordo
+                        "-fx-border-radius: 10;" +                     // Angoli arrotondati
+                        "-fx-background-radius: 10;" +                 // Angoli arrotondati dello sfondo
+                        "-fx-padding: 20;" +                           // Spaziatura interna
+                        "-fx-effect: dropshadow(gaussian, #000000, 15, 0.7, 0, 2);" // Ombra
         );
         menu.setAlignment(Pos.CENTER);
 
@@ -552,23 +554,22 @@ public class GameScreen {
         fadeOut.setToValue(0);
 
         // Pulsanti del menu
-
         Button rulesButton = createMenuButton("Rules", this::showRules);
         Button creditsButton = createMenuButton("Credits", this::showCredits);
         Button volumeButton = createMenuButton("Volume", this::showVolumeControl);
         Button surrenderButton = createMenuButton("Surrender", this::surrender);
-        Button exitButton = createMenuButton("Exit", () -> System.exit(0)); // Funzione per uscire
+        Button exitButton = createMenuButton("Exit", this::closeGame);
 
-        menu.getChildren().addAll(rulesButton, creditsButton, volumeButton, exitButton);
+        menu.getChildren().addAll(rulesButton, creditsButton, volumeButton, surrenderButton, exitButton);
 
         // Pulsante toggle per mostrare/nascondere il menu
         Button toggleMenuButton = createStyledButton("Menu", "#333333");
         toggleMenuButton.setStyle(
                 "-fx-background-color: rgba(40, 40, 40, 0.8);" +
-                        "-fx-border-color: gold;" +
+                        "-fx-border-color: #666666;" +
                         "-fx-border-width: 2;" +
-                        "-fx-font-size: 16px;" +
-                        "-fx-text-fill: gold;" +
+                        "-fx-font-size: 14px;" +
+                        "-fx-text-fill: #DDDDDD;" +
                         "-fx-border-radius: 10;" +
                         "-fx-background-radius: 10;"
         );
@@ -584,134 +585,143 @@ public class GameScreen {
 
         return menu;
     }
-
     private Button createMenuButton(String text, Runnable action) {
         Button button = new Button(text);
         button.setStyle(
-                "-fx-background-color: rgba(30, 30, 30, 0.95);" + // Sfondo scuro opaco
-                        "-fx-text-fill: gold;" +                          // Testo dorato
-                        "-fx-font-size: 16px;" +                          // Dimensione font
-                        "-fx-font-family: 'Times New Roman';" +           // Font gotico
-                        "-fx-border-color: gold;" +                       // Bordo dorato
-                        "-fx-border-width: 2;" +
-                        "-fx-border-radius: 10;" +
+                "-fx-background-color: #2A2A2A;" +
+                        "-fx-text-fill: #DDDDDD;" +
+                        "-fx-padding: 12px;" +
                         "-fx-background-radius: 10;" +
-                        "-fx-effect: dropshadow(gaussian, gold, 10, 0.8, 0, 0);" // Glow dorato attorno al pulsante
+                        "-fx-border-color: #666666;" +
+                        "-fx-border-width: 2px;" +
+                        "-fx-border-radius: 10;" +
+                        "-fx-effect: dropshadow(gaussian, #000000, 10, 0.8, 0, 2);" +
+                        "-fx-cursor: hand;"
         );
+        button.setFont(FontUtils.PIXEL_HORROR);
+        button.setMinWidth(200);
+        button.setMinHeight(60);
 
         button.setOnAction(e -> action.run()); // Collegamento alla funzione passata
 
         button.setOnMouseEntered(e -> button.setStyle(
-                "-fx-background-color: rgba(50, 50, 50, 1);" +    // Sfondo più chiaro al passaggio del mouse
-                        "-fx-text-fill: white;" +                         // Testo bianco
-                        "-fx-font-size: 16px;" +
-                        "-fx-font-family: 'Times New Roman';" +
-                        "-fx-border-color: gold;" +
-                        "-fx-border-width: 2;" +
-                        "-fx-border-radius: 10;" +
-                        "-fx-background-radius: 10;" +
-                        "-fx-effect: dropshadow(gaussian, gold, 20, 0.9, 0, 0);" // Glow più intenso
+                "-fx-background-color: #555555;" +
+                        "-fx-text-fill: #ffffff;" +
+                        "-fx-padding: 12px;" +
+                        "-fx-background-radius: 6;" +
+                        "-fx-border-color: #888888;" +
+                        "-fx-border-width: 3px;" +
+                        "-fx-border-radius: 6;" +
+                        "-fx-effect: dropshadow(gaussian, #444444, 20, 0.8, 0, 0);"
         ));
         button.setOnMouseExited(e -> button.setStyle(
-                "-fx-background-color: rgba(30, 30, 30, 0.95);" +
-                        "-fx-text-fill: gold;" +
-                        "-fx-font-size: 16px;" +
-                        "-fx-font-family: 'Times New Roman';" +
-                        "-fx-border-color: gold;" +
-                        "-fx-border-width: 2;" +
-                        "-fx-border-radius: 10;" +
+                "-fx-background-color: #2A2A2A;" +
+                        "-fx-text-fill: #DDDDDD;" +
+                        "-fx-padding: 12px;" +
                         "-fx-background-radius: 10;" +
-                        "-fx-effect: dropshadow(gaussian, gold, 10, 0.8, 0, 0);"
+                        "-fx-border-color: #666666;" +
+                        "-fx-border-width: 2px;" +
+                        "-fx-border-radius: 10;" +
+                        "-fx-effect: dropshadow(gaussian, #000000, 10, 0.8, 0, 2);" +
+                        "-fx-cursor: hand;"
         ));
+        button.setOnMousePressed(e -> button.setStyle(
+                "-fx-background-color: #222222;" +
+                "-fx-text-fill: #aaaaaa;" +
+                "-fx-padding: 12px;" +
+                "-fx-background-radius: 6;" +
+                "-fx-border-color: #444444;" +
+                "-fx-border-width: 3px;" +
+                "-fx-border-radius: 6;" +
+                "-fx-effect: dropshadow(gaussian, #111111, 30, 1.0, 0, 0);"));
 
         return button;
     }
+
+
 
     /**
      * Funzione per mostrare il regolamento del gioco
      */
 
     private void showRules() {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Regole del Gioco");
-        alert.setHeaderText("Regole");
-        alert.setContentText("Devo mettere le regole");
-        alert.showAndWait();
+        showCustomPopup("Rules", "Devo mettere le regole", () -> {});
     }
+
 
     /**
      * Funzione per mostrare i crediti del gioco
      */
 
     private void showCredits() {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Crediti");
-        alert.setHeaderText("Crediti");
-        alert.setContentText("Creato da Tommaso Patriarca, Alessandro Anastasio, Michele Comalli e Marco Barlascini");
-        alert.showAndWait();
+        showCustomPopup("Credits", "Creato da Tommaso Patriarca, Alessandro Anastasio, Michele Comalli e Marco Barlascini", () -> {});
     }
+
 
     /**
      * Funzione per mostrare i controlli del volume
      */
 
     private void showVolumeControl() {
-        Stage volumeStage = new Stage();
-        volumeStage.setTitle("Regolazione Volume");
+        StackPane overlayPane = new StackPane();
+        overlayPane.setStyle("-fx-background-color: rgba(0, 0, 0, 0.5);");
 
-        VBox volumeLayout = new VBox(20);
-        volumeLayout.setAlignment(Pos.CENTER);
-        volumeLayout.setPadding(new Insets(20));
-        volumeLayout.setStyle("-fx-background-color: rgba(30, 30, 30, 0.95); -fx-border-color: gold; -fx-border-width: 3;");
+        VBox popup = new VBox(20);
+        popup.setAlignment(Pos.CENTER);
+        popup.setStyle(
+                "-fx-background-color: rgba(42, 42, 42, 0.9);" +
+                        "-fx-border-color: #666666;" +
+                        "-fx-border-width: 2;" +
+                        "-fx-border-radius: 10;" +
+                        "-fx-background-radius: 10;" +
+                        "-fx-padding: 20;" +
+                        "-fx-effect: dropshadow(gaussian, #000000, 15, 0.7, 0, 2);"
+        );
 
-        Label volumeLabel = new Label("Regolazione Volume");
-        volumeLabel.setTextFill(Color.GOLD);
-        volumeLabel.setFont(Font.font("Arial", FontWeight.BOLD, 18));
+        Label titleLabel = new Label("Volume Control");
+        titleLabel.setStyle(
+                "-fx-text-fill: gold;" +
+                        "-fx-font-size: 20px;" +
+                        "-fx-font-weight: bold;" +
+                        "-fx-font-family: 'Arial';"
+        );
 
-        // Slider per il volume
         Slider volumeSlider = new Slider(0, 1, MusicManager.getVolume());
+        volumeSlider.setPrefWidth(200); // Dimensione più compatta
         volumeSlider.setShowTickMarks(true);
         volumeSlider.setShowTickLabels(true);
         volumeSlider.setMajorTickUnit(0.25);
         volumeSlider.setMinorTickCount(4);
         volumeSlider.setBlockIncrement(0.05);
         volumeSlider.setStyle(
-                "-fx-control-inner-background: #222; " +
-                        "-fx-accent: gold; " +
+                "-fx-control-inner-background: #222;" +
+                        "-fx-accent: gold;" +
                         "-fx-track-color: #555;" +
-                        "-fx-thumb-color: #FFD700;" // Colore del thumb
+                        "-fx-thumb-color: #FFD700;"
         );
 
-        // Etichetta dinamica per mostrare il valore del volume
         Label volumeValueLabel = new Label(String.format("Volume: %.0f%%", MusicManager.getVolume() * 100));
-        volumeValueLabel.setTextFill(Color.LIGHTGRAY);
-        volumeValueLabel.setFont(Font.font("Arial", FontWeight.BOLD, 14));
+        volumeValueLabel.setStyle("-fx-text-fill: #DDDDDD; -fx-font-size: 14px;");
 
-        // Listener per aggiornare il valore dinamico del volume
         volumeSlider.valueProperty().addListener((observable, oldValue, newValue) -> {
             MusicManager.setVolume(newValue.doubleValue());
             volumeValueLabel.setText(String.format("Volume: %.0f%%", newValue.doubleValue() * 100));
         });
 
-        // Pulsante di chiusura
-        Button closeButton = new Button("Chiudi");
-        closeButton.setStyle(
-                "-fx-background-color: rgba(30, 30, 30, 0.8); " +
-                        "-fx-border-color: gold; " +
-                        "-fx-border-width: 2; " +
-                        "-fx-font-size: 14px; " +
-                        "-fx-text-fill: gold; " +
-                        "-fx-background-radius: 10px;"
-        );
-        closeButton.setOnAction(e -> volumeStage.close());
+        HBox buttonContainer = new HBox(10);
+        buttonContainer.setAlignment(Pos.CENTER);
 
-        // Layout pulsanti
-        HBox buttonLayout = new HBox(closeButton);
-        buttonLayout.setAlignment(Pos.CENTER);
-        volumeLayout.getChildren().addAll(volumeLabel, volumeSlider, volumeValueLabel, buttonLayout);
-        Scene volumeScene = new Scene(volumeLayout, 400, 250);
-        volumeStage.setScene(volumeScene);
-        volumeStage.show();
+        Button closeButton = new Button("Close");
+        stylePopupButton(closeButton, "#f44336", "#E57373");
+        closeButton.setOnAction(e -> overlayPane.setVisible(false));
+
+        buttonContainer.getChildren().add(closeButton);
+
+        popup.getChildren().addAll(titleLabel, volumeSlider, volumeValueLabel, buttonContainer);
+        overlayPane.getChildren().add(popup);
+        StackPane.setAlignment(overlayPane, Pos.CENTER);
+
+        root.getChildren().add(overlayPane); // Aggiungi il popup al layout principale
     }
 
     /**
@@ -719,33 +729,40 @@ public class GameScreen {
      */
 
     private void surrender() {
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle("Arrendersi");
-        alert.setHeaderText("Vuoi arrenderti?");
-        alert.setContentText("Questa azione terminerà la partita.");
-        if (alert.showAndWait().get() == ButtonType.OK) {
-            System.exit(0);
-        }
+        showCustomPopup("Surrender", "Vuoi arrenderti? Questa azione terminerà la partita.", () -> System.exit(0));
     }
+    /**
+     * Funzione per chiudere il gioco
+     */
+
+    private void closeGame() {
+        showCustomPopup("Surrender", "Vuoi chiudere il gioco? Perderai la partita", () -> System.exit(0));
+    }
+
+
 
     private void styleHealthLabel(Label label, Color textColor) {
-        label.setFont(Font.font("Times New Roman", FontWeight.BOLD, 18)); // Font classico e gotico
-        label.setTextFill(textColor);
+        label.setFont(FontUtils.PIXEL_HORROR); // Applica il font personalizzato
+        label.setTextFill(textColor); // Imposta il colore del testo
         label.setStyle(
-                "-fx-background-color: rgba(30, 30, 30, 0.9); " +
-                        "-fx-border-color: black; " +
-                        "-fx-border-width: 2px; " +
-                        "-fx-padding: 8 16; " +
-                        "-fx-border-radius: 5; " +
-                        "-fx-background-radius: 5;"
+                "-fx-background-color: #2A2A2A;" +
+                        "-fx-font-size: 20px;"+
+                        "-fx-text-fill: #DDDDDD;" +
+                        "-fx-padding: 8px;" +
+                        "-fx-background-radius: 10;" +
+                        "-fx-border-color: #666666;" +
+                        "-fx-border-width: 2px;" +
+                        "-fx-border-radius: 10;" +
+                        "-fx-effect: dropshadow(gaussian, #000000, 10, 0.8, 0, 2);" // Ombra
         );
     }
-
 
     private HBox createCustomTitleBar(Stage stage) {
         HBox titleBar = new HBox();
         titleBar.setAlignment(Pos.CENTER_LEFT);
-        titleBar.setStyle("-fx-background-color: linear-gradient(to right, #1E1E1E, #333333); -fx-padding: 4; -fx-border-color: #444; -fx-border-width: 0 0 1 0;");
+        titleBar.setStyle("-fx-background-color: linear-gradient(to right, #1E1E1E, #333333); "
+                + "-fx-padding: 4; -fx-border-color: #444; -fx-border-width: 0 0 1 0; "
+                + "-fx-effect: dropshadow(gaussian, #000000, 10, 0.7, 0, 1);");
         titleBar.setPrefHeight(40);
 
         // Title label
@@ -797,6 +814,11 @@ public class GameScreen {
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
         titleBar.getChildren().addAll(titleLabel, spacer, minimizeButton, closeButton);
+        ImageView icon = new ImageView(new Image(Objects.requireNonNull(getClass().getResourceAsStream("/icons/Icon1.png"))));
+        icon.setFitHeight(20);
+        icon.setFitWidth(20);
+        titleBar.getChildren().add(0, icon);
+
         return titleBar;
     }
 
@@ -856,6 +878,102 @@ public class GameScreen {
         controller.turn(); // Resetta il controller per un nuovo round
         updateGameDisplay(); // Aggiorna la schermata per riflettere il nuovo stato
         startPlayerTurn(); // Inizia il turno del giocatore
+    }
+
+    private void showCustomPopup(String title, String message, Runnable onConfirm) {
+        StackPane overlayPane = new StackPane();
+        overlayPane.setStyle(
+                "-fx-background-color: rgba(0, 0, 0, 0.5);" + // Sfondo semi-trasparente
+                        "-fx-padding: 20;" // Spaziatura interna
+        );
+
+        VBox popup = new VBox(20);
+        popup.setAlignment(Pos.CENTER);
+        popup.setStyle(
+                "-fx-background-color: rgba(42, 42, 42, 0.9);" + // Sfondo scuro opaco
+                        "-fx-border-color: #666666;" +                  // Bordo grigio scuro
+                        "-fx-border-width: 2;" +                       // Spessore del bordo
+                        "-fx-border-radius: 10;" +                     // Angoli arrotondati
+                        "-fx-background-radius: 10;" +                 // Angoli arrotondati dello sfondo
+                        "-fx-effect: dropshadow(gaussian, #000000, 15, 0.7, 0, 2);" // Ombra
+        );
+
+        Label titleLabel = new Label(title);
+        titleLabel.setStyle(
+                "-fx-text-fill: gold;" +     // Testo dorato
+                        "-fx-font-size: 20px;" + // Dimensione font
+                        "-fx-font-weight: bold;" + // Grassetto
+                        "-fx-font-family: 'Arial';"
+        );
+
+        Label messageLabel = new Label(message);
+        messageLabel.setWrapText(true);
+        messageLabel.setAlignment(Pos.CENTER);
+        messageLabel.setStyle(
+                "-fx-text-fill: #DDDDDD;" +  // Testo chiaro
+                        "-fx-font-size: 16px;" + // Dimensione font
+                        "-fx-font-family: 'Arial';"
+        );
+
+        HBox buttonContainer = new HBox(10);
+        buttonContainer.setAlignment(Pos.CENTER);
+
+        Button confirmButton = new Button("Confirm");
+        stylePopupButton(confirmButton, "#4CAF50", "#66BB6A"); // Verde per conferma
+        confirmButton.setOnAction(e -> {
+            onConfirm.run();
+            overlayPane.setVisible(false);
+        });
+
+        Button cancelButton = new Button("Cancel");
+        stylePopupButton(cancelButton, "#f44336", "#E57373"); // Rosso per annulla
+        cancelButton.setOnAction(e -> overlayPane.setVisible(false));
+
+        buttonContainer.getChildren().addAll(confirmButton, cancelButton);
+
+        popup.getChildren().addAll(titleLabel, messageLabel, buttonContainer);
+
+        overlayPane.getChildren().add(popup);
+        StackPane.setAlignment(overlayPane, Pos.CENTER);
+
+        root.getChildren().add(overlayPane); // Aggiungi il popup al layout principale
+    }
+
+    private void stylePopupButton(Button button, String baseColor, String hoverColor) {
+        button.setStyle(
+                "-fx-background-color: " + baseColor + ";" +
+                        "-fx-text-fill: white;" +
+                        "-fx-font-size: 14px;" +
+                        "-fx-font-weight: bold;" +
+                        "-fx-background-radius: 5;" +
+                        "-fx-border-radius: 5;" +
+                        "-fx-border-color: #444444;" +
+                        "-fx-border-width: 1;" +
+                        "-fx-effect: dropshadow(gaussian, #000000, 5, 0.7, 0, 1);"
+        );
+
+        button.setOnMouseEntered(e -> button.setStyle(
+                "-fx-background-color: " + hoverColor + ";" +
+                        "-fx-text-fill: white;" +
+                        "-fx-font-size: 14px;" +
+                        "-fx-font-weight: bold;" +
+                        "-fx-background-radius: 5;" +
+                        "-fx-border-radius: 5;" +
+                        "-fx-border-color: #444444;" +
+                        "-fx-border-width: 1;" +
+                        "-fx-effect: dropshadow(gaussian, #000000, 5, 0.7, 0, 1);"
+        ));
+        button.setOnMouseExited(e -> button.setStyle(
+                "-fx-background-color: " + baseColor + ";" +
+                        "-fx-text-fill: white;" +
+                        "-fx-font-size: 14px;" +
+                        "-fx-font-weight: bold;" +
+                        "-fx-background-radius: 5;" +
+                        "-fx-border-radius: 5;" +
+                        "-fx-border-color: #444444;" +
+                        "-fx-border-width: 1;" +
+                        "-fx-effect: dropshadow(gaussian, #000000, 5, 0.7, 0, 1);"
+        ));
     }
 
 

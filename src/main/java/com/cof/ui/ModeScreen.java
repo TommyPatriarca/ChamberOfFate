@@ -3,6 +3,7 @@ package com.cof.ui;
 import com.cof.utils.FontUtils;
 import com.controller.Controller;
 import javafx.animation.FadeTransition;
+import javafx.animation.Interpolator;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -57,7 +58,12 @@ public class ModeScreen {
         Scene scene = new Scene(layoutWithBar, primaryStage.getWidth(), primaryStage.getHeight(), Color.BLACK);
 
         // Transizione di fade-in
-        FadeTransition fadeIn = new FadeTransition(Duration.seconds(1), root);
+        FadeTransition fadeIn = new FadeTransition(Duration.seconds(1.5), root);
+        fadeIn.setFromValue(0);
+        fadeIn.setToValue(1);
+        fadeIn.setCycleCount(1);
+        fadeIn.setInterpolator(Interpolator.EASE_BOTH);
+
         fadeIn.setFromValue(0);
         fadeIn.setToValue(1);
 
@@ -68,7 +74,9 @@ public class ModeScreen {
     private HBox createCustomTitleBar(Stage stage) {
         HBox titleBar = new HBox();
         titleBar.setAlignment(Pos.CENTER_LEFT);
-        titleBar.setStyle("-fx-background-color: linear-gradient(to right, #1E1E1E, #333333); -fx-padding: 4; -fx-border-color: #444; -fx-border-width: 0 0 1 0;");
+        titleBar.setStyle("-fx-background-color: linear-gradient(to right, #1E1E1E, #333333); "
+                + "-fx-padding: 4; -fx-border-color: #444; -fx-border-width: 0 0 1 0; "
+                + "-fx-effect: dropshadow(gaussian, #000000, 10, 0.7, 0, 1);");
         titleBar.setPrefHeight(40);
 
         // Title label
@@ -120,6 +128,11 @@ public class ModeScreen {
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
         titleBar.getChildren().addAll(titleLabel, spacer, minimizeButton, closeButton);
+        ImageView icon = new ImageView(new Image(Objects.requireNonNull(getClass().getResourceAsStream("/icons/Icon1.png"))));
+        icon.setFitHeight(20);
+        icon.setFitWidth(20);
+        titleBar.getChildren().add(0, icon);
+
         return titleBar;
     }
 
@@ -128,8 +141,17 @@ public class ModeScreen {
         Button button = new Button(text);
         styleButton(button);
 
-        button.setOnMouseEntered(e -> button.setStyle(getHoverStyle()));
-        button.setOnMouseExited(e -> styleButton(button));
+        button.setOnMouseEntered(e -> {
+            button.setScaleX(1.05);
+            button.setScaleY(1.05);
+            button.setStyle(getHoverStyle());
+        });
+        button.setOnMouseExited(e -> {
+            button.setScaleX(1.0);
+            button.setScaleY(1.0);
+            styleButton(button);
+        });
+
         button.setOnMousePressed(e -> button.setStyle(getPressedStyle()));
         button.setOnMouseReleased(e -> styleButton(button));
 
@@ -153,20 +175,20 @@ public class ModeScreen {
 
     private void styleButton(Button button) {
         button.setStyle(
-                "-fx-background-color: #333333;" +
-                        "-fx-text-fill: #cccccc;" +
+                "-fx-background-color: #2A2A2A;" +
+                        "-fx-text-fill: #DDDDDD;" +
                         "-fx-padding: 12px;" +
-                        "-fx-background-radius: 6;" +
-                        "-fx-border-color: #555555;" +
-                        "-fx-border-width: 3px;" +
-                        "-fx-border-radius: 6;" +
-                        "-fx-effect: dropshadow(gaussian, #222222, 15, 0.5, 0, 0);" +
-                        "-fx-cursor: hand;"
-        );
+                        "-fx-background-radius: 10;" +
+                        "-fx-border-color: #666666;" +
+                        "-fx-border-width: 2px;" +
+                        "-fx-border-radius: 10;" +
+                        "-fx-effect: dropshadow(gaussian, #000000, 10, 0.8, 0, 2);" +
+                        "-fx-cursor: hand;");
         button.setFont(FontUtils.PIXEL_HORROR);
-        button.setMinWidth(220);
-        button.setMinHeight(60);
+        button.setMinWidth(240);
+        button.setMinHeight(70);
     }
+
 
     private String getHoverStyle() {
         return "-fx-background-color: #555555;" +
