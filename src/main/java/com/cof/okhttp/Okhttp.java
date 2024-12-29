@@ -37,12 +37,75 @@ public class Okhttp {
     public boolean createLobby(String lobbyName) {
 
         String action = "create";
-        int id = (int) (Math.random() * 1000);
 
         RequestBody formBody = new FormBody.Builder()
                 .add("azione", action)
                 .add("lobbyName", lobbyName)
-                .add("id", String.valueOf(id))
+                .build();
+
+        Request request = new Request.Builder()
+                .url(SERVER_URL)
+                .post(formBody)
+                .build();
+
+        new Thread(() -> {
+            try {
+                Response response = client.newCall(request).execute();
+
+                // Mostra la risposta nella text area
+                if (response.isSuccessful()) {
+                    String responseBody = response.body().string();
+                    System.out.println("Risposta del server: \n" + responseBody);
+                } else {
+                    System.out.println("Errore del server: \n" + response.message());
+                }
+            } catch (IOException ex) {
+                // Mostra un errore in caso di problemi con la connessione
+                System.out.println("Errore di connessione: \n" + ex.getMessage());
+            }
+        }).start();
+        return true;
+    }
+
+    public boolean getLobbyList() {
+
+        String action = "getLista";
+
+        RequestBody formBody = new FormBody.Builder()
+                .add("azione", action)
+                .build();
+
+        Request request = new Request.Builder()
+                .url(SERVER_URL)
+                .post(formBody)
+                .build();
+
+        new Thread(() -> {
+            try {
+                Response response = client.newCall(request).execute();
+
+                // Mostra la risposta nella text area
+                if (response.isSuccessful()) {
+                    String responseBody = response.body().string();
+                    System.out.println("Risposta del server: \n" + responseBody);
+                } else {
+                    System.out.println("Errore del server: \n" + response.message());
+                }
+            } catch (IOException ex) {
+                // Mostra un errore in caso di problemi con la connessione
+                System.out.println("Errore di connessione: \n" + ex.getMessage());
+            }
+        }).start();
+        return true;
+    }
+
+    public boolean joinLobby(String lobbyName) {
+
+        String action = "join";
+
+        RequestBody formBody = new FormBody.Builder()
+                .add("azione", action)
+                .add("lobbyName", lobbyName)
                 .build();
 
         Request request = new Request.Builder()

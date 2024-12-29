@@ -23,9 +23,6 @@ public class FontUtils {
 
     // Load custom fonts
     public static final Font PIXEL_HORROR = loadFont("/fonts/pixelHorror.ttf", 20);
-
-    // Default fonts for fallback
-    public static final String TITLE_FONT = "Arial Black";
     public static final String SUBTITLE_FONT = "Arial";
     public static final String BODY_FONT = "Verdana";
 

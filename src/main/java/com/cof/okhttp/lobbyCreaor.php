@@ -1,18 +1,16 @@
 <?php
-// Classe Lobby per rappresentare una singola lobby con nome e ID
+// Classe Lobby per rappresentare una singola lobby con nome
 class Lobby {
     public $lobbyName; // Nome della lobby
-    public $id;        // ID della lobby
 
     // Costruttore per inizializzare un oggetto Lobby
-    public function __construct($lobbyName, $id) {
+    public function __construct($lobbyName) {
         $this->lobbyName = $lobbyName;
-        $this->id = $id;
     }
 
     // Metodo opzionale per rappresentare la lobby come stringa
     public function __toString() {
-        return "lobbyName: $this->lobbyName, id: $this->id";
+        return "lobbyName: $this->lobbyName";
     }
 }
 
@@ -32,7 +30,7 @@ function newLobby($filePath) {
     // Converte ogni elemento dell'array in un oggetto Lobby
     $lobbyList = [];
     foreach ($lobbyArray as $lobbyData) {
-        $lobbyList[] = new Lobby($lobbyData['lobbyName'], $lobbyData['id']);
+        $lobbyList[] = new Lobby($lobbyData['lobbyName']);
     }
 
     return $lobbyList; // Restituisce un array di oggetti Lobby
@@ -43,8 +41,7 @@ function salvaLobby($filePath, $lobbyList) {
     $lobbyArray = [];
     foreach ($lobbyList as $lobby) {
         $lobbyArray[] = [
-            'lobbyName' => $lobby->lobbyName,
-            'id' => $lobby->id
+            'lobbyName' => $lobby->lobbyName
         ];
     }
 
@@ -55,11 +52,10 @@ function salvaLobby($filePath, $lobbyList) {
 }
 
 // Funzione per creare un file specifico per una lobby
-function creaFileLobby($lobbyName, $id) {
+function creaFileLobby($lobbyName) {
     $fileName = $lobbyName . '.json'; // Nome file basato su lobbyName
     $lobbyData = [
         'lobbyName' => $lobbyName,
-        'id' => $id,
         'created_at' => date('Y-m-d H:i:s') // Timestamp di creazione
     ];
 
@@ -82,25 +78,27 @@ try {
     if ($httpMethod === 'POST') {
         $azione = $_POST['azione'] ?? ''; // join o create
         $lobbyName = $_POST['lobbyName'] ?? '';
-        $id = $_POST['id'] ?? '';
     } elseif ($httpMethod === 'GET') {
         $azione = $_GET['azione'] ?? ''; // join o create
         $lobbyName = $_GET['lobbyName'] ?? '';
-        $id = $_GET['id'] ?? '';
     } else {
         throw new Exception('Metodo HTTP non supportato');
     }
 
-    if (empty($azione) || empty($lobbyName) || empty($id)) {
-        throw new Exception('Azione, lobbyName e id sono obbligatori');
+    if (empty($azione)) {
+        throw new Exception('Azione è obbligatoria');
     }
 
     $lobbyList = newLobby($lobbyFile);
 
     if ($azione === 'join') {
+        if (empty($lobbyName)) {
+            throw new Exception('Il campo lobbyName è obbligatorio per l\'azione join.');
+        }
+
         $lobbyTrovata = false;
         foreach ($lobbyList as $lobby) {
-            if ($lobby->lobbyName === $lobbyName && $lobby->id === $id) {
+            if ($lobby->lobbyName === $lobbyName) {
                 $lobbyTrovata = true;
                 break;
             }
@@ -113,9 +111,13 @@ try {
             echo json_encode(['status' => 'fail', 'message' => 'Lobby non trovata']);
         }
     } elseif ($azione === 'create') {
+        if (empty($lobbyName)) {
+            throw new Exception('Il campo lobbyName è obbligatorio per l\'azione create.');
+        }
+
         $lobbyEsistente = false;
         foreach ($lobbyList as $lobby) {
-            if ($lobby->id === $id || $lobby->lobbyName === $lobbyName) {
+            if ($lobby->lobbyName === $lobbyName) {
                 $lobbyEsistente = true;
                 break;
             }
@@ -126,18 +128,25 @@ try {
             echo json_encode(['status' => 'fail', 'message' => 'Lobby già esistente']);
         } else {
             // Aggiungi la nuova lobby all'elenco
-            $lobbyList[] = new Lobby($lobbyName, $id);
+            $lobbyList[] = new Lobby($lobbyName);
 
             // Salva l'elenco delle lobby
             salvaLobby($lobbyFile, $lobbyList);
 
             // Crea un file specifico per la nuova lobby
-            creaFileLobby($lobbyName, $id);
+            creaFileLobby($lobbyName);
 
             echo json_encode(['status' => 'success', 'message' => 'Creazione riuscita']);
         }
+    } elseif ($azione === 'getLista') {
+        header('Content-Type: application/json');
+        $lobbyNames = array_map(function ($lobby) {
+            return $lobby->lobbyName;
+        }, $lobbyList);
+
+        echo json_encode(['status' => 'success', 'lobbies' => $lobbyNames]);
     } else {
-        throw new Exception('Azione non valida. Usa "join" o "create".');
+        throw new Exception('Azione non valida. Usa "join", "create" o "getLista".');
     }
 } catch (Exception $e) {
     http_response_code(400);
