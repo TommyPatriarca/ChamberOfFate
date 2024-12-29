@@ -175,6 +175,11 @@ public class Controller {
                 }
             }
 
+            //Controllo se entrambi non hanno sballato
+            else if(runCountP1>21 && runCountP2 > 21){
+                return -1;
+            }
+
             //Controllo se P1 non ha sballato
             else if(runCountP1>21){
                 //Alrimenti si spara P1
