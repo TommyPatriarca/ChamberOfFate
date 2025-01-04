@@ -8,7 +8,7 @@ import java.io.IOException;
 
 public class Okhttp {
 
-    private static final String SERVER_URL="http://chamberoffate.altervista.org/WS.php";
+    private static final String SERVER_URL="http://chamberoffate.altervista.org/lobbyCreator.php";
     private OkHttpClient client = new OkHttpClient();
     private String id=null;
     private String password=null;
