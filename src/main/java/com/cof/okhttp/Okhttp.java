@@ -8,33 +8,22 @@ import java.io.IOException;
 
 public class Okhttp {
 
-    private static final String SERVER_URL="http://chamberoffate.altervista.org/lobbyCreator.php";
+    private static final String SERVER_URL_1="http://chamberoffate.altervista.org/lobbyCreator.php";
+    private static final String SERVER_URL_2="http://chamberoffate.altervista.org/gestoreLobby.php";
     private OkHttpClient client = new OkHttpClient();
     private String id=null;
     private String password=null;
 
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    private boolean getIds(){
-        //get the ids from json file to see if the id given to a new game is already used
-        return true;
-    }
-
     public boolean createLobby(String lobbyName) {
+
+        /*
+        * Needed for this call:
+        *
+        * - lobbyName -> given from the input of the method
+        * - azione -> given inside the method (create)
+        * - server url used -> SERVER_URL_1
+        *
+        */
 
         String action = "create";
 
@@ -44,7 +33,7 @@ public class Okhttp {
                 .build();
 
         Request request = new Request.Builder()
-                .url(SERVER_URL)
+                .url(SERVER_URL_1)
                 .post(formBody)
                 .build();
 
@@ -69,6 +58,14 @@ public class Okhttp {
 
     public boolean getLobbyList() {
 
+        /*
+        * Needed for this call:
+        *
+        * - azione -> given inside the method (getLista)
+        * - server url used -> SERVER_URL_1
+        *
+        */
+
         String action = "getLista";
 
         RequestBody formBody = new FormBody.Builder()
@@ -76,7 +73,7 @@ public class Okhttp {
                 .build();
 
         Request request = new Request.Builder()
-                .url(SERVER_URL)
+                .url(SERVER_URL_1)
                 .post(formBody)
                 .build();
 
@@ -109,7 +106,7 @@ public class Okhttp {
                 .build();
 
         Request request = new Request.Builder()
-                .url(SERVER_URL)
+                .url(SERVER_URL_1)
                 .post(formBody)
                 .build();
 
