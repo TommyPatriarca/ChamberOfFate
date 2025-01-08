@@ -8,8 +8,6 @@ import javafx.stage.Stage;
 public class ChamberOfFate extends Application {
     @Override
     public void start(Stage primaryStage) {
-        /*Okhttp okhttp=new Okhttp();
-        okhttp.getLobbyList();*/
         PcLoadingScreen loadingScreen = new PcLoadingScreen();
         loadingScreen.start(primaryStage);
     }
