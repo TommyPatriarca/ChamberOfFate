@@ -1,8 +1,11 @@
 package com.cof.okhttp;
 
+import javafx.application.Platform;
 import okhttp3.*;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.function.Consumer;
 
 
 public class Okhttp {
@@ -158,4 +161,45 @@ public class Okhttp {
         //Request for second url---------------------------------------------------------------
         return true;
     }
+
+    public void getLobbyListAndUpdateUI(Consumer<List<String>> callback) {
+        String action = "getLista";
+
+        RequestBody formBody = new FormBody.Builder()
+                .add("azione", action)
+                .build();
+
+        Request request = new Request.Builder()
+                .url(SERVER_URL_1)
+                .post(formBody)
+                .build();
+
+        new Thread(() -> {
+            try {
+                Response response = client.newCall(request).execute();
+
+                if (response.isSuccessful()) {
+                    String responseBody = response.body().string();
+                    System.out.println("Lobby ricevute dal server: " + responseBody);
+
+                    // Parso la risposta
+                    List<String> lobbies = parseLobbies(responseBody);
+                    Platform.runLater(() -> callback.accept(lobbies));
+                } else {
+                    System.out.println("Errore del server: " + response.message());
+                }
+            } catch (IOException ex) {
+                System.out.println("Errore di connessione: " + ex.getMessage());
+            }
+        }).start();
+    }
+
+    private List<String> parseLobbies(String responseBody) {
+        // Supponiamo che la risposta sia separata da righe
+        if (responseBody == null || responseBody.trim().isEmpty()) {
+            return List.of();
+        }
+        return List.of(responseBody.split("\n"));
+    }
+
 }
