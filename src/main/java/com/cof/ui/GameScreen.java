@@ -35,7 +35,7 @@ public class GameScreen {
     private SoundManager soundManager = new SoundManager();
     private Controller controller;
     private HBox playerHandDisplay, opponentHandDisplay;
-    private Label currentPlayerLabel, player1HP, player2HP;
+    private Label currentPlayerLabel, player1HP, player2HP,player1ScoreLabel, player2ScoreLabel;
     private Button drawCardButton, passTurnButton;
     private StackPane root;
     private int currentRound = 1;
@@ -66,20 +66,29 @@ public class GameScreen {
         BorderPane healthPane = new BorderPane();
         healthPane.setPadding(new Insets(10));
 
-        // Vite del Player 1
+        // Vite e punteggio del Player 1
+        VBox player1Box = new VBox(5);
         player1HP = new Label("Player 1 HP: 5");
         styleHealthLabel(player1HP, Color.LIGHTGREEN);
-        BorderPane.setAlignment(player1HP, Pos.TOP_LEFT);
-        BorderPane.setMargin(player1HP, new Insets(10));
+        player1ScoreLabel = new Label("Score: 0");
+        styleScoreLabel(player1ScoreLabel);
+        player1Box.getChildren().addAll(player1HP, player1ScoreLabel);
+        BorderPane.setAlignment(player1Box, Pos.TOP_LEFT);
+        BorderPane.setMargin(player1Box, new Insets(10));
 
-        // Vite del Player 2
+// Vite e punteggio del Player 2
+        VBox player2Box = new VBox(5);
         player2HP = new Label("Player 2 HP: 5");
         styleHealthLabel(player2HP, Color.RED);
-        BorderPane.setAlignment(player2HP, Pos.TOP_RIGHT);
-        BorderPane.setMargin(player2HP, new Insets(10));
+        player2ScoreLabel = new Label("Score: 0");
+        styleScoreLabel(player2ScoreLabel);
+        player2Box.getChildren().addAll(player2HP, player2ScoreLabel);
+        BorderPane.setAlignment(player2Box, Pos.TOP_RIGHT);
+        BorderPane.setMargin(player2Box, new Insets(10));
 
-        healthPane.setLeft(player1HP);
-        healthPane.setRight(player2HP);
+        healthPane.setLeft(player1Box);
+        healthPane.setRight(player2Box);
+
 
         VBox gameArea = createGameArea();
         gameArea.setAlignment(Pos.CENTER);
@@ -170,7 +179,7 @@ public class GameScreen {
 
         playerHandDisplay = new HBox(10);
         playerHandDisplay.setAlignment(Pos.CENTER);
-
+        updateScores();
         gameArea.getChildren().addAll(opponentHandDisplay, playerHandDisplay);
         return gameArea;
     }
@@ -193,6 +202,7 @@ public class GameScreen {
         passTurnButton = createStyledButton("STA", "#f44336");
 
         drawCardButton.setOnAction(e -> {
+            updateScores();
             if (isPlayerTurn) {
                 controller.hitCard(true); // Il giocatore pesca una carta
                 updateGameDisplay();
@@ -217,7 +227,9 @@ public class GameScreen {
         return controls;
     }
 
-
+    /**
+     * Funzione per fare giocare il turno al bot
+     */
     private void botTurn(boolean completeTurn) {
         setPlayerControlsEnabled(false); // Disabilita i controlli del giocatore
         currentPlayerLabel.setText("Bot's Turn");
@@ -229,6 +241,7 @@ public class GameScreen {
             if (botDecidesToHit) {
                 controller.hitCard(false); // Il bot pesca una carta
                 updateGameDisplay();
+                updateScores();
 
                 // Se il bot ha sballato
                 if (controller.checkCards(controller.getPlayer2(), false) > 21) {
@@ -265,14 +278,19 @@ public class GameScreen {
         }
     }
 
+    /**
+     * Funzione per iniziare il turno del player
+     */
     private void startPlayerTurn() {
         isPlayerTurn = true;
         currentPlayerLabel.setText("Your Turn");
         setPlayerControlsEnabled(true); // Abilita i controlli del giocatore
+        updateScores();
     }
 
-
-
+    /**
+     * Funzione per finire il turno del player
+     */
     private void endPlayerTurn(boolean playerStands) {
         isPlayerTurn = false;
 
@@ -291,9 +309,9 @@ public class GameScreen {
         }
     }
 
-
-
-
+    /**
+     * Funzione per controllare se è finito un round
+     */
     private void checkRoundCompletion() {
         int player1Score = controller.checkCards(controller.getPlayer1(), false);
         int player2Score = controller.checkCards(controller.getPlayer2(), false);
@@ -305,9 +323,6 @@ public class GameScreen {
             resolveRound(null); // Termina il round
         }
     }
-
-
-
 
     /**
      * Funzione per creare i bottoni stilizzati passandogli il testo e il colore di sfondo
@@ -349,12 +364,13 @@ public class GameScreen {
                 opponentHandDisplay.getChildren().add(createBackCardView());
             }
         }
+        updateScores();
     }
 
 
 
     /**
-     * Funzione per risolvere il risultato del round
+     * Funzione per risolvere il  round
      */
 
     private void resolveRound(String message) {
@@ -427,6 +443,7 @@ public class GameScreen {
      */
 
     private void updateGameDisplay() {
+
         // Aggiorna la mano del giocatore
         playerHandDisplay.getChildren().clear();
         int playerDeckSize = controller.getPlayer1().getPlayDeck().size();
@@ -449,7 +466,7 @@ public class GameScreen {
                 opponentHandDisplay.getChildren().add(createBackCardView());
             }
         }
-
+        updateScores();
         updatePlayerHP();
     }
 
@@ -534,13 +551,13 @@ public class GameScreen {
     private VBox createMenu() {
         VBox menu = new VBox(20);
         menu.setStyle(
-                "-fx-background-color: rgba(42, 42, 42, 0.6);" + // Sfondo scuro opaco
-                        "-fx-border-color: #666666;" +                  // Bordo grigio scuro
-                        "-fx-border-width: 2;" +                       // Spessore del bordo
-                        "-fx-border-radius: 10;" +                     // Angoli arrotondati
-                        "-fx-background-radius: 10;" +                 // Angoli arrotondati dello sfondo
-                        "-fx-padding: 20;" +                           // Spaziatura interna
-                        "-fx-effect: dropshadow(gaussian, #000000, 15, 0.7, 0, 2);" // Ombra
+                "-fx-background-color: rgba(42, 42, 42, 0.6);" +
+                        "-fx-border-color: #666666;" +
+                        "-fx-border-width: 2;" +
+                        "-fx-border-radius: 10;" +
+                        "-fx-background-radius: 10;" +
+                        "-fx-padding: 20;" +
+                        "-fx-effect: dropshadow(gaussian, #000000, 15, 0.7, 0, 2);"
         );
         menu.setAlignment(Pos.CENTER);
 
@@ -740,7 +757,9 @@ public class GameScreen {
     }
 
 
-
+    /**
+     * Funzione per stilizzare il label contenente le vite dei player
+     */
     private void styleHealthLabel(Label label, Color textColor) {
         label.setFont(FontUtils.PIXEL_HORROR); // Applica il font personalizzato
         label.setTextFill(textColor); // Imposta il colore del testo
@@ -756,7 +775,10 @@ public class GameScreen {
                         "-fx-effect: dropshadow(gaussian, #000000, 10, 0.8, 0, 2);" // Ombra
         );
     }
-
+    /**
+     * Funzione per creare il box della barra del titolo
+     * @return Il box contenente la barra del titolo
+     */
     private HBox createCustomTitleBar(Stage stage) {
         HBox titleBar = new HBox();
         titleBar.setAlignment(Pos.CENTER_LEFT);
@@ -822,11 +844,18 @@ public class GameScreen {
         return titleBar;
     }
 
+    /**
+     * Funzione per abilitare i tasti per pescaro o stare
+     */
     private void setPlayerControlsEnabled(boolean enabled) {
         drawCardButton.setDisable(!enabled);
         passTurnButton.setDisable(!enabled);
     }
 
+    /**
+     * Funzione per creare il label per gli overlay
+     * @return Il label
+     */
     private Label createResultOverlay() {
         Label overlay = new Label();
         overlay.setStyle(
@@ -848,6 +877,9 @@ public class GameScreen {
         return overlay;
     }
 
+    /**
+     * Funzione per mostrare i risultati del round
+     */
     private void showResultOverlay(String message) {
         resultOverlay.setText(message);
         resultOverlay.setVisible(true);
@@ -863,6 +895,9 @@ public class GameScreen {
         fadeIn.play();
     }
 
+    /**
+     * Funzione per nascondere i risultati del round
+     */
     private void hideResultOverlay() {
         FadeTransition fadeOut = new FadeTransition(Duration.seconds(0.5), resultOverlay);
         fadeOut.setFromValue(1);
@@ -874,35 +909,69 @@ public class GameScreen {
         fadeOut.play();
     }
 
-    private void startNewRound() {
-        controller.turn(); // Resetta il controller per un nuovo round
-        updateGameDisplay(); // Aggiorna la schermata per riflettere il nuovo stato
-        startPlayerTurn(); // Inizia il turno del giocatore
+    /**
+     * Funzione per aggiornare il punteggio ovvero la somma dei valori delle carte
+     */
+    private void updateScores() {
+        int player1Score = controller.checkCards(controller.getPlayer1(), false);
+        int player2Score = controller.checkCards(controller.getPlayer2(), false);
+
+        player1ScoreLabel.setText("Score: " + player1Score);
+        player2ScoreLabel.setText("Score: " + "X"); //
     }
 
+    /**
+     * Funzione per stilizzare il label contenente i punteggi
+     */
+    private void styleScoreLabel(Label label) {
+        label.setFont(Font.font("Arial", FontWeight.BOLD, 16));
+        label.setTextFill(Color.GOLD);
+        label.setStyle(
+                "-fx-background-color: rgba(0, 0, 0, 0.6);" +
+                        "-fx-border-color: #FFD700;" +
+                        "-fx-border-width: 2;" +
+                        "-fx-border-radius: 10;" +
+                        "-fx-background-radius: 10;" +
+                        "-fx-padding: 5 10 5 10;" +
+                        "-fx-effect: dropshadow(gaussian, #000000, 10, 0.5, 0, 0);"
+        );
+    }
+
+    /**
+     * Funzione per iniziare un nuovo round nel gioco
+     */
+    private void startNewRound() {
+        controller.turn();
+        updateGameDisplay();
+        startPlayerTurn();
+    }
+
+    /**
+     * Funzione per mostrare un popup
+     */
     private void showCustomPopup(String title, String message, Runnable onConfirm) {
         StackPane overlayPane = new StackPane();
         overlayPane.setStyle(
-                "-fx-background-color: rgba(0, 0, 0, 0.5);" + // Sfondo semi-trasparente
-                        "-fx-padding: 20;" // Spaziatura interna
+                "-fx-background-color: rgba(0, 0, 0, 0.5);" +
+                        "-fx-padding: 20;"
         );
 
         VBox popup = new VBox(20);
         popup.setAlignment(Pos.CENTER);
         popup.setStyle(
-                "-fx-background-color: rgba(42, 42, 42, 0.9);" + // Sfondo scuro opaco
-                        "-fx-border-color: #666666;" +                  // Bordo grigio scuro
-                        "-fx-border-width: 2;" +                       // Spessore del bordo
-                        "-fx-border-radius: 10;" +                     // Angoli arrotondati
-                        "-fx-background-radius: 10;" +                 // Angoli arrotondati dello sfondo
-                        "-fx-effect: dropshadow(gaussian, #000000, 15, 0.7, 0, 2);" // Ombra
+                "-fx-background-color: rgba(42, 42, 42, 0.9);" + //
+                        "-fx-border-color: #666666;" +
+                        "-fx-border-width: 2;" +
+                        "-fx-border-radius: 10;" +
+                        "-fx-background-radius: 10;" +
+                        "-fx-effect: dropshadow(gaussian, #000000, 15, 0.7, 0, 2);"
         );
 
         Label titleLabel = new Label(title);
         titleLabel.setStyle(
-                "-fx-text-fill: gold;" +     // Testo dorato
-                        "-fx-font-size: 20px;" + // Dimensione font
-                        "-fx-font-weight: bold;" + // Grassetto
+                "-fx-text-fill: gold;" +
+                        "-fx-font-size: 20px;" +
+                        "-fx-font-weight: bold;" +
                         "-fx-font-family: 'Arial';"
         );
 
@@ -910,8 +979,8 @@ public class GameScreen {
         messageLabel.setWrapText(true);
         messageLabel.setAlignment(Pos.CENTER);
         messageLabel.setStyle(
-                "-fx-text-fill: #DDDDDD;" +  // Testo chiaro
-                        "-fx-font-size: 16px;" + // Dimensione font
+                "-fx-text-fill: #DDDDDD;" +
+                        "-fx-font-size: 16px;" +
                         "-fx-font-family: 'Arial';"
         );
 
@@ -919,14 +988,14 @@ public class GameScreen {
         buttonContainer.setAlignment(Pos.CENTER);
 
         Button confirmButton = new Button("Confirm");
-        stylePopupButton(confirmButton, "#4CAF50", "#66BB6A"); // Verde per conferma
+        stylePopupButton(confirmButton, "#4CAF50", "#66BB6A");
         confirmButton.setOnAction(e -> {
             onConfirm.run();
             overlayPane.setVisible(false);
         });
 
         Button cancelButton = new Button("Cancel");
-        stylePopupButton(cancelButton, "#f44336", "#E57373"); // Rosso per annulla
+        stylePopupButton(cancelButton, "#f44336", "#E57373");
         cancelButton.setOnAction(e -> overlayPane.setVisible(false));
 
         buttonContainer.getChildren().addAll(confirmButton, cancelButton);
@@ -939,6 +1008,9 @@ public class GameScreen {
         root.getChildren().add(overlayPane); // Aggiungi il popup al layout principale
     }
 
+    /**
+     * Funzione per stilizzare i bottoni dei popup
+     */
     private void stylePopupButton(Button button, String baseColor, String hoverColor) {
         button.setStyle(
                 "-fx-background-color: " + baseColor + ";" +

@@ -18,6 +18,7 @@ import javafx.util.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.prefs.Preferences;
 
 public class PcLobbyScreen {
 
@@ -29,6 +30,9 @@ public class PcLobbyScreen {
     private final List<String> lobbies = new ArrayList<>();
     private ListView<String> lobbyListView;
     private StackPane overlayPane;
+
+    // Preferences to store selected lobby
+    private final Preferences preferences = Preferences.userNodeForPackage(PcLobbyScreen.class);
 
     public void show(Stage primaryStage) {
 
@@ -55,7 +59,7 @@ public class PcLobbyScreen {
         Label lobbyLabel = new Label("Available Lobbies");
         lobbyLabel.setStyle("-fx-font-size: 28px; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-family: '" + FontUtils.SUBTITLE_FONT + "';");
 
-// Lobby List View
+        // Lobby List View
         lobbyListView = new ListView<>();
         lobbyListView.setPrefHeight(300);
         lobbyListView.setStyle(
@@ -69,7 +73,7 @@ public class PcLobbyScreen {
                         "-fx-font-size: 16px;"
         );
 
-// Add hover effect and selection effect to list items
+        // Add hover effect and selection effect to list items
         lobbyListView.setCellFactory(lv -> new ListCell<>() {
             @Override
             protected void updateItem(String item, boolean empty) {
@@ -114,6 +118,13 @@ public class PcLobbyScreen {
         // Enable "Join Lobby" button only when a lobby is selected
         lobbyListView.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
             joinLobbyButton.setDisable(newSelection == null);
+
+            // Save the selected lobby to preferences
+            if (newSelection != null) {
+                preferences.put("selectedLobby", newSelection);
+            } else {
+                preferences.remove("selectedLobby");
+            }
         });
 
         // Button Actions
@@ -139,8 +150,6 @@ public class PcLobbyScreen {
             ModeScreen modeScreen = new ModeScreen();
             modeScreen.show(primaryStage);
         });
-
-
 
         HBox buttonBox = new HBox(20, createLobbyButton, joinLobbyButton);
         buttonBox.setAlignment(Pos.CENTER);
@@ -172,15 +181,19 @@ public class PcLobbyScreen {
 
         refreshLobbiesTimeline = new Timeline(new KeyFrame(Duration.seconds(2), event -> {
             okhttp.getLobbyListAndUpdateUI(updatedLobbies -> {
+                String savedLobby = preferences.get("selectedLobby", null); // Retrieve saved lobby first
                 lobbies.clear();
                 lobbies.addAll(updatedLobbies);
                 lobbyListView.getItems().setAll(lobbies);
+
+                // Restore the selected lobby if it exists in the updated list
+                if (savedLobby != null && lobbies.contains(savedLobby)) {
+                    lobbyListView.getSelectionModel().select(savedLobby);
+                }
             });
         }));
         refreshLobbiesTimeline.setCycleCount(Timeline.INDEFINITE);
         refreshLobbiesTimeline.play();
-
-
     }
 
     private void showCreateLobbyDialog() {

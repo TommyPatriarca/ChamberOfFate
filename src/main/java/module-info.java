@@ -5,6 +5,7 @@ module com.cof {
     requires java.smartcardio;
     requires java.sql;
     requires okhttp3;
+    requires java.prefs;
 
     opens com.cof to javafx.fxml;
     exports com.cof;
