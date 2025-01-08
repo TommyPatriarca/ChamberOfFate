@@ -134,6 +134,7 @@ public class GameScreen {
 
 
         initializePlayerHands();
+        menu.setVisible(false);
         primaryStage.show();
     }
 
