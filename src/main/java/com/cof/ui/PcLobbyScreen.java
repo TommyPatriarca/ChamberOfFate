@@ -1,6 +1,9 @@
 package com.cof.ui;
 
+import com.cof.okhttp.Okhttp;
 import com.cof.utils.FontUtils;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -10,6 +13,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,6 +23,8 @@ public class PcLobbyScreen {
 
     private double xOffset = 0;
     private double yOffset = 0;
+
+    private Timeline refreshLobbiesTimeline;
 
     private final List<String> lobbies = new ArrayList<>();
     private ListView<String> lobbyListView;
@@ -126,11 +132,15 @@ public class PcLobbyScreen {
             }
         });
 
-
         backButton.setOnAction(e -> {
+            if (refreshLobbiesTimeline != null) {
+                refreshLobbiesTimeline.stop(); // Ferma il ciclo di aggiornamento
+            }
             ModeScreen modeScreen = new ModeScreen();
             modeScreen.show(primaryStage);
         });
+
+
 
         HBox buttonBox = new HBox(20, createLobbyButton, joinLobbyButton);
         buttonBox.setAlignment(Pos.CENTER);
@@ -157,6 +167,20 @@ public class PcLobbyScreen {
         Scene scene = new Scene(layoutWithBar, primaryStage.getWidth(), primaryStage.getHeight(), Color.BLACK);
 
         primaryStage.setScene(scene);
+
+        Okhttp okhttp = new Okhttp(); // Istanza per gestire le richieste
+
+        refreshLobbiesTimeline = new Timeline(new KeyFrame(Duration.seconds(2), event -> {
+            okhttp.getLobbyListAndUpdateUI(updatedLobbies -> {
+                lobbies.clear();
+                lobbies.addAll(updatedLobbies);
+                lobbyListView.getItems().setAll(lobbies);
+            });
+        }));
+        refreshLobbiesTimeline.setCycleCount(Timeline.INDEFINITE);
+        refreshLobbiesTimeline.play();
+
+
     }
 
     private void showCreateLobbyDialog() {
@@ -224,11 +248,21 @@ public class PcLobbyScreen {
 
         createButton.setOnAction(e -> {
             String lobbyType = passwordField.getText().isEmpty() ? "[Public] " : "[Private] ";
-            lobbies.add(lobbyType + lobbyNameField.getText());
-            lobbyListView.getItems().setAll(lobbies);
+            Okhttp okhttp = new Okhttp();
+
+            okhttp.createLobby(lobbyNameField.getText());
+
+            // Forza l'aggiornamento delle lobby dopo la creazione
+            okhttp.getLobbyListAndUpdateUI(updatedLobbies -> {
+                lobbies.clear();
+                lobbies.addAll(updatedLobbies);
+                lobbyListView.getItems().setAll(lobbies);
+            });
+
             overlayPane.getChildren().removeAll(dimBackground, popup);
             overlayPane.setMouseTransparent(true);
         });
+
 
         Button cancelButton = new Button("Cancel");
         cancelButton.setStyle("-fx-font-size: 16px; -fx-background-color: #555; -fx-text-fill: white;");
