@@ -4,6 +4,7 @@ import javafx.application.Platform;
 import okhttp3.*;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -58,7 +59,7 @@ public class Okhttp {
         return true;
     }
 
-    public boolean getLobbyList() {
+    public /*ArrayList<String>*/void getLobbyList() {
 
         /*
         * Needed for this call:
@@ -95,7 +96,6 @@ public class Okhttp {
                 System.out.println("Errore di connessione: \n" + ex.getMessage());
             }
         }).start();
-        return true;
     }
 
     public boolean joinLobby(String lobbyName) {
