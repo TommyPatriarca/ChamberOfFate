@@ -6,12 +6,12 @@ import com.cof.managers.SoundManager;
 import com.cof.utils.FontUtils;
 import com.controller.Controller;
 import com.controller.objects.CardObj;
-import javafx.animation.FadeTransition;
-import javafx.animation.PauseTransition;
-import javafx.animation.RotateTransition;
+import javafx.animation.*;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Group;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
@@ -19,6 +19,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
@@ -31,7 +32,7 @@ import java.util.Objects;
 public class GameScreen {
     private double xOffset = 0;
     private double yOffset = 0;
-    private boolean isPlayerTurn = true; // True: turno del giocatore, False: turno del bot
+    private boolean isPlayerTurn = true, isGamePaused = false; // True: turno del giocatore, False: turno del bot
     private SoundManager soundManager = new SoundManager();
     private Controller controller;
     private HBox playerHandDisplay, opponentHandDisplay;
@@ -211,6 +212,7 @@ public class GameScreen {
                 // Controlla se il giocatore ha perso
                 if (controller.checkCards(controller.getPlayer1(), false) > 21) {
                     resolveRound("Hai sballato! Vince l'avversario.");
+                    controller.getPlayer2().shoot(6); // Il bot perde una vita
                 } else {
                     endPlayerTurn(false); // Passa il turno al bot, senza che il giocatore stia
                 }
@@ -385,7 +387,7 @@ public class GameScreen {
                 message = "Entrambi avete sballato!";
             } else if (player1Score > 21) {
                 message = "Hai sballato! Vince il bot.";
-                controller.getPlayer1().shoot(6); // Perdi una vita
+                controller.getPlayer1().shoot(6);
             } else if (player2Score > 21) {
                 message = "Il bot ha sballato! Hai vinto.";
                 controller.getPlayer2().shoot(6); // Il bot perde una vita
@@ -402,6 +404,7 @@ public class GameScreen {
 
         updatePlayerHP();
         showResultOverlay(message); // Mostra l'overlay e prepara il nuovo round
+        shootAnimation(6);//TODO da cambiare il 6 con un numero variabile
     }
 
 
@@ -942,10 +945,13 @@ public class GameScreen {
      * Funzione per iniziare un nuovo round nel gioco
      */
     private void startNewRound() {
+        if (isGamePaused) return;
+
         controller.turn();
         updateGameDisplay();
         startPlayerTurn();
     }
+
 
     /**
      * Funzione per mostrare un popup
@@ -1048,7 +1054,90 @@ public class GameScreen {
                         "-fx-effect: dropshadow(gaussian, #000000, 5, 0.7, 0, 1);"
         ));
     }
+    private void shootAnimation(int bullets) {
+        // Metti in pausa la logica del round
+        setGamePaused(true);
 
+        // Creazione dello sfondo semitrasparente
+        ImageView bloodBackground = new ImageView(new Image(getClass().getResourceAsStream("/images/LobbyBackground.jpg")));
+        bloodBackground.setFitWidth(400);
+        bloodBackground.setFitHeight(400);
+        bloodBackground.setOpacity(0.7);
+
+        // Creazione dell'immagine del revolver
+        ImageView revolver = new ImageView(new Image(getClass().getResourceAsStream("/images/revolver.png")));
+        revolver.setFitWidth(150);
+        revolver.setFitHeight(150);
+
+        // Gruppo per i proiettili
+        Group bulletGroup = new Group();
+
+        // StackPane per centrare tutto
+        StackPane animationPane = new StackPane();
+        animationPane.getChildren().addAll(bloodBackground, bulletGroup, revolver);
+        root.getChildren().add(animationPane);
+        StackPane.setAlignment(animationPane, Pos.CENTER);
+
+        // Centrare il gruppo dei proiettili rispetto al caricatore
+        double revolverCenterX = 75; // Mezzo della larghezza del revolver
+        double revolverCenterY = 75; // Mezzo dell'altezza del revolver
+
+        // Creazione dei cerchi per i proiettili
+        double radius = 40; // Raggio dei proiettili
+        for (int i = 0; i < bullets; i++) {
+            Circle bullet = new Circle(5, Color.GOLD); // Proiettile di dimensione 5 e colore oro
+            double angle = 360.0 / bullets * i; // Angolo per posizionare i proiettili
+
+            // Posizionamento rispetto al centro del gruppo dei proiettili
+            double bulletX = revolverCenterX + radius * Math.cos(Math.toRadians(angle));
+            double bulletY = revolverCenterY + radius * Math.sin(Math.toRadians(angle));
+            bullet.setTranslateX(bulletX - revolverCenterX); // Offset relativo al centro del revolver
+            bullet.setTranslateY(bulletY - revolverCenterY); // Offset relativo al centro del revolver
+
+            bulletGroup.getChildren().add(bullet);
+        }
+
+        // Animazione di caricamento dei proiettili
+        SequentialTransition loadBulletsAnimation = new SequentialTransition();
+        for (Node bullet : bulletGroup.getChildren()) {
+            FadeTransition fadeIn = new FadeTransition(Duration.seconds(0.5), bullet);
+            fadeIn.setFromValue(0);
+            fadeIn.setToValue(1);
+            loadBulletsAnimation.getChildren().add(fadeIn);
+        }
+
+        // Una volta completato il caricamento, esegui la rotazione
+        loadBulletsAnimation.setOnFinished(event -> {
+            // Animazione di rotazione del gruppo (revolver + proiettili)
+            RotateTransition rotateAnimation = new RotateTransition(Duration.seconds(2), bulletGroup);
+            rotateAnimation.setByAngle(360);
+
+            RotateTransition rotateRevolver = new RotateTransition(Duration.seconds(2), revolver);
+            rotateRevolver.setByAngle(360);
+
+            ParallelTransition rotation = new ParallelTransition(rotateAnimation, rotateRevolver);
+            rotation.setOnFinished(e -> {
+                // Rimuovi tutto al termine
+                root.getChildren().remove(animationPane);
+                // Riprendi la logica del gioco e distribuisci le carte
+                setGamePaused(false);
+                startNewRound(); // Distribuisci le carte per il nuovo round
+            });
+            rotation.play();
+        });
+
+        loadBulletsAnimation.play();
+    }
+
+    private void setGamePaused(boolean paused) {
+        isGamePaused = paused;
+
+        // Disabilita o abilita i pulsanti del giocatore
+        drawCardButton.setDisable(paused);
+        passTurnButton.setDisable(paused);
+
+        // Altre logiche di pausa (es. bloccare eventi del bot o altri aggiornamenti)
+    }
 
 
 }
