@@ -29,6 +29,7 @@ public class Okhttp {
         *
         */
 
+        //Create the lobby using url 1--------------------------------------------------------------------
         String action = "create";
 
         RequestBody formBody = new FormBody.Builder()
@@ -57,6 +58,37 @@ public class Okhttp {
                 System.out.println("Errore di connessione: \n" + ex.getMessage());
             }
         }).start();
+        //Create the lobby using url 1--------------------------------------------------------------------
+
+        //Create the lobby using url 2--------------------------------------------------------------------
+        RequestBody formBody2 = new FormBody.Builder()
+                .add("instruction", action)
+                .add("nomeFile", lobbyName)
+                .build();
+
+        Request request2 = new Request.Builder()
+                .url(SERVER_URL_2)
+                .post(formBody2)
+                .build();
+
+        new Thread(() -> {
+            try {
+                Response response = client.newCall(request2).execute();
+
+                // Mostra la risposta nella text area
+                if (response.isSuccessful()) {
+                    String responseBody = response.body().string();
+                    System.out.println("Risposta del server: \n" + responseBody);
+                } else {
+                    System.out.println("Errore del server: \n" + response.message());
+                }
+            } catch (IOException ex) {
+                // Mostra un errore in caso di problemi con la connessione
+                System.out.println("Errore di connessione: \n" + ex.getMessage());
+            }
+        }).start();
+        //Create the lobby using url 2--------------------------------------------------------------------
+
         return true;
     }
 
