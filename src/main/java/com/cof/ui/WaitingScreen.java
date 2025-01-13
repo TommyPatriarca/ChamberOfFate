@@ -3,7 +3,6 @@ package com.cof.ui;
 import com.cof.utils.FontUtils;
 import com.controller.Controller;
 import javafx.animation.FadeTransition;
-import javafx.animation.Interpolator;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -18,7 +17,9 @@ import javafx.util.Duration;
 
 import java.util.Objects;
 
-public class ModeScreen {
+import static javafx.application.Application.launch;
+
+public class WaitingScreen {
 
     private double xOffset = 0;
     private double yOffset = 0;
@@ -27,21 +28,9 @@ public class ModeScreen {
         // Barra superiore
         HBox titleBar = createCustomTitleBar(primaryStage);
 
-        // Layout principale
-        VBox mainLayout = new VBox(30); // Spaziatura tra i pulsanti
-        mainLayout.setAlignment(Pos.CENTER); // Allinea inizialmente al centro
-        mainLayout.setPadding(new Insets(550, 0, 0, 0));
-
-        Button onlineButton = createButton("Online");
-        Button offlineButton = createButton("Offline");
-
-        mainLayout.getChildren().addAll(onlineButton, offlineButton);
-
         // Immagine di sfondo
-        Image backgroundImage = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/images/ModeBackground.jpg")));
+        Image backgroundImage = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/images/ChargingScreen.jpg")));
         ImageView backgroundView = new ImageView(backgroundImage);
-
-
         backgroundView.setPreserveRatio(false);
         backgroundView.setFitWidth(primaryStage.getWidth());
         backgroundView.setFitHeight(primaryStage.getHeight());
@@ -50,7 +39,7 @@ public class ModeScreen {
         primaryStage.widthProperty().addListener((obs, oldVal, newVal) -> backgroundView.setFitWidth(newVal.doubleValue()));
         primaryStage.heightProperty().addListener((obs, oldVal, newVal) -> backgroundView.setFitHeight(newVal.doubleValue()));
 
-        StackPane root = new StackPane(backgroundView, mainLayout);
+        StackPane root = new StackPane(backgroundView);
 
         // Aggiungere la barra superiore al layout principale
         VBox layoutWithBar = new VBox(titleBar, root);
@@ -58,12 +47,7 @@ public class ModeScreen {
         Scene scene = new Scene(layoutWithBar, primaryStage.getWidth(), primaryStage.getHeight(), Color.BLACK);
 
         // Transizione di fade-in
-        FadeTransition fadeIn = new FadeTransition(Duration.seconds(1.5), root);
-        fadeIn.setFromValue(0);
-        fadeIn.setToValue(1);
-        fadeIn.setCycleCount(1);
-        fadeIn.setInterpolator(Interpolator.EASE_BOTH);
-
+        FadeTransition fadeIn = new FadeTransition(Duration.seconds(1), root);
         fadeIn.setFromValue(0);
         fadeIn.setToValue(1);
 
@@ -74,9 +58,7 @@ public class ModeScreen {
     private HBox createCustomTitleBar(Stage stage) {
         HBox titleBar = new HBox();
         titleBar.setAlignment(Pos.CENTER_LEFT);
-        titleBar.setStyle("-fx-background-color: linear-gradient(to right, #1E1E1E, #333333); "
-                + "-fx-padding: 4; -fx-border-color: #444; -fx-border-width: 0 0 1 0; "
-                + "-fx-effect: dropshadow(gaussian, #000000, 10, 0.7, 0, 1);");
+        titleBar.setStyle("-fx-background-color: linear-gradient(to right, #1E1E1E, #333333); -fx-padding: 4; -fx-border-color: #444; -fx-border-width: 0 0 1 0;");
         titleBar.setPrefHeight(40);
 
         // Title label
@@ -128,87 +110,6 @@ public class ModeScreen {
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
         titleBar.getChildren().addAll(titleLabel, spacer, minimizeButton, closeButton);
-        ImageView icon = new ImageView(new Image(Objects.requireNonNull(getClass().getResourceAsStream("/icons/Icon1.png"))));
-        icon.setFitHeight(20);
-        icon.setFitWidth(20);
-        titleBar.getChildren().add(0, icon);
-
         return titleBar;
-    }
-
-
-    private Button createButton(String text) {
-        Button button = new Button(text);
-        styleButton(button);
-
-        button.setOnMouseEntered(e -> {
-            button.setScaleX(1.05);
-            button.setScaleY(1.05);
-            button.setStyle(getHoverStyle());
-        });
-        button.setOnMouseExited(e -> {
-            button.setScaleX(1.0);
-            button.setScaleY(1.0);
-            styleButton(button);
-        });
-
-        button.setOnMousePressed(e -> button.setStyle(getPressedStyle()));
-        button.setOnMouseReleased(e -> styleButton(button));
-
-        // Action for Offline Button
-        if ("Offline".equals(text)) {
-            button.setOnAction(e -> {
-                Controller controller = new Controller(false); // Initialize in offline mode
-                OfflineGameScreen offlineGameScreen = new OfflineGameScreen(controller); // Pass the controller
-                offlineGameScreen.show((Stage) button.getScene().getWindow()); // Use the same Stage
-            });
-        }
-        else if("Online".equals(text)){
-            button.setOnAction(e -> {
-                PcLobbyScreen pcLobbyScreen = new PcLobbyScreen();
-                pcLobbyScreen.show((Stage) button.getScene().getWindow()); // Use the same Stage
-            });
-        }
-
-        return button;
-    }
-
-    private void styleButton(Button button) {
-        button.setStyle(
-                "-fx-background-color: #2A2A2A;" +
-                        "-fx-text-fill: #DDDDDD;" +
-                        "-fx-padding: 12px;" +
-                        "-fx-background-radius: 10;" +
-                        "-fx-border-color: #666666;" +
-                        "-fx-border-width: 2px;" +
-                        "-fx-border-radius: 10;" +
-                        "-fx-effect: dropshadow(gaussian, #000000, 10, 0.8, 0, 2);" +
-                        "-fx-cursor: hand;");
-        button.setFont(FontUtils.PIXEL_HORROR);
-        button.setMinWidth(240);
-        button.setMinHeight(70);
-    }
-
-
-    private String getHoverStyle() {
-        return "-fx-background-color: #555555;" +
-                "-fx-text-fill: #ffffff;" +
-                "-fx-padding: 12px;" +
-                "-fx-background-radius: 6;" +
-                "-fx-border-color: #888888;" +
-                "-fx-border-width: 3px;" +
-                "-fx-border-radius: 6;" +
-                "-fx-effect: dropshadow(gaussian, #444444, 20, 0.8, 0, 0);";
-    }
-
-    private String getPressedStyle() {
-        return "-fx-background-color: #222222;" +
-                "-fx-text-fill: #aaaaaa;" +
-                "-fx-padding: 12px;" +
-                "-fx-background-radius: 6;" +
-                "-fx-border-color: #444444;" +
-                "-fx-border-width: 3px;" +
-                "-fx-border-radius: 6;" +
-                "-fx-effect: dropshadow(gaussian, #111111, 30, 1.0, 0, 0);";
     }
 }

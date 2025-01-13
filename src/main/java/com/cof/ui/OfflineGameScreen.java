@@ -7,7 +7,6 @@ import com.cof.utils.FontUtils;
 import com.controller.Controller;
 import com.controller.objects.CardObj;
 import javafx.animation.*;
-import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
@@ -20,7 +19,6 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
-import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.transform.Rotate;
@@ -29,7 +27,7 @@ import javafx.util.Duration;
 
 import java.util.Objects;
 
-public class GameScreen {
+public class OfflineGameScreen {
     private double xOffset = 0;
     private double yOffset = 0;
     private boolean isPlayerTurn = true, isGamePaused = false; // True: turno del giocatore, False: turno del bot
@@ -41,7 +39,7 @@ public class GameScreen {
     private StackPane root;
     private int currentRound = 1;
 
-    public GameScreen(Controller controller) {
+    public OfflineGameScreen(Controller controller) {
         this.controller = controller;
     }
 

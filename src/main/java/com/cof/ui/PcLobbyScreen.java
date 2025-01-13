@@ -128,16 +128,16 @@ public class PcLobbyScreen {
         });
 
         // Button Actions
-        createLobbyButton.setOnAction(e -> showCreateLobbyDialog());
+        createLobbyButton.setOnAction(e -> showCreateLobbyDialog(primaryStage));
         joinLobbyButton.setOnAction(e -> {
             String selectedLobby = lobbyListView.getSelectionModel().getSelectedItem();
             if (selectedLobby != null) {
                 System.out.println("Selected Lobby: " + selectedLobby); // Debugging
-                if (selectedLobby.startsWith("[Private]")) {
-                    showPasswordDialog(); // Show the password dialog for private lobbies
-                } else {
-                    startGame(primaryStage); // Start the game for public lobbies
-                }
+                Okhttp okhttp = new Okhttp();
+                okhttp.joinLobby(selectedLobby);
+
+                startGame(primaryStage);
+
             } else {
                 System.out.println("No lobby selected."); // Debugging message
             }
@@ -196,7 +196,7 @@ public class PcLobbyScreen {
         refreshLobbiesTimeline.play();
     }
 
-    private void showCreateLobbyDialog() {
+    private void showCreateLobbyDialog(Stage primaryStage) {
         // Create the dimmed overlay
         Pane dimBackground = new Pane();
         dimBackground.setStyle("-fx-background-color: rgba(0, 0, 0, 0.6);");
@@ -221,10 +221,6 @@ public class PcLobbyScreen {
         lobbyNameField.setPromptText("Lobby Name");
         lobbyNameField.setStyle("-fx-font-size: 16px; -fx-border-width: 2px;");
 
-        PasswordField passwordField = new PasswordField();
-        passwordField.setPromptText("Password (optional)");
-        passwordField.setStyle("-fx-font-size: 16px; -fx-border-width: 2px;");
-
         Button createButton = new Button("Create");
         createButton.setStyle("-fx-font-size: 16px; -fx-background-color: #555; -fx-text-fill: white;");
         createButton.setDisable(true);
@@ -246,23 +242,8 @@ public class PcLobbyScreen {
             createButton.setDisable(!isValidName || newText.isEmpty());
         });
 
-        passwordField.textProperty().addListener((obs, oldText, newText) -> {
-            if (newText.length() > 20) {
-                passwordField.setText(newText.substring(0, 20));
-            }
-
-            boolean isValidPassword = newText.matches("[a-zA-Z0-9]*"); // Optional field, but if filled must be valid
-            if (isValidPassword || newText.isEmpty()) {
-                passwordField.setStyle("-fx-font-size: 16px; -fx-border-width: 2px; -fx-border-color: green;");
-            } else {
-                passwordField.setStyle("-fx-font-size: 16px; -fx-border-width: 2px; -fx-border-color: red;");
-            }
-        });
-
         createButton.setOnAction(e -> {
-            String lobbyType = passwordField.getText().isEmpty() ? "[Public] " : "[Private] ";
             Okhttp okhttp = new Okhttp();
-
             okhttp.createLobby(lobbyNameField.getText());
 
             // Forza l'aggiornamento delle lobby dopo la creazione
@@ -274,6 +255,7 @@ public class PcLobbyScreen {
 
             overlayPane.getChildren().removeAll(dimBackground, popup);
             overlayPane.setMouseTransparent(true);
+            waitForPlayer(primaryStage); //TODO prendere lo stage giusto
         });
 
 
@@ -287,66 +269,18 @@ public class PcLobbyScreen {
         HBox buttonBox = new HBox(10, createButton, cancelButton);
         buttonBox.setAlignment(Pos.CENTER);
 
-        popup.getChildren().addAll(titleLabel, lobbyNameField, passwordField, buttonBox);
+        popup.getChildren().addAll(titleLabel, lobbyNameField, buttonBox);
 
         overlayPane.getChildren().addAll(dimBackground, popup);
         overlayPane.setMouseTransparent(false);
     }
 
-
-    private void showPasswordDialog() {
-        // Create the dimmed overlay
-        Pane dimBackground = new Pane();
-        dimBackground.setStyle("-fx-background-color: rgba(0, 0, 0, 0.6);");
-
-        // Bind to the scene's width and height to ensure proper resizing
-        Scene scene = overlayPane.getScene();
-        if (scene != null) {
-            dimBackground.prefWidthProperty().bind(scene.widthProperty());
-            dimBackground.prefHeightProperty().bind(scene.heightProperty());
-        } else {
-            dimBackground.setPrefSize(overlayPane.getWidth(), overlayPane.getHeight());
-        }
-
-        VBox popup = new VBox(10);
-        popup.setAlignment(Pos.CENTER);
-        popup.setStyle("-fx-background-color: rgba(0, 0, 0, 0.9); -fx-padding: 20; -fx-background-radius: 10;");
-        popup.setMaxWidth(300);
-
-        Label titleLabel = new Label("Enter Password");
-        titleLabel.setStyle("-fx-font-size: 20px; -fx-text-fill: white; -fx-font-weight: bold;");
-
-        PasswordField passwordField = new PasswordField();
-        passwordField.setPromptText("Password");
-        passwordField.setStyle("-fx-font-size: 16px;");
-
-        Button joinButton = new Button("Join");
-        joinButton.setStyle("-fx-font-size: 16px; -fx-background-color: #555; -fx-text-fill: white;");
-        joinButton.setOnAction(e -> {
-            // Placeholder for password validation
-            System.out.println("Password entered: " + passwordField.getText());
-            overlayPane.getChildren().removeAll(dimBackground, popup); // Remove popup and dimmed background
-            overlayPane.setMouseTransparent(true); // Re-enable interactions
-        });
-
-        Button cancelButton = new Button("Cancel");
-        cancelButton.setStyle("-fx-font-size: 16px; -fx-background-color: #555; -fx-text-fill: white;");
-        cancelButton.setOnAction(e -> {
-            overlayPane.getChildren().removeAll(dimBackground, popup);
-            overlayPane.setMouseTransparent(true); // Re-enable interactions
-        });
-
-        HBox buttonBox = new HBox(10, joinButton, cancelButton);
-        buttonBox.setAlignment(Pos.CENTER);
-
-        popup.getChildren().addAll(titleLabel, passwordField, buttonBox);
-
-        overlayPane.getChildren().addAll(dimBackground, popup);
-        overlayPane.setMouseTransparent(false); // Block interactions below the popup
+    private void waitForPlayer(Stage primaryStage) {
+        WaitingScreen waitingScreen = new WaitingScreen();
+        waitingScreen.show(primaryStage);
     }
 
     private void startGame(Stage primaryStage) {
-        System.out.println("Game starting...");
     }
 
     private Button createStyledButton(String text) {
