@@ -59,7 +59,11 @@ public class Okhttp {
             }
         }).start();
         //Create the lobby using url 1--------------------------------------------------------------------
-
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         //Create the lobby using url 2--------------------------------------------------------------------
         RequestBody formBody2 = new FormBody.Builder()
                 .add("instruction", action)
