@@ -6,6 +6,7 @@ import okhttp3.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -28,6 +29,8 @@ public class Okhttp {
         * - server url used -> SERVER_URL_1
         *
         */
+
+        LOBBY_NAME=lobbyName;
 
         //Create the lobby using url 1--------------------------------------------------------------------
         String action = "create";
@@ -206,5 +209,40 @@ public class Okhttp {
 
         return list;
     }
+
+    public CompletableFuture<String> getMazzo(String nomeGiocatore, String nomeFile) {
+        String action = "getMazzo";
+
+        RequestBody formBody = new FormBody.Builder()
+                .add("azione", action)
+                .add("playerKey", nomeGiocatore)
+                .add("nomeFile",nomeFile /*LOBBY_NAME*/)
+                .build();
+
+        Request request = new Request.Builder()
+                .url(SERVER_URL_2)
+                .post(formBody)
+                .build();
+
+        CompletableFuture<String> future = new CompletableFuture<>();
+
+        new Thread(() -> {
+            try {
+                Response response = client.newCall(request).execute();
+
+                if (response.isSuccessful()) {
+                    String responseBody = response.body().string();
+                    future.complete(responseBody); // Completa il futuro con la risposta
+                } else {
+                    future.completeExceptionally(new IOException("Errore del server: " + response.message()));
+                }
+            } catch (IOException ex) {
+                future.completeExceptionally(ex);
+            }
+        }).start();
+
+        return future; // Restituisci il futuro
+    }
+
 
 }
