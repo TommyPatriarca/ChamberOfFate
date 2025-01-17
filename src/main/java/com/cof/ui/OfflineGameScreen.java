@@ -584,7 +584,7 @@ public class OfflineGameScreen {
         // Pulsante toggle per mostrare/nascondere il menu
         Button toggleMenuButton = createStyledButton("Menu", "#333333");
         toggleMenuButton.setStyle(
-                "-fx-background-color: rgba(40, 40, 40, 0.8);" +
+                "-fx-background-color: rgba(40, 40, 40, 0.4);" +
                         "-fx-border-color: #666666;" +
                         "-fx-border-width: 2;" +
                         "-fx-font-size: 14px;" +
@@ -687,6 +687,8 @@ public class OfflineGameScreen {
 
         VBox popup = new VBox(20);
         popup.setAlignment(Pos.CENTER);
+        popup.setMaxWidth(350); // Limita la larghezza massima del popup
+        popup.setMaxHeight(550);
         popup.setStyle(
                 "-fx-background-color: rgba(42, 42, 42, 0.9);" +
                         "-fx-border-color: #666666;" +
@@ -706,7 +708,7 @@ public class OfflineGameScreen {
         );
 
         Slider volumeSlider = new Slider(0, 1, MusicManager.getVolume());
-        volumeSlider.setPrefWidth(200); // Dimensione più compatta
+        volumeSlider.setPrefWidth(200); // NON VAAAA
         volumeSlider.setShowTickMarks(true);
         volumeSlider.setShowTickLabels(true);
         volumeSlider.setMajorTickUnit(0.25);
@@ -740,8 +742,9 @@ public class OfflineGameScreen {
         overlayPane.getChildren().add(popup);
         StackPane.setAlignment(overlayPane, Pos.CENTER);
 
-        root.getChildren().add(overlayPane); // Aggiungi il popup al layout principale
+        root.getChildren().add(overlayPane);
     }
+
 
     /**
      * Funzione per mostrare la schermata per arrendersi
@@ -964,7 +967,7 @@ public class OfflineGameScreen {
         VBox popup = new VBox(20);
         popup.setAlignment(Pos.CENTER);
         popup.setStyle(
-                "-fx-background-color: rgba(42, 42, 42, 0.9);" + //
+                "-fx-background-color: rgba(42, 42, 42, 0.9);" +
                         "-fx-border-color: #666666;" +
                         "-fx-border-width: 2;" +
                         "-fx-border-radius: 10;" +
@@ -1004,6 +1007,9 @@ public class OfflineGameScreen {
         cancelButton.setOnAction(e -> overlayPane.setVisible(false));
 
         buttonContainer.getChildren().addAll(confirmButton, cancelButton);
+
+        popup.setMaxWidth(550);
+        popup.setMaxHeight(350);
 
         popup.getChildren().addAll(titleLabel, messageLabel, buttonContainer);
 

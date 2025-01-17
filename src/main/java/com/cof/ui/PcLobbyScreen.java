@@ -61,7 +61,7 @@ public class PcLobbyScreen {
 
         // Lobby List View
         lobbyListView = new ListView<>();
-        lobbyListView.setPrefHeight(300);
+        lobbyListView.setPrefHeight(400);
         lobbyListView.setStyle(
                 "-fx-background-color: rgba(40, 40, 40, 0.8);" +
                         "-fx-control-inner-background: transparent;" +
@@ -161,7 +161,7 @@ public class PcLobbyScreen {
         mainPane.setBottom(backButton);
 
         BorderPane.setAlignment(backButton, Pos.BOTTOM_RIGHT);
-        BorderPane.setMargin(backButton, new Insets(10));
+        BorderPane.setMargin(backButton, new Insets(50));
 
         mainLayout.getChildren().addAll(lobbyLabel, lobbyListView, buttonBox);
 
