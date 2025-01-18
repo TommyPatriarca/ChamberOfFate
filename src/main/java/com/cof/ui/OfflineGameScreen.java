@@ -511,8 +511,9 @@ public class OfflineGameScreen {
         ImageView cardView = createBackCardView();
         String imagePath = card.getImagePath();
 
-        if (animate) {
+        if (animate && !card.getAlreadyFlipped()) {
             playCardFlipAnimation(cardView, imagePath);
+            card.setAlreadyFlipped(true);
         } else {
             cardView.setImage(new Image(getClass().getResourceAsStream(imagePath)));
         }

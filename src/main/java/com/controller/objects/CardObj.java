@@ -2,6 +2,8 @@ package com.controller.objects;
 
 public class CardObj {
 
+    Boolean alreadyFlipped = false; //TODO sutti
+
     private String type;
 
     /**
@@ -50,5 +52,13 @@ public class CardObj {
         }else{
             return "/Cards/" + suitFullName + "_" + value + ".png";
         }
+    }
+
+    public Boolean getAlreadyFlipped() {
+        return alreadyFlipped;
+    }
+
+    public void setAlreadyFlipped(Boolean alreadyFlipped) {
+        this.alreadyFlipped = alreadyFlipped;
     }
 }
