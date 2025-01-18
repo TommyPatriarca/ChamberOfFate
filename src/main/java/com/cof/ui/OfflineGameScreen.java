@@ -210,7 +210,7 @@ public class OfflineGameScreen {
                 // Controlla se il giocatore ha perso
                 if (controller.checkCards(controller.getPlayer1(), false) > 21) {
                     resolveRound("Hai sballato! Vince l'avversario.");
-                    controller.getPlayer2().shoot(6); // Il bot perde una vita
+                    controller.getPlayer1().shoot(6); // Il bot perde una vita
                 } else {
                     endPlayerTurn(false); // Passa il turno al bot, senza che il giocatore stia
                 }
@@ -380,7 +380,7 @@ public class OfflineGameScreen {
         int player1Score = controller.checkCards(controller.getPlayer1(), false);
         int player2Score = controller.checkCards(controller.getPlayer2(), false);
 
-        if (message == null) {
+        if(message == null) {
             if (player1Score > 21 && player2Score > 21) {
                 message = "Entrambi avete sballato!";
             } else if (player1Score > 21) {

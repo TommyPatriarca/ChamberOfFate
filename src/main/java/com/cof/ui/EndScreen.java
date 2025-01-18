@@ -150,11 +150,6 @@ public class EndScreen {
         }
         else if("Exit".equals(text)){
             button.setOnAction(e -> {
-                try {
-                    wait(1000);
-                } catch (InterruptedException ex) {
-                    throw new RuntimeException(ex);
-                }
                 System.exit(0);
             });
         }
