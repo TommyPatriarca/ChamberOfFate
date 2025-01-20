@@ -5,10 +5,13 @@ import com.cof.ui.PcLoadingScreen;
 import javafx.application.Application;
 import javafx.stage.Stage;
 
+import java.util.ArrayList;
+
 public class ChamberOfFate extends Application {
     @Override
     public void start(Stage primaryStage) {
-        
+        Okhttp ok=new Okhttp();
+        ok.getHealth("giocatore1");
         PcLoadingScreen loadingScreen = new PcLoadingScreen();
         loadingScreen.start(primaryStage);
     }

@@ -14,6 +14,7 @@ import java.util.regex.Pattern;
 
 public class Okhttp {
 
+    private OggettoCondiviso og = new OggettoCondiviso();
     private static final String SERVER_URL_1="http://chamberoffate.altervista.org/lobbyCreator.php";
     private static final String SERVER_URL_2="http://chamberoffate.altervista.org/gestoreLobby.php";
     private String LOBBY_NAME="";
@@ -210,12 +211,13 @@ public class Okhttp {
         return list;
     }
 
-    public CompletableFuture<String> getMazzo(String nomeGiocatore, String nomeFile) {
-        String action = "getMazzo";
+    //NON FUNZIONA - NON FUNZIONA - NON FUNZIONA - NON FUNZIONA - NON FUNZIONA - NON FUNZIONA - NON FUNZIONA - NON FUNZIONA - NON FUNZIONA
+    public void getMazzo(String playerKey, String nomeFile) {
+        String instruction = "getMazzo";
 
         RequestBody formBody = new FormBody.Builder()
-                .add("azione", action)
-                .add("playerKey", nomeGiocatore)
+                .add("instruction", instruction)
+                .add("playerKey", playerKey)
                 .add("nomeFile",nomeFile /*LOBBY_NAME*/)
                 .build();
 
@@ -224,25 +226,144 @@ public class Okhttp {
                 .post(formBody)
                 .build();
 
-        CompletableFuture<String> future = new CompletableFuture<>();
 
         new Thread(() -> {
             try {
                 Response response = client.newCall(request).execute();
 
+                // Mostra la risposta nella text area
                 if (response.isSuccessful()) {
                     String responseBody = response.body().string();
-                    future.complete(responseBody); // Completa il futuro con la risposta
+                    System.out.println("Risposta del server: \n" + responseBody);
+                    og.setString(responseBody);
                 } else {
-                    future.completeExceptionally(new IOException("Errore del server: " + response.message()));
+                    System.out.println("Errore del server: \n" + response.message());
                 }
             } catch (IOException ex) {
-                future.completeExceptionally(ex);
+                // Mostra un errore in caso di problemi con la connessione
+                System.out.println("Errore di connessione: \n" + ex.getMessage());
             }
         }).start();
 
-        return future; // Restituisci il futuro
+        String string=og.getString();
+        System.out.println(string);
+        ArrayList<String> result = new ArrayList<>();
+        // Espressione regolare per trovare contenuti tra virgolette
+        Pattern pattern = Pattern.compile("\"(.*?)\"");
+        Matcher matcher;
+        matcher = pattern.matcher(string);
+
+        // Cerca tutte le occorrenze
+        while (matcher.find()) {
+            // Aggiungi la sottostringa trovata alla lista
+            result.add(matcher.group(1));
+        }
+        for (String s: result){
+            System.out.println(s);
+        }
+    }
+    //NON FUNZIONA - NON FUNZIONA - NON FUNZIONA - NON FUNZIONA - NON FUNZIONA - NON FUNZIONA - NON FUNZIONA - NON FUNZIONA - NON FUNZIONA
+
+    public void addCarta(String carta, String playerKey){
+        String instruction = "addCarta";
+
+        RequestBody formBody = new FormBody.Builder()
+                .add("instruction", instruction)
+                .add("playerKey", playerKey)
+                .add("nomeFile",LOBBY_NAME)
+                .add("carta", carta)
+                .build();
+
+        Request request = new Request.Builder()
+                .url(SERVER_URL_2)
+                .post(formBody)
+                .build();
+
+
+        new Thread(() -> {
+            try {
+                Response response = client.newCall(request).execute();
+
+                // Mostra la risposta nella text area
+                if (response.isSuccessful()) {
+                    String responseBody = response.body().string();
+                    System.out.println("Risposta del server: \n" + responseBody);
+                } else {
+                    System.out.println("Errore del server: \n" + response.message());
+                }
+            } catch (IOException ex) {
+                // Mostra un errore in caso di problemi con la connessione
+                System.out.println("Errore di connessione: \n" + ex.getMessage());
+            }
+        }).start();
     }
 
+    public void decreaseHealth(String playerKey){
+        String instruction = "decreaseHealth";
 
+        RequestBody formBody = new FormBody.Builder()
+                .add("instruction", instruction)
+                .add("playerKey", playerKey)
+                .add("nomeFile",LOBBY_NAME)
+                .build();
+
+        Request request = new Request.Builder()
+                .url(SERVER_URL_2)
+                .post(formBody)
+                .build();
+
+
+        new Thread(() -> {
+            try {
+                Response response = client.newCall(request).execute();
+
+                // Mostra la risposta nella text area
+                if (response.isSuccessful()) {
+                    String responseBody = response.body().string();
+                    System.out.println("Risposta del server: \n" + responseBody);
+                } else {
+                    System.out.println("Errore del server: \n" + response.message());
+                }
+            } catch (IOException ex) {
+                // Mostra un errore in caso di problemi con la connessione
+                System.out.println("Errore di connessione: \n" + ex.getMessage());
+            }
+        }).start();
+    }
+
+    public void getHealth(String playerKey){
+        String instruction = "getHealth";
+
+        RequestBody formBody = new FormBody.Builder()
+                .add("instruction", instruction)
+                .add("playerKey", playerKey)
+                .add("nomeFile","bozo")
+                .build();
+
+        Request request = new Request.Builder()
+                .url(SERVER_URL_2)
+                .post(formBody)
+                .build();
+
+
+        new Thread(() -> {
+            try {
+                Response response = client.newCall(request).execute();
+
+                // Mostra la risposta nella text area
+                if (response.isSuccessful()) {
+                    String responseBody = response.body().string();
+                    //System.out.println("Risposta del server: \n" + responseBody);
+                    og.setString(response.body().string());
+                } else {
+                    System.out.println("Errore del server: \n" + response.message());
+                }
+            } catch (IOException ex) {
+                // Mostra un errore in caso di problemi con la connessione
+                System.out.println("Errore di connessione: \n" + ex.getMessage());
+            }
+        }).start();
+
+        System.out.println(og.getString());
+    }
 }
