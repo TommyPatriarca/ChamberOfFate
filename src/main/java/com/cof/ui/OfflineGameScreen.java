@@ -1113,6 +1113,9 @@ public class OfflineGameScreen {
 
         // Una volta completato il caricamento, esegui la rotazione
         loadBulletsAnimation.setOnFinished(event -> {
+            // Riproduci il suono del revolver spin
+            SoundManager.revolverSpin();
+
             // Animazione di rotazione del gruppo (revolver + proiettili)
             RotateTransition rotateAnimation = new RotateTransition(Duration.seconds(2), bulletGroup);
             rotateAnimation.setByAngle(360);
@@ -1122,6 +1125,7 @@ public class OfflineGameScreen {
 
             ParallelTransition rotation = new ParallelTransition(rotateAnimation, rotateRevolver);
             rotation.setOnFinished(e -> {
+                SoundManager.ShotgunSound();
                 // Rimuovi tutto al termine
                 root.getChildren().remove(animationPane);
                 // Riprendi la logica del gioco e distribuisci le carte
@@ -1133,6 +1137,7 @@ public class OfflineGameScreen {
 
         loadBulletsAnimation.play();
     }
+
 
     private void setGamePaused(boolean paused) {
         isGamePaused = paused;

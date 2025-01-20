@@ -36,9 +36,9 @@ public class SoundManager {
 
     }
 
-    public static void error() {
+    public static void revolverSpin() {
         try {
-            InputStream file = SoundManager.class.getResourceAsStream("/audio/error.wav");
+            InputStream file = SoundManager.class.getResourceAsStream("/audio/RevolverSpin.wav");
             AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(new BufferedInputStream(file));
             clip = AudioSystem.getClip();
             clip.open(audioInputStream);
