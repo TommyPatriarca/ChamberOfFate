@@ -3,6 +3,7 @@ package com.cof.okhttp;
 import javafx.application.Platform;
 import okhttp3.*;
 
+import javax.security.auth.callback.Callback;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,7 +18,7 @@ public class Okhttp {
     private OggettoCondiviso og = new OggettoCondiviso();
     private static final String SERVER_URL_1="http://chamberoffate.altervista.org/lobbyCreator.php";
     private static final String SERVER_URL_2="http://chamberoffate.altervista.org/gestoreLobby.php";
-    private String LOBBY_NAME="";
+    private static String LOBBY_NAME="";
     private OkHttpClient client = new OkHttpClient();
 
     public boolean createLobby(String lobbyName) {
@@ -331,6 +332,43 @@ public class Okhttp {
         }).start();
     }
 
+
+    public interface Callback {
+        void onResponse(String response);
+        void onFailure(Exception e);
+    }
+
+    public void getHealth(String playerKey, Callback callback) {
+        String instruction = "getHealth";
+
+        RequestBody formBody = new FormBody.Builder()
+                .add("instruction", instruction)
+                .add("playerKey", playerKey)
+                .add("nomeFile", "bozo")
+                .build();
+
+        Request request = new Request.Builder()
+                .url(SERVER_URL_2)
+                .post(formBody)
+                .build();
+
+        new Thread(() -> {
+            try {
+                Response response = client.newCall(request).execute();
+
+                if (response.isSuccessful()) {
+                    String responseBody = response.body().string();
+                    callback.onResponse(responseBody); // Restituisce il risultato tramite la callback
+                } else {
+                    callback.onFailure(new IOException("Errore del server: " + response.message()));
+                }
+            } catch (IOException ex) {
+                callback.onFailure(ex);
+            }
+        }).start();
+    }
+
+    /*
     public void getHealth(String playerKey){
         String instruction = "getHealth";
 
@@ -353,8 +391,7 @@ public class Okhttp {
                 // Mostra la risposta nella text area
                 if (response.isSuccessful()) {
                     String responseBody = response.body().string();
-                    //System.out.println("Risposta del server: \n" + responseBody);
-                    og.setString(response.body().string());
+                    System.out.println("Risposta del server: \n" + responseBody);
                 } else {
                     System.out.println("Errore del server: \n" + response.message());
                 }
@@ -364,6 +401,8 @@ public class Okhttp {
             }
         }).start();
 
-        System.out.println(og.getString());
+        System.out.println(og.getHealth());
     }
+     */
+
 }
