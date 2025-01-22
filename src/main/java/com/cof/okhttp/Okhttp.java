@@ -15,10 +15,9 @@ import java.util.regex.Pattern;
 
 public class Okhttp {
 
-    private OggettoCondiviso og = new OggettoCondiviso();
-    private static final String SERVER_URL_1="http://chamberoffate.altervista.org/lobbyCreator.php";
-    private static final String SERVER_URL_2="http://chamberoffate.altervista.org/gestoreLobby.php";
-    private static String LOBBY_NAME="bozo";
+    private static final String SERVER_URL_1="http://chamberoffate.altervista.org/lobbyCreator-DO-NOT-DELETE.php";
+    private static final String SERVER_URL_2="http://chamberoffate.altervista.org/gestoreLobby-DO-NOT-DELETE.php";
+    private static String LOBBY_NAME;
     private OkHttpClient client = new OkHttpClient();
 
     //CREATE AND JOIN =================================================================================================
@@ -49,28 +48,31 @@ public class Okhttp {
                 .post(formBody)
                 .build();
 
-        new Thread(() -> {
-            try {
-                Response response = client.newCall(request).execute();
+        try {
+            Response response = client.newCall(request).execute();
 
-                // Mostra la risposta nella text area
-                if (response.isSuccessful()) {
-                    String responseBody = response.body().string();
-                    System.out.println("Risposta del server: \n" + responseBody);
-                } else {
-                    System.out.println("Errore del server: \n" + response.message());
-                }
-            } catch (IOException ex) {
-                // Mostra un errore in caso di problemi con la connessione
-                System.out.println("Errore di connessione: \n" + ex.getMessage());
+            // Mostra la risposta nella text area
+            if (response.isSuccessful()) {
+                String responseBody = response.body().string();
+                System.out.println("Risposta del server: \n" + responseBody);
+            } else {
+                System.out.println("Errore del server: \n" + response.message());
             }
-        }).start();
+        } catch (IOException ex) {
+            // Mostra un errore in caso di problemi con la connessione
+            System.out.println("Errore di connessione: \n" + ex.getMessage());
+        }
         //Create the lobby using url 1
+
+        /*
         try {
             Thread.sleep(500);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
+        */
+
+
         //Create the lobby using url 2
         RequestBody formBody2 = new FormBody.Builder()
                 .add("instruction", action)
@@ -82,22 +84,20 @@ public class Okhttp {
                 .post(formBody2)
                 .build();
 
-        new Thread(() -> {
-            try {
-                Response response = client.newCall(request2).execute();
+        try {
+            Response response2 = client.newCall(request2).execute();
 
-                // Mostra la risposta nella text area
-                if (response.isSuccessful()) {
-                    String responseBody = response.body().string();
-                    System.out.println("Risposta del server: \n" + responseBody);
-                } else {
-                    System.out.println("Errore del server: \n" + response.message());
-                }
-            } catch (IOException ex) {
-                // Mostra un errore in caso di problemi con la connessione
-                System.out.println("Errore di connessione: \n" + ex.getMessage());
+            // Mostra la risposta nella text area
+            if (response2.isSuccessful()) {
+                String responseBody = response2.body().string();
+                System.out.println("Risposta del server: \n" + responseBody);
+            } else {
+                System.out.println("Errore del server: \n" + response2.message());
             }
-        }).start();
+        } catch (IOException ex) {
+            // Mostra un errore in caso di problemi con la connessione
+            System.out.println("Errore di connessione: \n" + ex.getMessage());
+        }
         //Create the lobby using url 2
 
         return true;
@@ -119,22 +119,20 @@ public class Okhttp {
                 .post(formBody)
                 .build();
 
-        new Thread(() -> {
-            try {
-                Response response = client.newCall(request).execute();
+        try {
+            Response response = client.newCall(request).execute();
 
-                // Mostra la risposta nella text area
-                if (response.isSuccessful()) {
-                    String responseBody = response.body().string();
-                    System.out.println("Risposta del server: \n" + responseBody);
-                } else {
-                    System.out.println("Errore del server: \n" + response.message());
-                }
-            } catch (IOException ex) {
-                // Mostra un errore in caso di problemi con la connessione
-                System.out.println("Errore di connessione: \n" + ex.getMessage());
+            // Mostra la risposta nella text area
+            if (response.isSuccessful()) {
+                String responseBody = response.body().string();
+                System.out.println("Risposta del server: \n" + responseBody);
+            } else {
+                System.out.println("Errore del server: \n" + response.message());
             }
-        }).start();
+        } catch (IOException ex) {
+            // Mostra un errore in caso di problemi con la connessione
+            System.out.println("Errore di connessione: \n" + ex.getMessage());
+        }
         //Request for first url
 
         //Request for second url
@@ -148,22 +146,20 @@ public class Okhttp {
                 .post(formBody2)
                 .build();
 
-        new Thread(() -> {
-            try {
-                Response response = client.newCall(request2).execute();
+        try {
+            Response response2 = client.newCall(request2).execute();
 
-                // Mostra la risposta nella text area
-                if (response.isSuccessful()) {
-                    String responseBody = response.body().string();
-                    System.out.println("Risposta del server: \n" + responseBody);
-                } else {
-                    System.out.println("Errore del server: \n" + response.message());
-                }
-            } catch (IOException ex) {
-                // Mostra un errore in caso di problemi con la connessione
-                System.out.println("Errore di connessione: \n" + ex.getMessage());
+            // Mostra la risposta nella text area
+            if (response2.isSuccessful()) {
+                String responseBody = response2.body().string();
+                System.out.println("Risposta del server: \n" + responseBody);
+            } else {
+                System.out.println("Errore del server: \n" + response2.message());
             }
-        }).start();
+        } catch (IOException ex) {
+            // Mostra un errore in caso di problemi con la connessione
+            System.out.println("Errore di connessione: \n" + ex.getMessage());
+        }
         //Request for second url
         return true;
     }
@@ -327,6 +323,37 @@ public class Okhttp {
         }
         return null;
     }
+
+    public String countPlayers(){
+        String instruction = "countPlayers";
+
+        RequestBody formBody = new FormBody.Builder()
+                .add("instruction", instruction)
+                .add("nomeFile",LOBBY_NAME)
+                .build();
+
+        Request request = new Request.Builder()
+                .url(SERVER_URL_2)
+                .post(formBody)
+                .build();
+
+        try {
+            Response response = client.newCall(request).execute();
+
+            // Mostra la risposta nella text area
+            if (response.isSuccessful()) {
+                String responseBody = response.body().string();
+                return  responseBody;
+                //System.out.println("Risposta del server: \n" + responseBody);
+            } else {
+                System.out.println("Errore del server: \n" + response.message());
+            }
+        } catch (IOException ex) {
+            // Mostra un errore in caso di problemi con la connessione
+            System.out.println("Errore di connessione: \n" + ex.getMessage());
+        }
+        return null;
+    }
     //GETTERS =========================================================================================================
     //GETTERS =========================================================================================================
 
@@ -377,24 +404,176 @@ public class Okhttp {
                 .post(formBody)
                 .build();
 
+        try {
+            Response response = client.newCall(request).execute();
 
-        new Thread(() -> {
-            try {
-                Response response = client.newCall(request).execute();
-
-                // Mostra la risposta nella text area
-                if (response.isSuccessful()) {
-                    String responseBody = response.body().string();
-                    System.out.println("Risposta del server: \n" + responseBody);
-                } else {
-                    System.out.println("Errore del server: \n" + response.message());
-                }
-            } catch (IOException ex) {
-                // Mostra un errore in caso di problemi con la connessione
-                System.out.println("Errore di connessione: \n" + ex.getMessage());
+            // Mostra la risposta nella text area
+            if (response.isSuccessful()) {
+                String responseBody = response.body().string();
+                System.out.println("Risposta del server: \n" + responseBody);
+            } else {
+                System.out.println("Errore del server: \n" + response.message());
             }
-        }).start();
+        } catch (IOException ex) {
+            // Mostra un errore in caso di problemi con la connessione
+            System.out.println("Errore di connessione: \n" + ex.getMessage());
+        }
+    }
+
+    public void setAzioneDraw(String playerKey){
+        String instruction = "setAzione";
+
+        RequestBody formBody = new FormBody.Builder()
+                .add("instruction", instruction)
+                .add("playerKey", playerKey)
+                .add("nomeFile",LOBBY_NAME)
+                .add("azione", "draw")
+                .build();
+
+        Request request = new Request.Builder()
+                .url(SERVER_URL_2)
+                .post(formBody)
+                .build();
+
+        try {
+            Response response = client.newCall(request).execute();
+
+            // Mostra la risposta nella text area
+            if (response.isSuccessful()) {
+                String responseBody = response.body().string();
+                System.out.println("Risposta del server: \n" + responseBody);
+            } else {
+                System.out.println("Errore del server: \n" + response.message());
+            }
+        } catch (IOException ex) {
+            // Mostra un errore in caso di problemi con la connessione
+            System.out.println("Errore di connessione: \n" + ex.getMessage());
+        }
+    }
+
+    public void setAzioneStand(String playerKey){
+        String instruction = "setAzione";
+
+        RequestBody formBody = new FormBody.Builder()
+                .add("instruction", instruction)
+                .add("playerKey", playerKey)
+                .add("nomeFile",LOBBY_NAME)
+                .add("azione", "stand")
+                .build();
+
+        Request request = new Request.Builder()
+                .url(SERVER_URL_2)
+                .post(formBody)
+                .build();
+
+        try {
+            Response response = client.newCall(request).execute();
+
+            // Mostra la risposta nella text area
+            if (response.isSuccessful()) {
+                String responseBody = response.body().string();
+                System.out.println("Risposta del server: \n" + responseBody);
+            } else {
+                System.out.println("Errore del server: \n" + response.message());
+            }
+        } catch (IOException ex) {
+            // Mostra un errore in caso di problemi con la connessione
+            System.out.println("Errore di connessione: \n" + ex.getMessage());
+        }
+    }
+
+    public void clearAzione(String playerKey){
+        String instruction = "clearAzione";
+
+        RequestBody formBody = new FormBody.Builder()
+                .add("instruction", instruction)
+                .add("playerKey", playerKey)
+                .add("nomeFile",LOBBY_NAME)
+                .build();
+
+        Request request = new Request.Builder()
+                .url(SERVER_URL_2)
+                .post(formBody)
+                .build();
+
+        try {
+            Response response = client.newCall(request).execute();
+
+            // Mostra la risposta nella text area
+            if (response.isSuccessful()) {
+                String responseBody = response.body().string();
+                System.out.println("Risposta del server: \n" + responseBody);
+            } else {
+                System.out.println("Errore del server: \n" + response.message());
+            }
+        } catch (IOException ex) {
+            // Mostra un errore in caso di problemi con la connessione
+            System.out.println("Errore di connessione: \n" + ex.getMessage());
+        }
+    }
+
+    public void clearMazzo(String playerKey){
+        String instruction = "clearMazzo";
+
+        RequestBody formBody = new FormBody.Builder()
+                .add("instruction", instruction)
+                .add("playerKey", playerKey)
+                .add("nomeFile",LOBBY_NAME)
+                .build();
+
+        Request request = new Request.Builder()
+                .url(SERVER_URL_2)
+                .post(formBody)
+                .build();
+
+        try {
+            Response response = client.newCall(request).execute();
+
+            // Mostra la risposta nella text area
+            if (response.isSuccessful()) {
+                String responseBody = response.body().string();
+                System.out.println("Risposta del server: \n" + responseBody);
+            } else {
+                System.out.println("Errore del server: \n" + response.message());
+            }
+        } catch (IOException ex) {
+            // Mostra un errore in caso di problemi con la connessione
+            System.out.println("Errore di connessione: \n" + ex.getMessage());
+        }
     }
     //SETTERS AND MODIFIERS ===========================================================================================
     //SETTERS AND MODIFIERS ===========================================================================================
+
+    //DELETE LOBBY ====================================================================================================
+    //DELETE LOBBY ====================================================================================================
+    public void deleteLobby(){
+        String instruction = "deleteLobby";
+
+        RequestBody formBody = new FormBody.Builder()
+                .add("instruction", instruction)
+                .add("nomeFile",LOBBY_NAME)
+                .build();
+
+        Request request = new Request.Builder()
+                .url(SERVER_URL_2)
+                .post(formBody)
+                .build();
+
+        try {
+            Response response = client.newCall(request).execute();
+
+            // Mostra la risposta nella text area
+            if (response.isSuccessful()) {
+                String responseBody = response.body().string();
+                System.out.println("Risposta del server: \n" + responseBody);
+            } else {
+                System.out.println("Errore del server: \n" + response.message());
+            }
+        } catch (IOException ex) {
+            // Mostra un errore in caso di problemi con la connessione
+            System.out.println("Errore di connessione: \n" + ex.getMessage());
+        }
+    }
+    //DELETE LOBBY ====================================================================================================
+    //DELETE LOBBY ====================================================================================================
 }
