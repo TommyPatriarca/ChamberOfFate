@@ -19,6 +19,7 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
+import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.transform.Rotate;
@@ -402,7 +403,6 @@ public class OfflineGameScreen {
 
         updatePlayerHP();
         showResultOverlay(message); // Mostra l'overlay e prepara il nuovo round
-        shootAnimation(6);//TODO da cambiare il 6 con un numero variabile
     }
 
 
@@ -910,7 +910,7 @@ public class OfflineGameScreen {
         fadeOut.setToValue(0);
         fadeOut.setOnFinished(event -> {
             resultOverlay.setVisible(false);
-            startNewRound(); // Avvia un nuovo round
+            shootAnimation(6);//TODO da cambiare il 6 con un numero variabile
         });
         fadeOut.play();
     }
@@ -1063,11 +1063,8 @@ public class OfflineGameScreen {
         // Metti in pausa la logica del round
         setGamePaused(true);
 
-        // Creazione dello sfondo semitrasparente
-        ImageView bloodBackground = new ImageView(new Image(getClass().getResourceAsStream("/images/LobbyBackground.jpg")));
-        bloodBackground.setFitWidth(400);
-        bloodBackground.setFitHeight(400);
-        bloodBackground.setOpacity(0.7);
+        // Creazione di un overlay grigio trasparente
+        Rectangle overlay = new Rectangle(400, 400, Color.rgb(0, 0, 0, 0.00)); //TODO controllare il colore
 
         // Creazione dell'immagine del revolver
         ImageView revolver = new ImageView(new Image(getClass().getResourceAsStream("/images/revolver.png")));
@@ -1079,7 +1076,7 @@ public class OfflineGameScreen {
 
         // StackPane per centrare tutto
         StackPane animationPane = new StackPane();
-        animationPane.getChildren().addAll(bloodBackground, bulletGroup, revolver);
+        animationPane.getChildren().addAll(overlay, bulletGroup, revolver);
         root.getChildren().add(animationPane);
         StackPane.setAlignment(animationPane, Pos.CENTER);
 
@@ -1136,7 +1133,9 @@ public class OfflineGameScreen {
         });
 
         loadBulletsAnimation.play();
+        startNewRound(); // Avvia un nuovo round
     }
+
 
 
     private void setGamePaused(boolean paused) {
