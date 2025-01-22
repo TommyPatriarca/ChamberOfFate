@@ -13,7 +13,7 @@ public class ChamberOfFate extends Application {
     @Override
     public void start(Stage primaryStage) {
         Okhttp ok=new Okhttp();
-        System.out.println(ok.getHealth("giocatore1"));
+        System.out.println(ok.getAzione("giocatore1"));
         PcLoadingScreen loadingScreen = new PcLoadingScreen();
         loadingScreen.start(primaryStage);
     }

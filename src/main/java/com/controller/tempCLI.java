@@ -36,7 +36,7 @@ public class tempCLI {
         System.out.println("Hai le seguenti carte: ");
         printCards();
 
-        System.out.println("Il giocatore 2 ha la seguente carta\n" + controller.getPlayer2().getPlayDeck().getFirst().getTipo());
+        //System.out.println("Il giocatore 2 ha la seguente carta\n" + controller.getPlayer2().getPlayDeck().getFirst().getTipo());
 
         while (true){
 
