@@ -332,44 +332,7 @@ public class Okhttp {
         }).start();
     }
 
-
-    public interface Callback {
-        void onResponse(String response);
-        void onFailure(Exception e);
-    }
-
-    public void getHealth(String playerKey, Callback callback) {
-        String instruction = "getHealth";
-
-        RequestBody formBody = new FormBody.Builder()
-                .add("instruction", instruction)
-                .add("playerKey", playerKey)
-                .add("nomeFile", "bozo")
-                .build();
-
-        Request request = new Request.Builder()
-                .url(SERVER_URL_2)
-                .post(formBody)
-                .build();
-
-        new Thread(() -> {
-            try {
-                Response response = client.newCall(request).execute();
-
-                if (response.isSuccessful()) {
-                    String responseBody = response.body().string();
-                    callback.onResponse(responseBody); // Restituisce il risultato tramite la callback
-                } else {
-                    callback.onFailure(new IOException("Errore del server: " + response.message()));
-                }
-            } catch (IOException ex) {
-                callback.onFailure(ex);
-            }
-        }).start();
-    }
-
-    /*
-    public void getHealth(String playerKey){
+    public String getHealth(String playerKey){
         String instruction = "getHealth";
 
         RequestBody formBody = new FormBody.Builder()
@@ -383,26 +346,21 @@ public class Okhttp {
                 .post(formBody)
                 .build();
 
+        try {
+            Response response = client.newCall(request).execute();
 
-        new Thread(() -> {
-            try {
-                Response response = client.newCall(request).execute();
-
-                // Mostra la risposta nella text area
-                if (response.isSuccessful()) {
-                    String responseBody = response.body().string();
-                    System.out.println("Risposta del server: \n" + responseBody);
-                } else {
-                    System.out.println("Errore del server: \n" + response.message());
-                }
-            } catch (IOException ex) {
-                // Mostra un errore in caso di problemi con la connessione
-                System.out.println("Errore di connessione: \n" + ex.getMessage());
+            // Mostra la risposta nella text area
+            if (response.isSuccessful()) {
+                String responseBody = response.body().string();
+                return  responseBody;
+                //System.out.println("Risposta del server: \n" + responseBody);
+            } else {
+                System.out.println("Errore del server: \n" + response.message());
             }
-        }).start();
-
-        System.out.println(og.getHealth());
+        } catch (IOException ex) {
+            // Mostra un errore in caso di problemi con la connessione
+            System.out.println("Errore di connessione: \n" + ex.getMessage());
+        }
+        return null;
     }
-     */
-
 }
