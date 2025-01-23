@@ -39,6 +39,7 @@ public class OfflineGameScreen {
     private Button drawCardButton, passTurnButton;
     private StackPane root;
     private int currentRound = 1;
+    private Stage stagesaved;
 
     public OfflineGameScreen(Controller controller) {
         this.controller = controller;
@@ -51,6 +52,7 @@ public class OfflineGameScreen {
     private Label resultOverlay; // Overlay per i risultati
 
     public void show(Stage primaryStage) {
+        stagesaved = primaryStage;
         primaryStage.setMaximized(true);
         controller.startGame("Player 1");
 
@@ -752,7 +754,10 @@ public class OfflineGameScreen {
      */
 
     private void surrender() {
-        showCustomPopup("Surrender", "Vuoi arrenderti? Questa azione terminerà la partita.", () -> System.exit(0));
+        showCustomPopup("Surrender", "Vuoi arrenderti? Questa azione terminerà la partita.", () -> {
+            ModeScreen modeScreen = new ModeScreen();
+            modeScreen.show(stagesaved);
+        });
     }
     /**
      * Funzione per chiudere il gioco
