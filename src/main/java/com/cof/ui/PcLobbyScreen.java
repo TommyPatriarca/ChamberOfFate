@@ -2,6 +2,7 @@ package com.cof.ui;
 
 import com.cof.okhttp.Okhttp;
 import com.cof.utils.FontUtils;
+import com.controller.Controller;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.geometry.Insets;
@@ -132,16 +133,16 @@ public class PcLobbyScreen {
         joinLobbyButton.setOnAction(e -> {
             String selectedLobby = lobbyListView.getSelectionModel().getSelectedItem();
             if (selectedLobby != null) {
-                System.out.println("Selected Lobby: " + selectedLobby); // Debugging
+                System.out.println("Selected Lobby: " + selectedLobby);
                 Okhttp okhttp = new Okhttp();
                 okhttp.joinLobby(selectedLobby);
 
-                startGame(primaryStage);
-
+                startGame();  // Chiamata senza bisogno di passare primaryStage
             } else {
-                System.out.println("No lobby selected."); // Debugging message
+                System.out.println("No lobby selected.");
             }
         });
+
 
         backButton.setOnAction(e -> {
             if (refreshLobbiesTimeline != null) {
@@ -194,6 +195,14 @@ public class PcLobbyScreen {
         }));
         refreshLobbiesTimeline.setCycleCount(Timeline.INDEFINITE);
         refreshLobbiesTimeline.play();
+    }
+
+    private void startGame() {
+        Stage stage = (Stage) lobbyListView.getScene().getWindow(); // Ottieni la finestra attuale
+
+        Controller controller = new Controller(true);
+        OnlineGameScreen onlineGameScreen = new OnlineGameScreen(controller);
+        onlineGameScreen.show(stage);
     }
 
     private void showCreateLobbyDialog(Stage primaryStage) {
@@ -278,9 +287,6 @@ public class PcLobbyScreen {
     private void waitForPlayer(Stage primaryStage) {
         WaitingScreen waitingScreen = new WaitingScreen();
         waitingScreen.show(primaryStage);
-    }
-
-    private void startGame(Stage primaryStage) {
     }
 
     private Button createStyledButton(String text) {

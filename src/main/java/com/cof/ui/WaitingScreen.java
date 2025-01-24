@@ -28,52 +28,41 @@ public class WaitingScreen {
     private double yOffset = 0;
     private Timeline checkPlayersTimeline;
     private Okhttp okhttp = new Okhttp();
+    private Stage stage;
 
     public void show(Stage primaryStage) {
-        // Barra superiore
-        HBox titleBar = createCustomTitleBar(primaryStage);
+        this.stage = primaryStage;
 
-        // Immagine di sfondo
-        Image backgroundImage = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/images/ChargingScreen.jpg")));
-        ImageView backgroundView = new ImageView(backgroundImage);
-        backgroundView.setPreserveRatio(false);
+        // UI esistente per mostrare la schermata di attesa
+        HBox titleBar = createCustomTitleBar(primaryStage);
+        ImageView backgroundView = new ImageView(new Image(Objects.requireNonNull(getClass().getResourceAsStream("/images/ChargingScreen.jpg"))));
         backgroundView.setFitWidth(primaryStage.getWidth());
         backgroundView.setFitHeight(primaryStage.getHeight());
 
-
-        primaryStage.widthProperty().addListener((obs, oldVal, newVal) -> backgroundView.setFitWidth(newVal.doubleValue()));
-        primaryStage.heightProperty().addListener((obs, oldVal, newVal) -> backgroundView.setFitHeight(newVal.doubleValue()));
-
         StackPane root = new StackPane(backgroundView);
-
-        // Aggiungere la barra superiore al layout principale
         VBox layoutWithBar = new VBox(titleBar, root);
-
         Scene scene = new Scene(layoutWithBar, primaryStage.getWidth(), primaryStage.getHeight(), Color.BLACK);
 
-        // Transizione di fade-in
-        FadeTransition fadeIn = new FadeTransition(Duration.seconds(1), root);
-        fadeIn.setFromValue(0);
-        fadeIn.setToValue(1);
+        primaryStage.setScene(scene);
+        primaryStage.show();
 
-        primaryStage.setScene(scene); // Reuse the same Stage
-        fadeIn.play();
-
-        // Avvio del controllo dei giocatori nella lobby ogni 2 secondi
+        // Controllo periodico per verificare se la partita è iniziata
         checkPlayersTimeline = new Timeline(new KeyFrame(Duration.seconds(2), event -> {
-            String playerCount = okhttp.countPlayers();
-            if (playerCount != null && Integer.parseInt(playerCount) >= 2) {
-                startGame(primaryStage);
+            String gameStatus = okhttp.getAzione("gameStatus");
+            if ("started".equals(gameStatus)) {
+                startGame();
             }
         }));
         checkPlayersTimeline.setCycleCount(Timeline.INDEFINITE);
         checkPlayersTimeline.play();
     }
 
-    private void startGame(Stage primaryStage) {
-        checkPlayersTimeline.stop(); // Ferma il controllo una volta iniziata la partita
-        OnlineGameScreen onlineGameScreen = new OnlineGameScreen(new Controller(true));
-        onlineGameScreen.show(primaryStage);
+    private void startGame() {
+        checkPlayersTimeline.stop(); // Ferma il controllo periodico
+
+        Controller controller = new Controller(true);
+        OnlineGameScreen onlineGameScreen = new OnlineGameScreen(controller);
+        onlineGameScreen.show(stage);
     }
 
     private HBox createCustomTitleBar(Stage stage) {

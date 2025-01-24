@@ -420,6 +420,33 @@ public class Okhttp {
         }
     }
 
+    public void setGameStarted() {
+        String instruction = "startGame";
+
+        RequestBody formBody = new FormBody.Builder()
+                .add("instruction", instruction)
+                .add("nomeFile", LOBBY_NAME)
+                .build();
+
+        Request request = new Request.Builder()
+                .url(SERVER_URL_2)
+                .post(formBody)
+                .build();
+
+        try {
+            Response response = client.newCall(request).execute();
+
+            if (response.isSuccessful()) {
+                System.out.println("Partita avviata con successo!");
+            } else {
+                System.out.println("Errore nell'avvio della partita: " + response.message());
+            }
+        } catch (IOException ex) {
+            System.out.println("Errore di connessione: " + ex.getMessage());
+        }
+    }
+
+
     public void setAzioneDraw(String playerKey){
         String instruction = "setAzione";
 
