@@ -19,6 +19,7 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
+import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.transform.Rotate;
@@ -30,7 +31,7 @@ import java.util.Objects;
 public class OnlineGameScreen {
     private double xOffset = 0;
     private double yOffset = 0;
-    private boolean Turn = true, isGamePaused = false; // True: turno del giocatore, False: turno del bot
+    private boolean isPlayerTurn = true, isGamePaused = false; // True: turno del giocatore, False: turno del bot
     private SoundManager soundManager = new SoundManager();
     private Controller controller;
     private HBox playerHandDisplay, opponentHandDisplay;
@@ -38,6 +39,7 @@ public class OnlineGameScreen {
     private Button drawCardButton, passTurnButton;
     private StackPane root;
     private int currentRound = 1;
+    private Stage stagesaved;
 
     public OnlineGameScreen(Controller controller) {
         this.controller = controller;
@@ -50,6 +52,7 @@ public class OnlineGameScreen {
     private Label resultOverlay; // Overlay per i risultati
 
     public void show(Stage primaryStage) {
+        stagesaved = primaryStage;
         primaryStage.setMaximized(true);
         controller.startGame("Player 1");
 
@@ -203,14 +206,14 @@ public class OnlineGameScreen {
 
         drawCardButton.setOnAction(e -> {
             updateScores();
-            if (Turn) {
+            if (isPlayerTurn) {
                 controller.hitCard(true); // Il giocatore pesca una carta
                 updateGameDisplay();
 
                 // Controlla se il giocatore ha perso
                 if (controller.checkCards(controller.getPlayer1(), false) > 21) {
                     resolveRound("Hai sballato! Vince l'avversario.");
-                    controller.getPlayer2().shoot(6); // Il bot perde una vita
+                    controller.getPlayer1().shoot(6); // Il bot perde una vita
                 } else {
                     endPlayerTurn(false); // Passa il turno al bot, senza che il giocatore stia
                 }
@@ -218,7 +221,7 @@ public class OnlineGameScreen {
         });
 
         passTurnButton.setOnAction(e -> {
-            if (Turn) {
+            if (isPlayerTurn) {
                 endPlayerTurn(true); // Il giocatore decide di stare
             }
         });
@@ -271,7 +274,7 @@ public class OnlineGameScreen {
         int player1Score = controller.checkCards(controller.getPlayer1(), false);
         int player2Score = controller.checkCards(controller.getPlayer2(), false);
 
-        boolean player1Finished = player1Score > 21 || !Turn; // Il giocatore ha sballato o deciso di stare
+        boolean player1Finished = player1Score > 21 || !isPlayerTurn; // Il giocatore ha sballato o deciso di stare
         boolean player2Finished = player2Score > 21 || controller.checkCards(controller.getPlayer2(), false) >= 17;
 
         if (player1Finished && player2Finished) {
@@ -283,7 +286,7 @@ public class OnlineGameScreen {
      * Funzione per iniziare il turno del player
      */
     private void startPlayerTurn() {
-        Turn = true;
+        isPlayerTurn = true;
         currentPlayerLabel.setText("Your Turn");
         setPlayerControlsEnabled(true); // Abilita i controlli del giocatore
         updateScores();
@@ -293,7 +296,7 @@ public class OnlineGameScreen {
      * Funzione per finire il turno del player
      */
     private void endPlayerTurn(boolean playerStands) {
-        Turn = false;
+        isPlayerTurn = false;
 
         if (controller.checkCards(controller.getPlayer1(), false) > 21) {
             // Il giocatore ha sballato
@@ -317,7 +320,7 @@ public class OnlineGameScreen {
         int player1Score = controller.checkCards(controller.getPlayer1(), false);
         int player2Score = controller.checkCards(controller.getPlayer2(), false);
 
-        boolean player1Finished = player1Score > 21 || !Turn; // Il giocatore ha sballato o deciso di stare
+        boolean player1Finished = player1Score > 21 || !isPlayerTurn; // Il giocatore ha sballato o deciso di stare
         boolean player2Finished = player2Score > 21 || controller.checkCards(controller.getPlayer2(), false) >= 17;
 
         if (player1Finished && player2Finished) {
@@ -380,7 +383,7 @@ public class OnlineGameScreen {
         int player1Score = controller.checkCards(controller.getPlayer1(), false);
         int player2Score = controller.checkCards(controller.getPlayer2(), false);
 
-        if (message == null) {
+        if(message == null) {
             if (player1Score > 21 && player2Score > 21) {
                 message = "Entrambi avete sballato!";
             } else if (player1Score > 21) {
@@ -402,7 +405,6 @@ public class OnlineGameScreen {
 
         updatePlayerHP();
         showResultOverlay(message); // Mostra l'overlay e prepara il nuovo round
-        shootAnimation(6);//TODO da cambiare il 6 con un numero variabile
     }
 
 
@@ -511,8 +513,9 @@ public class OnlineGameScreen {
         ImageView cardView = createBackCardView();
         String imagePath = card.getImagePath();
 
-        if (animate) {
+        if (animate && !card.getAlreadyFlipped()) {
             playCardFlipAnimation(cardView, imagePath);
+            card.setAlreadyFlipped(true);
         } else {
             cardView.setImage(new Image(getClass().getResourceAsStream(imagePath)));
         }
@@ -584,7 +587,7 @@ public class OnlineGameScreen {
         // Pulsante toggle per mostrare/nascondere il menu
         Button toggleMenuButton = createStyledButton("Menu", "#333333");
         toggleMenuButton.setStyle(
-                "-fx-background-color: rgba(40, 40, 40, 0.8);" +
+                "-fx-background-color: rgba(40, 40, 40, 0.4);" +
                         "-fx-border-color: #666666;" +
                         "-fx-border-width: 2;" +
                         "-fx-font-size: 14px;" +
@@ -687,6 +690,8 @@ public class OnlineGameScreen {
 
         VBox popup = new VBox(20);
         popup.setAlignment(Pos.CENTER);
+        popup.setMaxWidth(350); // Limita la larghezza massima del popup
+        popup.setMaxHeight(550);
         popup.setStyle(
                 "-fx-background-color: rgba(42, 42, 42, 0.9);" +
                         "-fx-border-color: #666666;" +
@@ -706,7 +711,7 @@ public class OnlineGameScreen {
         );
 
         Slider volumeSlider = new Slider(0, 1, MusicManager.getVolume());
-        volumeSlider.setPrefWidth(200); // Dimensione più compatta
+        volumeSlider.setPrefWidth(200); // NON VAAAA
         volumeSlider.setShowTickMarks(true);
         volumeSlider.setShowTickLabels(true);
         volumeSlider.setMajorTickUnit(0.25);
@@ -740,15 +745,19 @@ public class OnlineGameScreen {
         overlayPane.getChildren().add(popup);
         StackPane.setAlignment(overlayPane, Pos.CENTER);
 
-        root.getChildren().add(overlayPane); // Aggiungi il popup al layout principale
+        root.getChildren().add(overlayPane);
     }
+
 
     /**
      * Funzione per mostrare la schermata per arrendersi
      */
 
     private void surrender() {
-        showCustomPopup("Surrender", "Vuoi arrenderti? Questa azione terminerà la partita.", () -> System.exit(0));
+        showCustomPopup("Surrender", "Vuoi arrenderti? Questa azione terminerà la partita.", () -> {
+            ModeScreen modeScreen = new ModeScreen();
+            modeScreen.show(stagesaved);
+        });
     }
     /**
      * Funzione per chiudere il gioco
@@ -906,7 +915,7 @@ public class OnlineGameScreen {
         fadeOut.setToValue(0);
         fadeOut.setOnFinished(event -> {
             resultOverlay.setVisible(false);
-            startNewRound(); // Avvia un nuovo round
+            shootAnimation(6);//TODO da cambiare il 6 con un numero variabile
         });
         fadeOut.play();
     }
@@ -964,7 +973,7 @@ public class OnlineGameScreen {
         VBox popup = new VBox(20);
         popup.setAlignment(Pos.CENTER);
         popup.setStyle(
-                "-fx-background-color: rgba(42, 42, 42, 0.9);" + //
+                "-fx-background-color: rgba(42, 42, 42, 0.9);" +
                         "-fx-border-color: #666666;" +
                         "-fx-border-width: 2;" +
                         "-fx-border-radius: 10;" +
@@ -1004,6 +1013,9 @@ public class OnlineGameScreen {
         cancelButton.setOnAction(e -> overlayPane.setVisible(false));
 
         buttonContainer.getChildren().addAll(confirmButton, cancelButton);
+
+        popup.setMaxWidth(550);
+        popup.setMaxHeight(350);
 
         popup.getChildren().addAll(titleLabel, messageLabel, buttonContainer);
 
@@ -1056,11 +1068,8 @@ public class OnlineGameScreen {
         // Metti in pausa la logica del round
         setGamePaused(true);
 
-        // Creazione dello sfondo semitrasparente
-        ImageView bloodBackground = new ImageView(new Image(getClass().getResourceAsStream("/images/LobbyBackground.jpg")));
-        bloodBackground.setFitWidth(400);
-        bloodBackground.setFitHeight(400);
-        bloodBackground.setOpacity(0.7);
+        // Creazione di un overlay grigio trasparente
+        Rectangle overlay = new Rectangle(400, 400, Color.rgb(0, 0, 0, 0.00)); //TODO controllare il colore
 
         // Creazione dell'immagine del revolver
         ImageView revolver = new ImageView(new Image(getClass().getResourceAsStream("/images/revolver.png")));
@@ -1072,7 +1081,7 @@ public class OnlineGameScreen {
 
         // StackPane per centrare tutto
         StackPane animationPane = new StackPane();
-        animationPane.getChildren().addAll(bloodBackground, bulletGroup, revolver);
+        animationPane.getChildren().addAll(overlay, bulletGroup, revolver);
         root.getChildren().add(animationPane);
         StackPane.setAlignment(animationPane, Pos.CENTER);
 
@@ -1106,6 +1115,9 @@ public class OnlineGameScreen {
 
         // Una volta completato il caricamento, esegui la rotazione
         loadBulletsAnimation.setOnFinished(event -> {
+            // Riproduci il suono del revolver spin
+            SoundManager.revolverSpin();
+
             // Animazione di rotazione del gruppo (revolver + proiettili)
             RotateTransition rotateAnimation = new RotateTransition(Duration.seconds(2), bulletGroup);
             rotateAnimation.setByAngle(360);
@@ -1115,6 +1127,7 @@ public class OnlineGameScreen {
 
             ParallelTransition rotation = new ParallelTransition(rotateAnimation, rotateRevolver);
             rotation.setOnFinished(e -> {
+                SoundManager.ShotgunSound();
                 // Rimuovi tutto al termine
                 root.getChildren().remove(animationPane);
                 // Riprendi la logica del gioco e distribuisci le carte
@@ -1125,7 +1138,10 @@ public class OnlineGameScreen {
         });
 
         loadBulletsAnimation.play();
+        startNewRound(); // Avvia un nuovo round
     }
+
+
 
     private void setGamePaused(boolean paused) {
         isGamePaused = paused;
