@@ -214,6 +214,50 @@ public class Okhttp {
         return list;
     }
 
+    public ArrayList<String> getLobbyList() { // ! PER IL CAPITANO !
+        String instruction = "getLista";
+
+        RequestBody formBody = new FormBody.Builder()
+                .add("azione", instruction)
+                .build();
+
+        Request request = new Request.Builder()
+                .url(SERVER_URL_1)
+                .post(formBody)
+                .build();
+
+        String resopnseList="";
+
+        try {
+            Response response = client.newCall(request).execute();
+
+            // Mostra la risposta nella text area
+            if (response.isSuccessful()) {
+                String responseBody = response.body().string();
+                resopnseList=responseBody;
+            } else {
+                System.out.println("Errore del server: \n" + response.message());
+            }
+        } catch (IOException ex) {
+            // Mostra un errore in caso di problemi con la connessione
+            System.out.println("Errore di connessione: \n" + ex.getMessage());
+        }
+
+        ArrayList<String> result = new ArrayList<>();
+        // Espressione regolare per trovare contenuti tra virgolette
+        Pattern pattern = Pattern.compile("\"(.*?)\"");
+        Matcher matcher;
+        matcher = pattern.matcher(resopnseList);
+
+        // Cerca tutte le occorrenze
+        while (matcher.find()) {
+            // Aggiungi la sottostringa trovata alla lista
+            result.add(matcher.group(1));
+        }
+
+        return result;
+    }
+
     public ArrayList<String> getMazzo(String playerKey) {
         String instruction = "getMazzo";
 
