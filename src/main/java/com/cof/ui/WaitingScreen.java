@@ -46,10 +46,10 @@ public class WaitingScreen {
         primaryStage.setScene(scene);
         primaryStage.show();
 
-        // Controllo periodico per verificare se la partita è iniziata
+        // Controllo periodico per verificare se ci sono due giocatori
         checkPlayersTimeline = new Timeline(new KeyFrame(Duration.seconds(2), event -> {
-            String gameStatus = okhttp.getAzione("gameStatus");
-            if ("started".equals(gameStatus)) {
+            String playerCount = okhttp.countPlayers();
+            if (playerCount != null && Integer.parseInt(playerCount) >= 2) {
                 startGame();
             }
         }));
