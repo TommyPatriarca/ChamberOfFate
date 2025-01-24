@@ -255,7 +255,7 @@ public class PcLobbyScreen {
 
             overlayPane.getChildren().removeAll(dimBackground, popup);
             overlayPane.setMouseTransparent(true);
-            waitForPlayer(primaryStage); //TODO prendere lo stage giusto
+            waitForPlayer(primaryStage);
         });
 
 

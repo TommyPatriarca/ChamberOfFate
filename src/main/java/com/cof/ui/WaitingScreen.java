@@ -1,8 +1,11 @@
 package com.cof.ui;
 
+import com.cof.okhttp.Okhttp;
 import com.cof.utils.FontUtils;
 import com.controller.Controller;
 import javafx.animation.FadeTransition;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -23,6 +26,8 @@ public class WaitingScreen {
 
     private double xOffset = 0;
     private double yOffset = 0;
+    private Timeline checkPlayersTimeline;
+    private Okhttp okhttp = new Okhttp();
 
     public void show(Stage primaryStage) {
         // Barra superiore
@@ -53,6 +58,22 @@ public class WaitingScreen {
 
         primaryStage.setScene(scene); // Reuse the same Stage
         fadeIn.play();
+
+        // Avvio del controllo dei giocatori nella lobby ogni 2 secondi
+        checkPlayersTimeline = new Timeline(new KeyFrame(Duration.seconds(2), event -> {
+            String playerCount = okhttp.countPlayers();
+            if (playerCount != null && Integer.parseInt(playerCount) >= 2) {
+                startGame(primaryStage);
+            }
+        }));
+        checkPlayersTimeline.setCycleCount(Timeline.INDEFINITE);
+        checkPlayersTimeline.play();
+    }
+
+    private void startGame(Stage primaryStage) {
+        checkPlayersTimeline.stop(); // Ferma il controllo una volta iniziata la partita
+        OnlineGameScreen onlineGameScreen = new OnlineGameScreen(new Controller(true));
+        onlineGameScreen.show(primaryStage);
     }
 
     private HBox createCustomTitleBar(Stage stage) {
