@@ -5,9 +5,7 @@ import com.cof.managers.MusicManager;
 import com.cof.managers.SoundManager;
 import com.cof.utils.FontUtils;
 import com.controller.Controller;
-import com.controller.ControllerOnline;
 import com.controller.objects.CardObj;
-import com.controller.objects.PlayerObj;
 import javafx.animation.*;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -35,7 +33,7 @@ public class OnlineGameScreen {
     private double yOffset = 0;
     private boolean isPlayerTurn = true, isGamePaused = false; // True: turno del giocatore, False: turno del bot
     private SoundManager soundManager = new SoundManager();
-    private ControllerOnline controller;
+    private Controller controller;
     private HBox playerHandDisplay, opponentHandDisplay;
     private Label currentPlayerLabel, player1HP, player2HP,player1ScoreLabel, player2ScoreLabel;
     private Button drawCardButton, passTurnButton;
@@ -43,10 +41,9 @@ public class OnlineGameScreen {
     private int currentRound = 1;
     private Stage stagesaved;
 
-    public OnlineGameScreen(ControllerOnline controller) {
+    public OnlineGameScreen(Controller controller) {
         this.controller = controller;
     }
-
 
     /**
      * Funzione per mostrare la schermata di gioco
@@ -55,15 +52,9 @@ public class OnlineGameScreen {
     private Label resultOverlay; // Overlay per i risultati
 
     public void show(Stage primaryStage) {
-
-        Timeline gameSync = new Timeline(new KeyFrame(Duration.seconds(5), event -> syncGameState()));
-        gameSync.setCycleCount(Timeline.INDEFINITE);
-        gameSync.play();
-
-        startGamePolling();
         stagesaved = primaryStage;
         primaryStage.setMaximized(true);
-        controller.startOnlineGame("Player 1");
+        controller.startGame("Player 1");
 
         // Immagine di sfondo
         ImageView backgroundView = createBackground(primaryStage);
@@ -214,23 +205,81 @@ public class OnlineGameScreen {
         passTurnButton = createStyledButton("STA", "#f44336");
 
         drawCardButton.setOnAction(e -> {
-            if (controller.isMyTurn()) {
-                controller.hitCard();
+            updateScores();
+            if (isPlayerTurn) {
+                controller.hitCard(true); // Il giocatore pesca una carta
                 updateGameDisplay();
-                endPlayerTurn();
+
+                // Controlla se il giocatore ha perso
+                if (controller.checkCards(controller.getPlayer1(), false) > 21) {
+                    resolveRound("Hai sballato! Vince l'avversario.");
+                    controller.getPlayer1().shoot(6); // Il bot perde una vita
+                } else {
+                    endPlayerTurn(false); // Passa il turno al bot, senza che il giocatore stia
+                }
             }
         });
 
-
         passTurnButton.setOnAction(e -> {
-            if (controller.isMyTurn()) {
-                endPlayerTurn();
+            if (isPlayerTurn) {
+                endPlayerTurn(true); // Il giocatore decide di stare
             }
         });
 
 
         controls.getChildren().addAll(currentPlayerLabel, drawCardButton, passTurnButton);
         return controls;
+    }
+
+    /**
+     * Funzione per fare giocare il turno al bot
+     */
+    private void botTurn(boolean completeTurn) {
+        setPlayerControlsEnabled(false); // Disabilita i controlli del giocatore
+        currentPlayerLabel.setText("Bot's Turn");
+
+        PauseTransition pause = new PauseTransition(Duration.seconds(1.5)); // Ritardo per simulare la giocata del bot
+        pause.setOnFinished(e -> {
+            boolean botDecidesToHit = controller.checkCards(controller.getPlayer2(), false) < 17;
+
+            if (botDecidesToHit) {
+                controller.hitCard(false); // Il bot pesca una carta
+                updateGameDisplay();
+                updateScores();
+
+                // Se il bot ha sballato
+                if (controller.checkCards(controller.getPlayer2(), false) > 21) {
+                    checkRoundCompletion(); // Controlla se il round è finito
+                } else if (completeTurn) {
+                    botTurn(true); // Continua a giocare solo se il giocatore ha premuto "Stai"
+                } else {
+                    startPlayerTurn(); // Torna al giocatore
+                }
+            } else {
+                // Il bot decide di stare
+                if (completeTurn) {
+                    checkRoundCompletion(); // Verifica se il round è terminato
+                } else {
+                    startPlayerTurn(); // Torna al giocatore
+                }
+            }
+        });
+
+        pause.play(); // Avvia il ritardo
+    }
+
+
+
+    private void endRoundIfNecessary() {
+        int player1Score = controller.checkCards(controller.getPlayer1(), false);
+        int player2Score = controller.checkCards(controller.getPlayer2(), false);
+
+        boolean player1Finished = player1Score > 21 || !isPlayerTurn; // Il giocatore ha sballato o deciso di stare
+        boolean player2Finished = player2Score > 21 || controller.checkCards(controller.getPlayer2(), false) >= 17;
+
+        if (player1Finished && player2Finished) {
+            resolveRound(null); // Termina il round
+        }
     }
 
     /**
@@ -246,13 +295,38 @@ public class OnlineGameScreen {
     /**
      * Funzione per finire il turno del player
      */
+    private void endPlayerTurn(boolean playerStands) {
+        isPlayerTurn = false;
 
-    private void endPlayerTurn() {
-        controller.endTurn();
-        setPlayerControlsEnabled(false);
-        currentPlayerLabel.setText("In attesa dell'avversario...");
+        if (controller.checkCards(controller.getPlayer1(), false) > 21) {
+            // Il giocatore ha sballato
+            currentPlayerLabel.setText("Bot's Turn");
+            botTurn(true); // Il bot completa tutte le sue giocate
+        } else if (playerStands) {
+            // Il giocatore ha deciso di stare
+            currentPlayerLabel.setText("Bot's Turn");
+            botTurn(true); // Il bot completa tutte le sue giocate
+        } else {
+            // Il giocatore pesca una carta
+            currentPlayerLabel.setText("Bot's Turn");
+            botTurn(false); // Il bot esegue solo una mossa
+        }
     }
 
+    /**
+     * Funzione per controllare se è finito un round
+     */
+    private void checkRoundCompletion() {
+        int player1Score = controller.checkCards(controller.getPlayer1(), false);
+        int player2Score = controller.checkCards(controller.getPlayer2(), false);
+
+        boolean player1Finished = player1Score > 21 || !isPlayerTurn; // Il giocatore ha sballato o deciso di stare
+        boolean player2Finished = player2Score > 21 || controller.checkCards(controller.getPlayer2(), false) >= 17;
+
+        if (player1Finished && player2Finished) {
+            resolveRound(null); // Termina il round
+        }
+    }
 
     /**
      * Funzione per creare i bottoni stilizzati passandogli il testo e il colore di sfondo
@@ -297,6 +371,62 @@ public class OnlineGameScreen {
         updateScores();
     }
 
+
+
+    /**
+     * Funzione per risolvere il  round
+     */
+
+    private void resolveRound(String message) {
+        revealAllCards();
+
+        int player1Score = controller.checkCards(controller.getPlayer1(), false);
+        int player2Score = controller.checkCards(controller.getPlayer2(), false);
+
+        if(message == null) {
+            if (player1Score > 21 && player2Score > 21) {
+                message = "Entrambi avete sballato!";
+            } else if (player1Score > 21) {
+                message = "Hai sballato! Vince il bot.";
+                controller.getPlayer1().shoot(6);
+            } else if (player2Score > 21) {
+                message = "Il bot ha sballato! Hai vinto.";
+                controller.getPlayer2().shoot(6); // Il bot perde una vita
+            } else if (player1Score > player2Score) {
+                message = "Hai vinto!";
+                controller.getPlayer2().shoot(6);
+            } else if (player1Score < player2Score) {
+                message = "Hai perso!";
+                controller.getPlayer1().shoot(6);
+            } else {
+                message = "Pareggio!";
+            }
+        }
+
+        updatePlayerHP();
+        showResultOverlay(message); // Mostra l'overlay e prepara il nuovo round
+    }
+
+
+
+    /**
+     * Funzione per far girare tutte le carte sul tavolo
+     */
+
+    private void revealAllCards() {
+        opponentHandDisplay.getChildren().clear();
+        controller.getPlayer2().getPlayDeck().forEach(card -> {
+            opponentHandDisplay.getChildren().add(createCardView(card, true));
+        });
+
+        playerHandDisplay.getChildren().clear();
+        controller.getPlayer1().getPlayDeck().forEach(card -> {
+            playerHandDisplay.getChildren().add(createCardView(card, true));
+        });
+
+        updatePlayerHP();
+    }
+
     /**
      * Funzione per mostrare il risultato della partita
      */
@@ -317,19 +447,32 @@ public class OnlineGameScreen {
      */
 
     private void updateGameDisplay() {
+
+        // Aggiorna la mano del giocatore
         playerHandDisplay.getChildren().clear();
-        for (CardObj card : controller.getPlayer1().getPlayDeck()) {
-            playerHandDisplay.getChildren().add(createCardView(card, false));
+        int playerDeckSize = controller.getPlayer1().getPlayDeck().size();
+
+        for (int i = 0; i < playerDeckSize; i++) {
+            boolean animate = (i == playerDeckSize - 1); // Anima solo l'ultima carta
+            playerHandDisplay.getChildren().add(createCardView(controller.getPlayer1().getPlayDeck().get(i), animate));
         }
 
+        // Aggiorna la mano dell'avversario
         opponentHandDisplay.getChildren().clear();
-        for (CardObj card : controller.getPlayer2().getPlayDeck()) {
-            opponentHandDisplay.getChildren().add(createBackCardView());
+        int opponentDeckSize = controller.getPlayer2().getPlayDeck().size();
+
+        for (int i = 0; i < opponentDeckSize; i++) {
+            if (i == 0) {
+                // Mostra la prima carta dell'avversario
+                opponentHandDisplay.getChildren().add(createCardView(controller.getPlayer2().getPlayDeck().get(i), false));
+            } else {
+                // Mostra il retro per tutte le altre carte
+                opponentHandDisplay.getChildren().add(createBackCardView());
+            }
         }
-
         updateScores();
+        updatePlayerHP();
     }
-
 
 
 
@@ -339,13 +482,11 @@ public class OnlineGameScreen {
      */
 
     private void updatePlayerHP() {
-        controller.reduceHealth("player1");
-        controller.reduceHealth("player2");
-
         player1HP.setText("Player 1 HP: " + controller.getPlayer1().getHP());
         player2HP.setText("Player 2 HP: " + controller.getPlayer2().getHP());
 
-        if (controller.isGameOver()) {
+        // Controlla se il gioco deve terminare
+        if (controller.getPlayer1().getHP() == 0 || controller.getPlayer2().getHP() == 0) {
             endGame((Stage) player1HP.getScene().getWindow());
         }
     }
@@ -813,20 +954,10 @@ public class OnlineGameScreen {
     private void startNewRound() {
         if (isGamePaused) return;
 
-        // Sincronizza lo stato del gioco dal server
-        controller.checkTurn();
-
-        // Aggiorna la visualizzazione delle carte
+        controller.turn();
         updateGameDisplay();
-
-        if (controller.isMyTurn()) {
-            startPlayerTurn();
-        } else {
-            setPlayerControlsEnabled(false);
-            currentPlayerLabel.setText("In attesa dell'avversario...");
-        }
+        startPlayerTurn();
     }
-
 
 
     /**
@@ -1015,31 +1146,12 @@ public class OnlineGameScreen {
     private void setGamePaused(boolean paused) {
         isGamePaused = paused;
 
+        // Disabilita o abilita i pulsanti del giocatore
         drawCardButton.setDisable(paused);
         passTurnButton.setDisable(paused);
 
+        // Altre logiche di pausa (es. bloccare eventi del bot o altri aggiornamenti)
     }
 
-    private Timeline gamePolling;
-
-    private void startGamePolling() {
-        gamePolling = new Timeline(new KeyFrame(Duration.seconds(2), event -> {
-            controller.checkTurn();
-            if (controller.isMyTurn()) {
-                startPlayerTurn();
-            } else {
-                setPlayerControlsEnabled(false);
-                currentPlayerLabel.setText("In attesa dell'avversario...");
-            }
-        }));
-        gamePolling.setCycleCount(Timeline.INDEFINITE);
-        gamePolling.play();
-    }
-
-    private void syncGameState() {
-        if (controller.isMyTurn()) {
-            updateGameDisplay();
-        }
-    }
 
 }

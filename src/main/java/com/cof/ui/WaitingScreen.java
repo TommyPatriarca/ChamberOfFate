@@ -3,13 +3,11 @@ package com.cof.ui;
 import com.cof.okhttp.Okhttp;
 import com.cof.utils.FontUtils;
 import com.controller.Controller;
-import com.controller.ControllerOnline;
 import javafx.animation.FadeTransition;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -20,7 +18,6 @@ import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
-import java.awt.event.ActionEvent;
 import java.util.Objects;
 
 import static javafx.application.Application.launch;
@@ -33,10 +30,8 @@ public class WaitingScreen {
     private Okhttp okhttp = new Okhttp();
     private Stage stage;
 
-
     public void show(Stage primaryStage) {
         this.stage = primaryStage;
-        stage=primaryStage;
 
         // UI esistente per mostrare la schermata di attesa
         HBox titleBar = createCustomTitleBar(primaryStage);
@@ -55,7 +50,6 @@ public class WaitingScreen {
         checkPlayersTimeline = new Timeline(new KeyFrame(Duration.seconds(2), event -> {
             String playerCount = okhttp.countPlayers();
             if (playerCount != null && Integer.parseInt(playerCount) >= 2) {
-                checkPlayersTimeline.stop();
                 startGame();
             }
         }));
@@ -64,15 +58,12 @@ public class WaitingScreen {
     }
 
     private void startGame() {
-        ControllerOnline controllerOnline = new ControllerOnline("player1");
-        OnlineGameScreen onlineGameScreen = new OnlineGameScreen(controllerOnline);
+        checkPlayersTimeline.stop(); // Ferma il controllo periodico
+
+        Controller controller = new Controller(true);
+        OnlineGameScreen onlineGameScreen = new OnlineGameScreen(controller);
         onlineGameScreen.show(stage);
     }
-
-
-
-
-
 
     private HBox createCustomTitleBar(Stage stage) {
         HBox titleBar = new HBox();
