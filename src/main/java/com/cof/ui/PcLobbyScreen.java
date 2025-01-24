@@ -206,7 +206,11 @@ public class PcLobbyScreen {
     }
 
     private void showCreateLobbyDialog(Stage primaryStage) {
-        // Create the dimmed overlay
+        // Ferma l'aggiornamento delle lobby quando si apre la finestra di creazione
+        if (refreshLobbiesTimeline != null) {
+            refreshLobbiesTimeline.stop();
+        }
+
         Pane dimBackground = new Pane();
         dimBackground.setStyle("-fx-background-color: rgba(0, 0, 0, 0.6);");
 
@@ -234,20 +238,8 @@ public class PcLobbyScreen {
         createButton.setStyle("-fx-font-size: 16px; -fx-background-color: #555; -fx-text-fill: white;");
         createButton.setDisable(true);
 
-        // Validate lobby name and password
         lobbyNameField.textProperty().addListener((obs, oldText, newText) -> {
-            if (newText.length() > 15) {
-                lobbyNameField.setText(newText.substring(0, 15));
-            }
-
             boolean isValidName = newText.matches("[a-zA-Z0-9 ]+");
-            if (isValidName) {
-                lobbyNameField.setStyle("-fx-font-size: 16px; -fx-border-width: 2px; -fx-border-color: green;");
-            } else {
-                lobbyNameField.setStyle("-fx-font-size: 16px; -fx-border-width: 2px; -fx-border-color: red;");
-            }
-
-            // Enable create button only if name is valid
             createButton.setDisable(!isValidName || newText.isEmpty());
         });
 
@@ -255,34 +247,30 @@ public class PcLobbyScreen {
             Okhttp okhttp = new Okhttp();
             okhttp.createLobby(lobbyNameField.getText());
 
-            // Forza l'aggiornamento delle lobby dopo la creazione
-            okhttp.getLobbyListAndUpdateUI(updatedLobbies -> {
-                lobbies.clear();
-                lobbies.addAll(updatedLobbies);
-                lobbyListView.getItems().setAll(lobbies);
-            });
-
             overlayPane.getChildren().removeAll(dimBackground, popup);
             overlayPane.setMouseTransparent(true);
+
             waitForPlayer(primaryStage);
         });
-
 
         Button cancelButton = new Button("Cancel");
         cancelButton.setStyle("-fx-font-size: 16px; -fx-background-color: #555; -fx-text-fill: white;");
         cancelButton.setOnAction(e -> {
             overlayPane.getChildren().removeAll(dimBackground, popup);
             overlayPane.setMouseTransparent(true);
+
+            // Riavvia l'aggiornamento delle lobby se la creazione è annullata
+            refreshLobbiesTimeline.play();
         });
 
         HBox buttonBox = new HBox(10, createButton, cancelButton);
         buttonBox.setAlignment(Pos.CENTER);
 
         popup.getChildren().addAll(titleLabel, lobbyNameField, buttonBox);
-
         overlayPane.getChildren().addAll(dimBackground, popup);
         overlayPane.setMouseTransparent(false);
     }
+
 
     private void waitForPlayer(Stage primaryStage) {
         WaitingScreen waitingScreen = new WaitingScreen();
