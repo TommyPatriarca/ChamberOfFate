@@ -26,15 +26,7 @@ public class Controller {
      */
     public Controller (boolean onOrOff){
 
-        //This function creates a new deck
-
-        if(onOrOff){
-            onlineGame();
-        }
-        else {
             offlineGame();
-        }
-
     }
 
     /**

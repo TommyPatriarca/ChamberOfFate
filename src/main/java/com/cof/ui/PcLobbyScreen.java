@@ -3,6 +3,7 @@ package com.cof.ui;
 import com.cof.okhttp.Okhttp;
 import com.cof.utils.FontUtils;
 import com.controller.Controller;
+import com.controller.ControllerOnline;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.geometry.Insets;
@@ -200,10 +201,14 @@ public class PcLobbyScreen {
     private void startGame() {
         Stage stage = (Stage) lobbyListView.getScene().getWindow(); // Ottieni la finestra attuale
 
-        Controller controller = new Controller(true);
-        OnlineGameScreen onlineGameScreen = new OnlineGameScreen(controller);
+        // Crea l'istanza del nuovo ControllerOnline
+        ControllerOnline controllerOnline = new ControllerOnline("player1");
+
+        // Avvia la schermata di gioco online con il nuovo controller
+        OnlineGameScreen onlineGameScreen = new OnlineGameScreen(controllerOnline);
         onlineGameScreen.show(stage);
     }
+
 
     private void showCreateLobbyDialog(Stage primaryStage) {
         // Ferma l'aggiornamento delle lobby quando si apre la finestra di creazione

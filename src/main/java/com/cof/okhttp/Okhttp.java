@@ -304,6 +304,34 @@ public class Okhttp {
         return result;
     }
 
+    public void updateTurn(String playerKey) {
+        String instruction = "updateTurn";
+
+        RequestBody formBody = new FormBody.Builder()
+                .add("instruction", instruction)
+                .add("playerKey", playerKey)
+                .add("nomeFile", LOBBY_NAME)
+                .add("azione", "end_turn")
+                .build();
+
+        Request request = new Request.Builder()
+                .url(SERVER_URL_2)
+                .post(formBody)
+                .build();
+
+        try {
+            Response response = client.newCall(request).execute();
+            if (response.isSuccessful()) {
+                System.out.println("Turno aggiornato con successo.");
+            } else {
+                System.out.println("Errore aggiornamento turno: " + response.message());
+            }
+        } catch (IOException ex) {
+            System.out.println("Errore di connessione: " + ex.getMessage());
+        }
+    }
+
+
     public String getAzione(String playerKey){
         String instruction = "getAzione";
 
