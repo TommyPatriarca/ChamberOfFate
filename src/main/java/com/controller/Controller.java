@@ -41,13 +41,15 @@ public class Controller {
      * Funzione per gestire la versione online del gioco
      */
     public void onlineGame(){
-        //OkHttpClient client;
+        deck = new Deck(); // Inizializza il mazzo per la modalità online
     }
+
 
     /**
      * Funzione per gestire la versione offline del gioco con AI
      */
     public void offlineGame(){
+
         deck = new Deck();
     }
 
