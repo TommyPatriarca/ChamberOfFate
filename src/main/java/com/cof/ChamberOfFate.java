@@ -11,6 +11,7 @@ public class ChamberOfFate extends Application {
     @Override
     public void start(Stage primaryStage) {
         Okhttp ok=new Okhttp();
+        ok.testDeck();
         PcLoadingScreen loadingScreen = new PcLoadingScreen();
         loadingScreen.start(primaryStage);
     }

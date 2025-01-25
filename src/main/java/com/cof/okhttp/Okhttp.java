@@ -1,5 +1,6 @@
 package com.cof.okhttp;
 
+import com.google.gson.Gson;
 import javafx.application.Platform;
 import okhttp3.*;
 
@@ -403,6 +404,41 @@ public class Okhttp {
 
     //SETTERS AND MODIFIERS ===========================================================================================
     //SETTERS AND MODIFIERS ===========================================================================================
+
+    public void testDeck(){
+        String instruction = "deckGenerator";
+        ArrayList<String> test=new ArrayList<>();
+        test.add("nigga1");
+        test.add("nigga2");
+        String deckJson = new Gson().toJson(test);
+
+        RequestBody formBody = new FormBody.Builder()
+                .add("instruction", instruction)
+                .add("deck", deckJson)
+                .add("nomeFile","amongus 2")
+                .build();
+
+        Request request = new Request.Builder()
+                .url(SERVER_URL_2)
+                .post(formBody)
+                .build();
+
+        try {
+            Response response = client.newCall(request).execute();
+
+            // Mostra la risposta nella text area
+            if (response.isSuccessful()) {
+                String responseBody = response.body().string();
+                System.out.println("Risposta del server: \n" + responseBody);
+            } else {
+                System.out.println("Errore del server: \n" + response.message());
+            }
+        } catch (IOException ex) {
+            // Mostra un errore in caso di problemi con la connessione
+            System.out.println("Errore di connessione: \n" + ex.getMessage());
+        }
+    }
+
     public void addCarta(String carta, String playerKey){
         String instruction = "addCarta";
 
