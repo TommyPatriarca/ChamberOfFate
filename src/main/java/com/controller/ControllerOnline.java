@@ -109,7 +109,8 @@ public class ControllerOnline {
     }
 
     public boolean isMyTurn() {
-        return okhttp.getAzione(playerKey).equals("draw");
+        String action = okhttp.getAzione(playerKey);
+        return action != null && action.equals("draw");
     }
 
     public boolean checkGameOver() {
