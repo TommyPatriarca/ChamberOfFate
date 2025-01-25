@@ -3,6 +3,7 @@ package com.cof.ui;
 import com.cof.okhttp.Okhttp;
 import com.cof.utils.FontUtils;
 import com.controller.Controller;
+import com.controller.ControllerOnline;
 import javafx.animation.FadeTransition;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -19,6 +20,7 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 
 import java.util.Objects;
+import java.util.Scanner;
 
 import static javafx.application.Application.launch;
 
@@ -60,10 +62,39 @@ public class WaitingScreen {
     private void startGame() {
         checkPlayersTimeline.stop(); // Ferma il controllo periodico
 
-        Controller controller = new Controller(true);
-        OnlineGameScreen onlineGameScreen = new OnlineGameScreen(controller);
-        onlineGameScreen.show(stage);
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Are you the first player? (true/false): ");
+        boolean isFirst = scanner.nextBoolean();
+        System.out.println("Enter player key: ");
+        String key = scanner.next();
+
+        ControllerOnline controller = new ControllerOnline(isFirst, key);
+        controller.startGame(isFirst ? "Player 1" : "Player 2");
+
+        while (!controller.checkGameOver()) {
+            if (controller.isMyTurn()) {
+                System.out.println("Your turn! Press 'h' to hit or 's' to stand: ");
+                String action = scanner.next();
+                if (action.equalsIgnoreCase("h")) {
+                    controller.hitCard(true);
+                    System.out.println("You drew a card!");
+                } else if (action.equalsIgnoreCase("s")) {
+                    controller.endTurn();
+                    System.out.println("You ended your turn.");
+                }
+            } else {
+                System.out.println("Waiting for opponent...");
+                try {
+                    Thread.sleep(2000); // Simulazione di attesa
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        System.out.println("Game over!");
     }
+
+
 
     private HBox createCustomTitleBar(Stage stage) {
         HBox titleBar = new HBox();

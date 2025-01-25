@@ -3,6 +3,7 @@ package com.cof.ui;
 import com.cof.okhttp.Okhttp;
 import com.cof.utils.FontUtils;
 import com.controller.Controller;
+import com.controller.ControllerOnline;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.geometry.Insets;
@@ -19,6 +20,7 @@ import javafx.util.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Scanner;
 import java.util.prefs.Preferences;
 
 public class PcLobbyScreen {
@@ -200,10 +202,37 @@ public class PcLobbyScreen {
     private void startGame() {
         Stage stage = (Stage) lobbyListView.getScene().getWindow(); // Ottieni la finestra attuale
 
-        Controller controller = new Controller(true);
-        OnlineGameScreen onlineGameScreen = new OnlineGameScreen(controller);
-        onlineGameScreen.show(stage);
+        ControllerOnline controller = new ControllerOnline(true, "belinga");
+        controller.startGame("Player 1");
+
+        // Aggiungi la logica di stampa per testare la CLI temporanea
+        System.out.println("Gioco online avviato per Player 1.");
+
+        while (!controller.checkGameOver()) {
+            if (controller.isMyTurn()) {
+                System.out.println("È il tuo turno! Premi 'h' per pescare una carta o 's' per passare: ");
+                Scanner scanner = new Scanner(System.in);
+                String action = scanner.next();
+                if (action.equalsIgnoreCase("h")) {
+                    controller.hitCard(true);
+                    System.out.println("Carta pescata!");
+                } else if (action.equalsIgnoreCase("s")) {
+                    controller.endTurn();
+                    System.out.println("Turno passato all'avversario.");
+                }
+            } else {
+                System.out.println("In attesa dell'avversario...");
+                try {
+                    Thread.sleep(2000); // Aspetta per simulare polling al server
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        System.out.println("Partita terminata!");
     }
+
 
     private void showCreateLobbyDialog(Stage primaryStage) {
         // Ferma l'aggiornamento delle lobby quando si apre la finestra di creazione
