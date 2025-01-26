@@ -149,4 +149,8 @@ public class Deck {
             return false;
         }
     }
+
+    public ArrayList<CardObj> getDeckArr() {
+        return deckArr;
+    }
 }

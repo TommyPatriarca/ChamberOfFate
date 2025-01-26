@@ -21,7 +21,10 @@ public class ControllerOnline {
 
         if (isFirstPlayer) {
             deck = new Deck();
-            okhttp.setDeck();  // Carica il mazzo sul server
+            ArrayList<String> deckList = new ArrayList<>();
+            for (CardObj card : deck.getDeckArr()) {
+            }
+            okhttp.setDeck(deckList);  // Carica il mazzo sul server
         } else {
             loadDeckFromServer();  // Recupera il mazzo dal server
         }
@@ -151,7 +154,7 @@ public class ControllerOnline {
             } else {
                 System.out.println("Waiting for opponent...");
                 try {
-                    Thread.sleep(3000); // Aggiunge un ritardo di 5 secondi tra le richieste
+                    Thread.sleep(3000); // Aggiunge un ritardo di 3 secondi tra le richieste
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -159,5 +162,4 @@ public class ControllerOnline {
         }
         System.out.println("Game over!");
     }
-
 }
