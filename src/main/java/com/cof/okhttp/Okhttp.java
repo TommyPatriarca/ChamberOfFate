@@ -506,11 +506,6 @@ public class Okhttp {
      */
     public void setDeck(ArrayList<String> deck ){
         String instruction = "deckGenerator";
-        /*
-        ArrayList<String> test=new ArrayList<>();
-        test.add("nigga1");
-        test.add("nigga2");
-         */
 
         String deckJson = new Gson().toJson(deck);
 
