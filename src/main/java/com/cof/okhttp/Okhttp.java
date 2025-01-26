@@ -450,12 +450,15 @@ public class Okhttp {
     //SETTERS AND MODIFIERS ===========================================================================================
     //SETTERS AND MODIFIERS ===========================================================================================
 
-    public void setDeck(){
+    public void setDeck(ArrayList<String> deck ){
         String instruction = "deckGenerator";
+        /*
         ArrayList<String> test=new ArrayList<>();
         test.add("nigga1");
         test.add("nigga2");
-        String deckJson = new Gson().toJson(test);
+         */
+
+        String deckJson = new Gson().toJson(deck);
 
         RequestBody formBody = new FormBody.Builder()
                 .add("instruction", instruction)
