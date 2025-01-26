@@ -10,8 +10,8 @@ import java.util.Scanner;
 
 public class ControllerOnline {
     private Deck deck;
-    private PlayerObj player1, player2;
-    private static Okhttp okhttp = new Okhttp();
+    private PlayerObj giocatore1, giocatore2;
+    private Okhttp okhttp = new Okhttp();
     private boolean isFirstPlayer;
     private String playerKey;
 
@@ -23,55 +23,56 @@ public class ControllerOnline {
             deck = new Deck();
             ArrayList<String> deckList = new ArrayList<>();
             for (CardObj card : deck.getDeckArr()) {
+                deckList.add(card.getTipo());
             }
-            okhttp.setDeck(deckList);  // Carica il mazzo sul server
+            okhttp.setDeck(deck.getDeckArrAsString());  // Carica il mazzo sul server
         } else {
             loadDeckFromServer();  // Recupera il mazzo dal server
         }
-        player1 = new PlayerObj("Player 1");
-        player2 = new PlayerObj("Player 2");
+        giocatore1 = new PlayerObj("Player 1");
+        giocatore2 = new PlayerObj("Player 2");
     }
 
     private void loadDeckFromServer() {
         ArrayList<String> cards = okhttp.getDeck();
         deck = new Deck();
         for (String card : cards) {
-            player1.addCard(new CardObj(card));
+            giocatore1.addCard(new CardObj(card));
         }
     }
 
     public void startGame(String playerName) {
-        player1 = new PlayerObj(playerName);
-        player2 = new PlayerObj("Opponent");
+        giocatore1 = new PlayerObj(playerName);
+        giocatore2 = new PlayerObj("Opponent");
         turn();
     }
 
     public void turn() {
-        player1.resetPlayer();
-        player2.resetPlayer();
+        giocatore1.resetPlayer();
+        giocatore2.resetPlayer();
 
-        player1.addCard(deck.hitCard());
-        player1.addCard(deck.hitCard());
+        giocatore1.addCard(deck.hitCard());
+        giocatore1.addCard(deck.hitCard());
 
-        player2.addCard(deck.hitCard());
-        player2.addCard(deck.hitCard());
+        giocatore2.addCard(deck.hitCard());
+        giocatore2.addCard(deck.hitCard());
     }
 
     public void hitCard(boolean isPlayerTurn) {
         if (isPlayerTurn) {
             CardObj card = deck.hitCard();
-            player1.addCard(card);
+            giocatore1.addCard(card);
             okhttp.addCarta(card.getTipo(), playerKey);
         } else {
             CardObj card = deck.hitCard();
-            player2.addCard(card);
+            giocatore2.addCard(card);
             okhttp.addCarta(card.getTipo(), "Opponent");
         }
     }
 
     public int checkResult() {
-        int runCountP1 = checkCards(player1, false);
-        int runCountP2 = checkCards(player2, false);
+        int runCountP1 = checkCards(giocatore1, false);
+        int runCountP2 = checkCards(giocatore2, false);
 
         if (runCountP1 < 22 && runCountP2 < 22) {
             return Integer.compare(runCountP2, runCountP1);
@@ -117,24 +118,22 @@ public class ControllerOnline {
     }
 
     public boolean checkGameOver() {
-        return player1.getHP() == 0 || player2.getHP() == 0;
+        return giocatore1.getHP() == 0 || giocatore2.getHP() == 0;
     }
 
     public void decreasePlayerHealth() {
         okhttp.decreaseHealth(playerKey);
     }
 
-    public PlayerObj getPlayer1() {
-        return player1;
+    public PlayerObj getgiocatore1() {
+        return giocatore1;
     }
 
-    public PlayerObj getPlayer2() {
-        return player2;
+    public PlayerObj getgiocatore2() {
+        return giocatore2;
     }
 
     public static void main(String[] args) {
-
-        okhttp.setGameStarted();
         Scanner scanner = new Scanner(System.in);
         System.out.println("Are you the first player? (true/false): ");
         boolean isFirst = scanner.nextBoolean();
@@ -148,18 +147,11 @@ public class ControllerOnline {
                 String action = scanner.next();
                 if (action.equalsIgnoreCase("h")) {
                     game.hitCard(true);
-                    System.out.println("You drew a card!");
                 } else if (action.equalsIgnoreCase("s")) {
                     game.endTurn();
-                    System.out.println("You ended your turn.");
                 }
             } else {
                 System.out.println("Waiting for opponent...");
-                try {
-                    Thread.sleep(3000); // Aggiunge un ritardo di 3 secondi tra le richieste
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
             }
         }
         System.out.println("Game over!");

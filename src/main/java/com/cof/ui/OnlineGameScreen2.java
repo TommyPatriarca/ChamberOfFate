@@ -40,7 +40,7 @@ public class OnlineGameScreen2 {
     private SoundManager soundManager = new SoundManager();
     private ControllerOnline controller;
     private HBox playerHandDisplay, opponentHandDisplay;
-    private Label currentPlayerLabel, player1HP, player2HP,player1ScoreLabel, player2ScoreLabel;
+    private Label currentPlayerLabel, giocatore1HP, giocatore2HP,giocatore1ScoreLabel, giocatore2ScoreLabel;
     private Button drawCardButton, passTurnButton;
     private StackPane root;
     private int currentRound = 1;
@@ -49,7 +49,7 @@ public class OnlineGameScreen2 {
     private boolean isFirstPlayer;
     private Okhttp okhttp = new Okhttp();
     private Deck deck;
-    private PlayerObj player1, player2;
+    private PlayerObj giocatore1, giocatore2;
 
 
     public OnlineGameScreen2(String playerKey, boolean isFirstPlayer) {
@@ -63,8 +63,8 @@ public class OnlineGameScreen2 {
             loadDeckFromServer(); // Il secondo giocatore scarica il mazzo dal server
         }
 
-        player1 = new PlayerObj("Player 1");
-        player2 = new PlayerObj("Player 2");
+        giocatore1 = new PlayerObj("Player 1");
+        giocatore2 = new PlayerObj("Player 2");
     }
 
 
@@ -123,27 +123,27 @@ public class OnlineGameScreen2 {
         healthPane.setPadding(new Insets(10));
 
         // Vite e punteggio del Player 1
-        VBox player1Box = new VBox(5);
-        player1HP = new Label("Player 1 HP: 5");
-        styleHealthLabel(player1HP, Color.LIGHTGREEN);
-        player1ScoreLabel = new Label("Score: 0");
-        styleScoreLabel(player1ScoreLabel);
-        player1Box.getChildren().addAll(player1HP, player1ScoreLabel);
-        BorderPane.setAlignment(player1Box, Pos.TOP_LEFT);
-        BorderPane.setMargin(player1Box, new Insets(10));
+        VBox giocatore1Box = new VBox(5);
+        giocatore1HP = new Label("Player 1 HP: 5");
+        styleHealthLabel(giocatore1HP, Color.LIGHTGREEN);
+        giocatore1ScoreLabel = new Label("Score: 0");
+        styleScoreLabel(giocatore1ScoreLabel);
+        giocatore1Box.getChildren().addAll(giocatore1HP, giocatore1ScoreLabel);
+        BorderPane.setAlignment(giocatore1Box, Pos.TOP_LEFT);
+        BorderPane.setMargin(giocatore1Box, new Insets(10));
 
 // Vite e punteggio del Player 2
-        VBox player2Box = new VBox(5);
-        player2HP = new Label("Player 2 HP: 5");
-        styleHealthLabel(player2HP, Color.RED);
-        player2ScoreLabel = new Label("Score: 0");
-        styleScoreLabel(player2ScoreLabel);
-        player2Box.getChildren().addAll(player2HP, player2ScoreLabel);
-        BorderPane.setAlignment(player2Box, Pos.TOP_RIGHT);
-        BorderPane.setMargin(player2Box, new Insets(10));
+        VBox giocatore2Box = new VBox(5);
+        giocatore2HP = new Label("Player 2 HP: 5");
+        styleHealthLabel(giocatore2HP, Color.RED);
+        giocatore2ScoreLabel = new Label("Score: 0");
+        styleScoreLabel(giocatore2ScoreLabel);
+        giocatore2Box.getChildren().addAll(giocatore2HP, giocatore2ScoreLabel);
+        BorderPane.setAlignment(giocatore2Box, Pos.TOP_RIGHT);
+        BorderPane.setMargin(giocatore2Box, new Insets(10));
 
-        healthPane.setLeft(player1Box);
-        healthPane.setRight(player2Box);
+        healthPane.setLeft(giocatore1Box);
+        healthPane.setRight(giocatore2Box);
 
 
         VBox gameArea = createGameArea();
@@ -278,16 +278,16 @@ public class OnlineGameScreen2 {
             if (isPlayerTurn) {
                 // Pesca la carta dal mazzo
                 CardObj drawnCard = deck.hitCard();
-                player1.addCard(drawnCard);
+                giocatore1.addCard(drawnCard);
 
                 okhttp.addCarta(drawnCard.getTipo(), playerKey); // Salva la carta sul server
 
                 updateGameDisplay();
 
                 // Controlla se il giocatore ha superato 21 punti
-                if (checkCards(player1) > 21) {
+                if (checkCards(giocatore1) > 21) {
                     System.out.println("Hai sballato! Vince l'avversario.");
-                    player1.shoot(6); // Perde una vita
+                    giocatore1.shoot(6); // Perde una vita
                     okhttp.setAzioneStand(playerKey); // Comunica al server che il turno è finito
                 } else {
                     endPlayerTurn(false); // Passa il turno all'avversario
@@ -326,13 +326,13 @@ public class OnlineGameScreen2 {
 
 
     private void endRoundIfNecessary() {
-        int player1Score = controller.checkCards(controller.getPlayer1(), false);
-        int player2Score = controller.checkCards(controller.getPlayer2(), false);
+        int giocatore1Score = controller.checkCards(controller.getgiocatore1(), false);
+        int giocatore2Score = controller.checkCards(controller.getgiocatore2(), false);
 
-        boolean player1Finished = player1Score > 21 || !isPlayerTurn; // Il giocatore ha sballato o deciso di stare
-        boolean player2Finished = player2Score > 21 || controller.checkCards(controller.getPlayer2(), false) >= 17;
+        boolean giocatore1Finished = giocatore1Score > 21 || !isPlayerTurn; // Il giocatore ha sballato o deciso di stare
+        boolean giocatore2Finished = giocatore2Score > 21 || controller.checkCards(controller.getgiocatore2(), false) >= 17;
 
-        if (player1Finished && player2Finished) {
+        if (giocatore1Finished && giocatore2Finished) {
             resolveRound(null); // Termina il round
         }
     }
@@ -357,7 +357,7 @@ public class OnlineGameScreen2 {
         if (playerStands) {
             okhttp.setAzioneStand(playerKey);
         } else {
-            okhttp.setAzioneDraw("player2");
+            okhttp.setAzioneDraw("giocatore2");
         }
 
         setPlayerControlsEnabled(false);
@@ -368,13 +368,13 @@ public class OnlineGameScreen2 {
      * Funzione per controllare se è finito un round
      */
     private void checkRoundCompletion() {
-        int player1Score = controller.checkCards(controller.getPlayer1(), false);
-        int player2Score = controller.checkCards(controller.getPlayer2(), false);
+        int giocatore1Score = controller.checkCards(controller.getgiocatore1(), false);
+        int giocatore2Score = controller.checkCards(controller.getgiocatore2(), false);
 
-        boolean player1Finished = player1Score > 21 || !isPlayerTurn; // Il giocatore ha sballato o deciso di stare
-        boolean player2Finished = player2Score > 21 || controller.checkCards(controller.getPlayer2(), false) >= 17;
+        boolean giocatore1Finished = giocatore1Score > 21 || !isPlayerTurn; // Il giocatore ha sballato o deciso di stare
+        boolean giocatore2Finished = giocatore2Score > 21 || controller.checkCards(controller.getgiocatore2(), false) >= 17;
 
-        if (player1Finished && player2Finished) {
+        if (giocatore1Finished && giocatore2Finished) {
             resolveRound(null); // Termina il round
         }
     }
@@ -398,22 +398,22 @@ public class OnlineGameScreen2 {
     private void initializePlayerHands() {
         // Aggiorna la mano del giocatore
         playerHandDisplay.getChildren().clear();
-        int playerDeckSize = controller.getPlayer1().getPlayDeck().size();
+        int playerDeckSize = controller.getgiocatore1().getPlayDeck().size();
 
         for (int i = 0; i < playerDeckSize; i++) {
             boolean animate = (i == playerDeckSize - 1) || currentRound == 1; // Anima l'ultima carta o tutte nel primo round
-            playerHandDisplay.getChildren().add(createCardView(controller.getPlayer1().getPlayDeck().get(i), animate));
+            playerHandDisplay.getChildren().add(createCardView(controller.getgiocatore1().getPlayDeck().get(i), animate));
         }
 
         // Aggiorna la mano dell'avversario
         opponentHandDisplay.getChildren().clear();
-        int opponentDeckSize = controller.getPlayer2().getPlayDeck().size();
+        int opponentDeckSize = controller.getgiocatore2().getPlayDeck().size();
 
         for (int i = 0; i < opponentDeckSize; i++) {
             if (i == 0) {
                 // Mostra la prima carta dell'avversario
                 boolean animate = currentRound == 1; // Anima solo nel primo round
-                opponentHandDisplay.getChildren().add(createCardView(controller.getPlayer2().getPlayDeck().get(i), animate));
+                opponentHandDisplay.getChildren().add(createCardView(controller.getgiocatore2().getPlayDeck().get(i), animate));
             } else {
                 // Mostra il retro per tutte le altre carte
                 opponentHandDisplay.getChildren().add(createBackCardView());
@@ -431,24 +431,24 @@ public class OnlineGameScreen2 {
     private void resolveRound(String message) {
         revealAllCards();
 
-        int player1Score = controller.checkCards(controller.getPlayer1(), false);
-        int player2Score = controller.checkCards(controller.getPlayer2(), false);
+        int giocatore1Score = controller.checkCards(controller.getgiocatore1(), false);
+        int giocatore2Score = controller.checkCards(controller.getgiocatore2(), false);
 
         if(message == null) {
-            if (player1Score > 21 && player2Score > 21) {
+            if (giocatore1Score > 21 && giocatore2Score > 21) {
                 message = "Entrambi avete sballato!";
-            } else if (player1Score > 21) {
+            } else if (giocatore1Score > 21) {
                 message = "Hai sballato! Vince il bot.";
-                controller.getPlayer1().shoot(6);
-            } else if (player2Score > 21) {
+                controller.getgiocatore1().shoot(6);
+            } else if (giocatore2Score > 21) {
                 message = "Il bot ha sballato! Hai vinto.";
-                controller.getPlayer2().shoot(6); // Il bot perde una vita
-            } else if (player1Score > player2Score) {
+                controller.getgiocatore2().shoot(6); // Il bot perde una vita
+            } else if (giocatore1Score > giocatore2Score) {
                 message = "Hai vinto!";
-                controller.getPlayer2().shoot(6);
-            } else if (player1Score < player2Score) {
+                controller.getgiocatore2().shoot(6);
+            } else if (giocatore1Score < giocatore2Score) {
                 message = "Hai perso!";
-                controller.getPlayer1().shoot(6);
+                controller.getgiocatore1().shoot(6);
             } else {
                 message = "Pareggio!";
             }
@@ -466,12 +466,12 @@ public class OnlineGameScreen2 {
 
     private void revealAllCards() {
         opponentHandDisplay.getChildren().clear();
-        controller.getPlayer2().getPlayDeck().forEach(card -> {
+        controller.getgiocatore2().getPlayDeck().forEach(card -> {
             opponentHandDisplay.getChildren().add(createCardView(card, true));
         });
 
         playerHandDisplay.getChildren().clear();
-        controller.getPlayer1().getPlayDeck().forEach(card -> {
+        controller.getgiocatore1().getPlayDeck().forEach(card -> {
             playerHandDisplay.getChildren().add(createCardView(card, true));
         });
 
@@ -483,10 +483,10 @@ public class OnlineGameScreen2 {
      */
 
     private void endGame(Stage stage) {
-        if(controller.getPlayer1().getHP() == 0){
+        if(controller.getgiocatore1().getHP() == 0){
             EndScreen endScreen = new EndScreen();
             endScreen.show(stage, false);
-        } else if (controller.getPlayer2().getHP() == 0) {
+        } else if (controller.getgiocatore2().getHP() == 0) {
             EndScreen endScreen = new EndScreen();
             endScreen.show(stage, true);
         }
@@ -501,21 +501,21 @@ public class OnlineGameScreen2 {
 
         // Aggiorna la mano del giocatore
         playerHandDisplay.getChildren().clear();
-        int playerDeckSize = controller.getPlayer1().getPlayDeck().size();
+        int playerDeckSize = controller.getgiocatore1().getPlayDeck().size();
 
         for (int i = 0; i < playerDeckSize; i++) {
             boolean animate = (i == playerDeckSize - 1); // Anima solo l'ultima carta
-            playerHandDisplay.getChildren().add(createCardView(controller.getPlayer1().getPlayDeck().get(i), animate));
+            playerHandDisplay.getChildren().add(createCardView(controller.getgiocatore1().getPlayDeck().get(i), animate));
         }
 
         // Aggiorna la mano dell'avversario
         opponentHandDisplay.getChildren().clear();
-        int opponentDeckSize = controller.getPlayer2().getPlayDeck().size();
+        int opponentDeckSize = controller.getgiocatore2().getPlayDeck().size();
 
         for (int i = 0; i < opponentDeckSize; i++) {
             if (i == 0) {
                 // Mostra la prima carta dell'avversario
-                opponentHandDisplay.getChildren().add(createCardView(controller.getPlayer2().getPlayDeck().get(i), false));
+                opponentHandDisplay.getChildren().add(createCardView(controller.getgiocatore2().getPlayDeck().get(i), false));
             } else {
                 // Mostra il retro per tutte le altre carte
                 opponentHandDisplay.getChildren().add(createBackCardView());
@@ -533,12 +533,12 @@ public class OnlineGameScreen2 {
      */
 
     private void updatePlayerHP() {
-        player1HP.setText("Player 1 HP: " + controller.getPlayer1().getHP());
-        player2HP.setText("Player 2 HP: " + controller.getPlayer2().getHP());
+        giocatore1HP.setText("Player 1 HP: " + controller.getgiocatore1().getHP());
+        giocatore2HP.setText("Player 2 HP: " + controller.getgiocatore2().getHP());
 
         // Controlla se il gioco deve terminare
-        if (controller.getPlayer1().getHP() == 0 || controller.getPlayer2().getHP() == 0) {
-            endGame((Stage) player1HP.getScene().getWindow());
+        if (controller.getgiocatore1().getHP() == 0 || controller.getgiocatore2().getHP() == 0) {
+            endGame((Stage) giocatore1HP.getScene().getWindow());
         }
     }
 
@@ -975,11 +975,11 @@ public class OnlineGameScreen2 {
      * Funzione per aggiornare il punteggio ovvero la somma dei valori delle carte
      */
     private void updateScores() {
-        int player1Score = controller.checkCards(controller.getPlayer1(), false);
-        int player2Score = controller.checkCards(controller.getPlayer2(), false);
+        int giocatore1Score = controller.checkCards(controller.getgiocatore1(), false);
+        int giocatore2Score = controller.checkCards(controller.getgiocatore2(), false);
 
-        player1ScoreLabel.setText("Score: " + player1Score);
-        player2ScoreLabel.setText("Score: " + "X"); //
+        giocatore1ScoreLabel.setText("Score: " + giocatore1Score);
+        giocatore2ScoreLabel.setText("Score: " + "X"); //
     }
 
     /**

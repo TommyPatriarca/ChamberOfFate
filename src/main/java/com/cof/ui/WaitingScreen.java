@@ -4,6 +4,7 @@ import com.cof.okhttp.Okhttp;
 import com.cof.utils.FontUtils;
 import com.controller.Controller;
 import com.controller.ControllerOnline;
+import com.controller.managers.cardManager.Deck;
 import javafx.animation.FadeTransition;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -19,6 +20,7 @@ import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
+import java.util.ArrayList;
 import java.util.Objects;
 import java.util.Scanner;
 
@@ -62,13 +64,19 @@ public class WaitingScreen {
     private void startGame() {
         checkPlayersTimeline.stop(); // Ferma il controllo periodico
 
-        String playerKey = "player1"; // Imposta il primo giocatore
-        Okhttp okhttp = new Okhttp();
-        okhttp.setDeck(); // Genera e salva il mazzo sul server
+        // Crea un nuovo mazzo di carte
+        Deck deck = new Deck();
+        ArrayList<String> deckList = deck.getDeckArrAsString();  // Ottieni la lista di stringhe del mazzo
 
+        // Invia il mazzo al server
+        Okhttp okhttp = new Okhttp();
+        okhttp.setDeck(deckList);
+
+        String playerKey = "giocatore2";
         OnlineGameScreen2 gameScreen = new OnlineGameScreen2(playerKey, true);
         gameScreen.show(stage);
     }
+
 
 
     private HBox createCustomTitleBar(Stage stage) {
