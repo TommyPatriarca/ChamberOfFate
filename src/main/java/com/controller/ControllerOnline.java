@@ -143,13 +143,21 @@ public class ControllerOnline {
                 String action = scanner.next();
                 if (action.equalsIgnoreCase("h")) {
                     game.hitCard(true);
+                    System.out.println("You drew a card!");
                 } else if (action.equalsIgnoreCase("s")) {
                     game.endTurn();
+                    System.out.println("You ended your turn.");
                 }
             } else {
                 System.out.println("Waiting for opponent...");
+                try {
+                    Thread.sleep(3000); // Aggiunge un ritardo di 5 secondi tra le richieste
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
         }
         System.out.println("Game over!");
     }
+
 }

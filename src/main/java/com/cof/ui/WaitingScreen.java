@@ -85,7 +85,7 @@ public class WaitingScreen {
             } else {
                 System.out.println("Waiting for opponent...");
                 try {
-                    Thread.sleep(2000); // Simulazione di attesa
+                    Thread.sleep(3000); // Aggiunge un ritardo di 5 secondi tra le richieste
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
