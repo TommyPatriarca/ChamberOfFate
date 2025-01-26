@@ -60,4 +60,20 @@ public class SoundManager {
         clip.start();
 
     }
+
+    /**
+     * Il suono del caricamento della revolver
+     */
+    public static void revolverMisfire() {
+        try {
+            InputStream file = SoundManager.class.getResourceAsStream("/audio/Misfire.wav");
+            AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(new BufferedInputStream(file));
+            clip = AudioSystem.getClip();
+            clip.open(audioInputStream);
+        } catch (UnsupportedAudioFileException | IOException | LineUnavailableException e) {
+            e.printStackTrace();
+        }
+        clip.start();
+
+    }
 }

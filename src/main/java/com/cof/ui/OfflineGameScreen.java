@@ -43,7 +43,9 @@ public class OfflineGameScreen {
     private StackPane root;
     private int currentRound = 1;
     private Stage stagesaved;
-    private Label resultOverlay; // Overlay per i risultati
+    private Label resultOverlay;
+    private boolean shot = false;
+    private boolean isRoundEnded = false,isPareggio = false;
     /**
      * Funzione per mostrare la schermata di gioco
      */
@@ -217,7 +219,10 @@ public class OfflineGameScreen {
                 // Controlla se il giocatore ha perso
                 if (controller.checkCards(controller.getPlayer1(), false) > 21) {
                     resolveRound("Hai sballato! Vince l'avversario.");
-                    controller.getPlayer1().shoot(6); // Il bot perde una vita
+                    isRoundEnded=true;
+                    if(controller.getPlayer1().shoot(controller.checkCards(controller.getPlayer1(), false))){
+                        shot=true;
+                    }
                 } else {
                     endPlayerTurn(false); // Passa il turno al bot, senza che il giocatore stia
                 }
@@ -315,6 +320,7 @@ public class OfflineGameScreen {
         boolean player2Finished = player2Score > 21 || controller.checkCards(controller.getPlayer2(), false) >= 17;
 
         if (player1Finished && player2Finished) {
+            isRoundEnded=true;
             resolveRound(null); // Termina il round
         }
     }
@@ -369,6 +375,7 @@ public class OfflineGameScreen {
      */
 
     private void resolveRound(String message) {
+        updateScores();
         revealAllCards();
 
         int player1Score = controller.checkCards(controller.getPlayer1(), false);
@@ -379,22 +386,30 @@ public class OfflineGameScreen {
                 message = "Entrambi avete sballato!";
             } else if (player1Score > 21) {
                 message = "Hai sballato! Vince il bot.";
-                controller.getPlayer1().shoot(6);
+                if(controller.getPlayer1().shoot(player2Score)){
+                    shot=true;
+                }
             } else if (player2Score > 21) {
                 message = "Il bot ha sballato! Hai vinto.";
-                controller.getPlayer2().shoot(6); // Il bot perde una vita
+                if(controller.getPlayer2().shoot(player1Score)){
+                    shot=true;
+                }
             } else if (player1Score > player2Score) {
                 message = "Hai vinto!";
-                controller.getPlayer2().shoot(6);
+                if(controller.getPlayer2().shoot(player1Score)){
+                    shot=true;
+                }
             } else if (player1Score < player2Score) {
                 message = "Hai perso!";
-                controller.getPlayer1().shoot(6);
+                if(controller.getPlayer1().shoot(player2Score)){
+                    shot=true;
+                }
             } else {
                 message = "Pareggio!";
+                isPareggio = true;
             }
         }
 
-        updatePlayerHP();
         showResultOverlay(message); // Mostra l'overlay e prepara il nuovo round
     }
 
@@ -665,7 +680,11 @@ public class OfflineGameScreen {
      */
 
     private void showRules() {
-        showCustomPopup("Rules", "Devo mettere le regole", () -> {});
+        showExitCustomPopup("Rules", "Blackjack Rounds: Each round is a head-to-head blackjack game.\n" +
+                "Bullet Loading Rules:\n" +
+                "If the winner scores exactly 21, the loser must load 6 bullets (a full revolver).\n" +
+                "The closer the winner's score to 21, the more bullets are loaded (e.g., 20 = 5 bullets, 19 = 4 bullets, etc.).\n" +
+                "Lives: Each player starts with 5 lives. If the chamber fires during Russian Roulette, the player loses a life. The first to lose all their lives is eliminated.");
     }
 
 
@@ -674,7 +693,7 @@ public class OfflineGameScreen {
      */
 
     private void showCredits() {
-        showCustomPopup("Credits", "Creato da Tommaso Patriarca, Alessandro Anastasio, Michele Comalli e Marco Barlascini", () -> {});
+        showExitCustomPopup("Credits", "Creato da Tommaso Patriarca, Alessandro Anastasio, Michele Comalli e Marco Barlascini");
     }
 
 
@@ -913,7 +932,9 @@ public class OfflineGameScreen {
         fadeOut.setToValue(0);
         fadeOut.setOnFinished(event -> {
             resultOverlay.setVisible(false);
-            shootAnimation(6);//TODO da cambiare il 6 con un numero variabile
+            if(!isPareggio) {
+                shootAnimation(shot);
+            }
         });
         fadeOut.play();
     }
@@ -926,7 +947,11 @@ public class OfflineGameScreen {
         int player2Score = controller.checkCards(controller.getPlayer2(), false);
 
         player1ScoreLabel.setText("Score: " + player1Score);
-        player2ScoreLabel.setText("Score: " + "X"); //
+        if(isRoundEnded){
+            player2ScoreLabel.setText("Score: " + player2Score);
+        }else{
+            player2ScoreLabel.setText("Score: " + "X");
+        }
     }
 
     /**
@@ -951,6 +976,8 @@ public class OfflineGameScreen {
      */
     private void startNewRound() {
         if (isGamePaused) return;
+        isRoundEnded=false;
+        isPareggio=false;
 
         controller.turn();
         updateGameDisplay();
@@ -1024,6 +1051,60 @@ public class OfflineGameScreen {
     }
 
     /**
+     * Funzione per mostrare un popup con solo il pulsante di chiusura
+     */
+    private void showExitCustomPopup(String title, String message) {
+        StackPane overlayPane = new StackPane();
+        overlayPane.setStyle(
+                "-fx-background-color: rgba(0, 0, 0, 0.5);" +
+                        "-fx-padding: 20;"
+        );
+
+        VBox popup = new VBox(20);
+        popup.setAlignment(Pos.CENTER);
+        popup.setStyle(
+                "-fx-background-color: rgba(42, 42, 42, 0.9);" +
+                        "-fx-border-color: #666666;" +
+                        "-fx-border-width: 2;" +
+                        "-fx-border-radius: 10;" +
+                        "-fx-background-radius: 10;" +
+                        "-fx-effect: dropshadow(gaussian, #000000, 15, 0.7, 0, 2);"
+        );
+
+        Label titleLabel = new Label(title);
+        titleLabel.setStyle(
+                "-fx-text-fill: gold;" +
+                        "-fx-font-size: 20px;" +
+                        "-fx-font-weight: bold;" +
+                        "-fx-font-family: 'Arial';"
+        );
+
+        Label messageLabel = new Label(message);
+        messageLabel.setWrapText(true);
+        messageLabel.setAlignment(Pos.CENTER);
+        messageLabel.setStyle(
+                "-fx-text-fill: #DDDDDD;" +
+                        "-fx-font-size: 16px;" +
+                        "-fx-font-family: 'Arial';"
+        );
+
+        Button closeButton = new Button("Chiudi");
+        stylePopupButton(closeButton, "#f44336", "#E57373");
+        closeButton.setOnAction(e -> overlayPane.setVisible(false));
+
+        popup.setMaxWidth(550);
+        popup.setMaxHeight(350);
+
+        popup.getChildren().addAll(titleLabel, messageLabel, closeButton);
+
+        overlayPane.getChildren().add(popup);
+        StackPane.setAlignment(overlayPane, Pos.CENTER);
+
+        root.getChildren().add(overlayPane); // Aggiungi il popup al layout principale
+    }
+
+
+    /**
      * Funzione per stilizzare i bottoni dei popup
      */
     private void stylePopupButton(Button button, String baseColor, String hoverColor) {
@@ -1065,14 +1146,14 @@ public class OfflineGameScreen {
 
     /**
      * L'animazione in cui la revolver viene caricata
-     * @param bullets il numero di proiettili
+     * @param shot la pistola ha sparato
      */
-    private void shootAnimation(int bullets) {
+    private void shootAnimation(boolean shot) {
         // Metti in pausa la logica del round
         setGamePaused(true);
 
         // Creazione di un overlay grigio trasparente
-        Rectangle overlay = new Rectangle(400, 400, Color.rgb(0, 0, 0, 0.00)); //TODO controllare il colore
+        Rectangle overlay = new Rectangle(400, 400, Color.rgb(0, 0, 0, 0.00));
 
         // Creazione dell'immagine del revolver
         ImageView revolver = new ImageView(new Image(getClass().getResourceAsStream("/images/revolver.png")));
@@ -1084,63 +1165,37 @@ public class OfflineGameScreen {
 
         // StackPane per centrare tutto
         StackPane animationPane = new StackPane();
-        animationPane.getChildren().addAll(overlay, bulletGroup, revolver);
+        animationPane.getChildren().addAll(overlay, revolver);
         root.getChildren().add(animationPane);
         StackPane.setAlignment(animationPane, Pos.CENTER);
 
-        // Centrare il gruppo dei proiettili rispetto al caricatore
-        double revolverCenterX = 75; // Mezzo della larghezza del revolver
-        double revolverCenterY = 75; // Mezzo dell'altezza del revolver
 
-        // Creazione dei cerchi per i proiettili
-        double radius = 40; // Raggio dei proiettili
-        for (int i = 0; i < bullets; i++) {
-            Circle bullet = new Circle(5, Color.GOLD); // Proiettile di dimensione 5 e colore oro
-            double angle = 360.0 / bullets * i; // Angolo per posizionare i proiettili
-
-            // Posizionamento rispetto al centro del gruppo dei proiettili
-            double bulletX = revolverCenterX + radius * Math.cos(Math.toRadians(angle));
-            double bulletY = revolverCenterY + radius * Math.sin(Math.toRadians(angle));
-            bullet.setTranslateX(bulletX - revolverCenterX); // Offset relativo al centro del revolver
-            bullet.setTranslateY(bulletY - revolverCenterY); // Offset relativo al centro del revolver
-
-            bulletGroup.getChildren().add(bullet);
-        }
-
-        // Animazione di caricamento dei proiettili
-        SequentialTransition loadBulletsAnimation = new SequentialTransition();
-        for (Node bullet : bulletGroup.getChildren()) {
-            FadeTransition fadeIn = new FadeTransition(Duration.seconds(0.5), bullet);
-            fadeIn.setFromValue(0);
-            fadeIn.setToValue(1);
-            loadBulletsAnimation.getChildren().add(fadeIn);
-        }
 
         // Una volta completato il caricamento, esegui la rotazione
-        loadBulletsAnimation.setOnFinished(event -> {
+
             // Riproduci il suono del revolver spin
             SoundManager.revolverSpin();
 
-            // Animazione di rotazione del gruppo (revolver + proiettili)
-            RotateTransition rotateAnimation = new RotateTransition(Duration.seconds(2), bulletGroup);
-            rotateAnimation.setByAngle(360);
 
             RotateTransition rotateRevolver = new RotateTransition(Duration.seconds(2), revolver);
             rotateRevolver.setByAngle(360);
 
-            ParallelTransition rotation = new ParallelTransition(rotateAnimation, rotateRevolver);
+            ParallelTransition rotation = new ParallelTransition(rotateRevolver);
             rotation.setOnFinished(e -> {
-                SoundManager.ShotgunSound();
+                if(shot){
+                    SoundManager.ShotgunSound();
+                    setShotFalse();
+                }else {
+                    SoundManager.revolverMisfire();
+                }
                 // Rimuovi tutto al termine
                 root.getChildren().remove(animationPane);
                 // Riprendi la logica del gioco e distribuisci le carte
                 setGamePaused(false);
                 startNewRound(); // Distribuisci le carte per il nuovo round
             });
+            updatePlayerHP();
             rotation.play();
-        });
-
-        loadBulletsAnimation.play();
         startNewRound(); // Avvia un nuovo round
     }
 
@@ -1159,5 +1214,8 @@ public class OfflineGameScreen {
         // Altre logiche di pausa (es. bloccare eventi del bot o altri aggiornamenti)
     }
 
+    private void setShotFalse(){
+        shot=false;
+    }
 
 }

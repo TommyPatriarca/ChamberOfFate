@@ -7,7 +7,6 @@ public class PlayerObj {
     private ArrayList<CardObj> playDeck;
     private int HP = 5;
     private String name;
-    private int revAMMO;
 
     private int[] caricatore = new int[6];
 
@@ -34,11 +33,25 @@ public class PlayerObj {
 
     /**
      * Funzione per farsi sparare
-     * @param revAMMO Proiettili nel caricatore
+     * @param punti Punti del giocatore
      * @return Se true, si è sparato, se false no
      */
-    public boolean shoot(int revAMMO){
-        this.revAMMO = revAMMO;
+    public boolean shoot(int punti){
+        int revAMMO=0;
+
+        if(punti<15){
+            revAMMO=1;
+        }else if(punti<16){
+            revAMMO=2;
+        }else if(punti<18){
+            revAMMO=3;
+        }else if(punti<20){
+            revAMMO=4;
+        }else if(punti<21){
+            revAMMO=5;
+        }else if(punti==21){
+            revAMMO=6;
+        }
 
         for(int i=0;i<6;i++) {
             if(i<revAMMO){
@@ -48,9 +61,6 @@ public class PlayerObj {
             else{
                 caricatore[i] = 0;
             }
-            /*for (int j = 0; j < revAMMO; j++) {
-                caricatore[i] = 1;
-            }*/
         }
 
         double randomN = Math.random() * 6;
