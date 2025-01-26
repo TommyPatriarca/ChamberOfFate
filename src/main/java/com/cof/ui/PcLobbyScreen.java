@@ -201,11 +201,11 @@ public class PcLobbyScreen {
 
     private void joinGame() {
         Stage stage = (Stage) lobbyListView.getScene().getWindow(); // Ottieni la finestra attuale
-        String playerKey = "player2"; // Imposta il secondo giocatore
-
-        OnlineGameScreen2 gameScreen = new OnlineGameScreen2(playerKey, false);
+        String playerKey = "giocatore2"; // Il secondo giocatore sarà "giocatore2"
+        OnlineGameScreen2 gameScreen = new OnlineGameScreen2(playerKey,false);
         gameScreen.show(stage);
     }
+
 
 
     private void showCreateLobbyDialog(Stage primaryStage) {

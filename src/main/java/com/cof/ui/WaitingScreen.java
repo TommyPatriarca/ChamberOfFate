@@ -64,18 +64,11 @@ public class WaitingScreen {
     private void startGame() {
         checkPlayersTimeline.stop(); // Ferma il controllo periodico
 
-        // Crea un nuovo mazzo di carte
-        Deck deck = new Deck();
-        ArrayList<String> deckList = deck.getDeckArrAsString();  // Ottieni la lista di stringhe del mazzo
-
-        // Invia il mazzo al server
-        Okhttp okhttp = new Okhttp();
-        okhttp.setDeck(deckList);
-
-        String playerKey = "giocatore2";
-        OnlineGameScreen2 gameScreen = new OnlineGameScreen2(playerKey, true);
+        String playerKey = "giocatore1"; // Il primo giocatore sarà "giocatore1"
+        OnlineGameScreen2 gameScreen = new OnlineGameScreen2(playerKey,true);
         gameScreen.show(stage);
     }
+
 
 
 

@@ -51,21 +51,10 @@ public class OnlineGameScreen2 {
     private Deck deck;
     private PlayerObj giocatore1, giocatore2;
 
-
     public OnlineGameScreen2(String playerKey, boolean isFirstPlayer) {
-        this.playerKey = playerKey;
-        this.isFirstPlayer = isFirstPlayer;
-
-        if (isFirstPlayer) {
-            deck = new Deck(); // Crea un nuovo mazzo solo se è il primo giocatore
-            okhttp.setDeck(deck.getDeckArrAsString()); // Carica il mazzo sul server
-        } else {
-            loadDeckFromServer(); // Il secondo giocatore scarica il mazzo dal server
-        }
-
-        giocatore1 = new PlayerObj("Player 1");
-        giocatore2 = new PlayerObj("Player 2");
+        this.controller = new ControllerOnline(isFirstPlayer, playerKey);
     }
+
 
 
     private void loadDeckFromServer() {
@@ -189,20 +178,17 @@ public class OnlineGameScreen2 {
         });
 
         Timeline turnChecker = new Timeline(new KeyFrame(Duration.seconds(2), event -> {
-            String action = okhttp.getAzione(playerKey);
-
-            if (action != null && action.equals("draw")) {
-                isPlayerTurn = true;
-                currentPlayerLabel.setText("Il tuo turno");
+            if (controller.isMyTurn()) {
+                currentPlayerLabel.setText("È il tuo turno!");
                 setPlayerControlsEnabled(true);
             } else {
-                isPlayerTurn = false;
-                currentPlayerLabel.setText("Turno avversario");
+                currentPlayerLabel.setText("Turno avversario...");
                 setPlayerControlsEnabled(false);
             }
         }));
         turnChecker.setCycleCount(Timeline.INDEFINITE);
         turnChecker.play();
+
 
 
         initializePlayerHands();
@@ -275,35 +261,30 @@ public class OnlineGameScreen2 {
         passTurnButton = createStyledButton("STA", "#f44336");
 
         drawCardButton.setOnAction(e -> {
-            if (isPlayerTurn) {
-                // Pesca la carta dal mazzo
-                CardObj drawnCard = deck.hitCard();
-                giocatore1.addCard(drawnCard);
-
-                okhttp.addCarta(drawnCard.getTipo(), playerKey); // Salva la carta sul server
-
+            if (controller.isMyTurn()) {
+                controller.hitCard(true); // Pesca la carta per il giocatore attuale
                 updateGameDisplay();
 
-                // Controlla se il giocatore ha superato 21 punti
-                if (checkCards(giocatore1) > 21) {
+                if (controller.checkCards(controller.getgiocatore1(), false) > 21) {
                     System.out.println("Hai sballato! Vince l'avversario.");
-                    giocatore1.shoot(6); // Perde una vita
-                    okhttp.setAzioneStand(playerKey); // Comunica al server che il turno è finito
-                } else {
-                    endPlayerTurn(false); // Passa il turno all'avversario
+                    controller.decreasePlayerHealth();
+                    controller.endTurn();
                 }
+            } else {
+                System.out.println("Non è il tuo turno!");
             }
         });
-
-
 
 
         passTurnButton.setOnAction(e -> {
-            if (isPlayerTurn) {
-                okhttp.setAzioneStand(playerKey); // Comunica al server che il giocatore ha passato
-                endPlayerTurn(true); // Conclude il turno del giocatore
+            if (controller.isMyTurn()) {
+                controller.endTurn();
+                System.out.println("Turno passato all'avversario.");
+            } else {
+                System.out.println("Non è il tuo turno!");
             }
         });
+
 
 
         controls.getChildren().addAll(currentPlayerLabel, drawCardButton, passTurnButton);
@@ -979,7 +960,7 @@ public class OnlineGameScreen2 {
         int giocatore2Score = controller.checkCards(controller.getgiocatore2(), false);
 
         giocatore1ScoreLabel.setText("Score: " + giocatore1Score);
-        giocatore2ScoreLabel.setText("Score: " + "X"); //
+        giocatore2ScoreLabel.setText("Score: " + giocatore2Score); //
     }
 
     /**
