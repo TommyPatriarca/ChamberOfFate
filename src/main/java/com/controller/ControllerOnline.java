@@ -11,7 +11,7 @@ import java.util.Scanner;
 public class ControllerOnline {
     private Deck deck;
     private PlayerObj player1, player2;
-    private Okhttp okhttp = new Okhttp();
+    private static Okhttp okhttp = new Okhttp();
     private boolean isFirstPlayer;
     private String playerKey;
 
@@ -133,6 +133,8 @@ public class ControllerOnline {
     }
 
     public static void main(String[] args) {
+
+        okhttp.setGameStarted();
         Scanner scanner = new Scanner(System.in);
         System.out.println("Are you the first player? (true/false): ");
         boolean isFirst = scanner.nextBoolean();

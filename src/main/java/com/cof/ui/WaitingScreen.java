@@ -48,19 +48,25 @@ public class WaitingScreen {
         primaryStage.setScene(scene);
         primaryStage.show();
 
-        // Controllo periodico per verificare se ci sono due giocatori
         checkPlayersTimeline = new Timeline(new KeyFrame(Duration.seconds(2), event -> {
-            String playerCount = okhttp.countPlayers();
-            if (playerCount != null && Integer.parseInt(playerCount) >= 2) {
+            String gameStarted = okhttp.getAzione("gameStatus");
+            if (gameStarted != null && gameStarted.equals("started")) {
                 startGame();
             }
         }));
         checkPlayersTimeline.setCycleCount(Timeline.INDEFINITE);
         checkPlayersTimeline.play();
+
     }
 
     private void startGame() {
         checkPlayersTimeline.stop(); // Ferma il controllo periodico
+
+        try {
+            Thread.sleep(2000); // Aspetta per garantire che i dati siano aggiornati
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
 
         Scanner scanner = new Scanner(System.in);
         System.out.println("Are you the first player? (true/false): ");
@@ -83,9 +89,9 @@ public class WaitingScreen {
                     System.out.println("You ended your turn.");
                 }
             } else {
-                System.out.println("Waiting for opponent...");
+                System.out.println("Waiting for opponent...Non è il mio turno");
                 try {
-                    Thread.sleep(3000); // Aggiunge un ritardo di 5 secondi tra le richieste
+                    Thread.sleep(5000); // Aggiunto ritardo per ridurre le richieste al server
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -93,6 +99,7 @@ public class WaitingScreen {
         }
         System.out.println("Game over!");
     }
+
 
 
 
