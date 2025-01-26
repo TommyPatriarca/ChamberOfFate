@@ -13,7 +13,9 @@ import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-
+/**
+ * La classe per connetersi online
+ */
 public class Okhttp {
 
     private static final String SERVER_URL_1="http://chamberoffate.altervista.org/lobbyCreator-DO-NOT-DELETE.php";
@@ -23,6 +25,12 @@ public class Okhttp {
 
     //CREATE AND JOIN =================================================================================================
     //CREATE AND JOIN =================================================================================================
+
+    /**
+     * Crea una lobby
+     * @param lobbyName il nome della lobby
+     * @return true se si è collegato al server,false se c'è stato un errore
+     */
     public boolean createLobby(String lobbyName) {
 
         /*
@@ -104,6 +112,11 @@ public class Okhttp {
         return true;
     }
 
+    /**
+     * Entra nella lobby
+     * @param lobbyName il nome della lobby
+     * @return true se si è collegato al server,false se c'è stato un errore
+     */
     public boolean joinLobby(String lobbyName) {
 
         String action = "join";
@@ -169,6 +182,11 @@ public class Okhttp {
 
     //GETTERS =========================================================================================================
     //GETTERS =========================================================================================================
+
+    /**
+     * Manda una richiesta al php per avere la lista di lobby è aggiorna la lista di lobby disponibili
+     * @param callback la lista di lobby disponibili
+     */
     public void getLobbyListAndUpdateUI(Consumer<ArrayList<String>> callback) {
         String action = "getLista";
 
@@ -201,6 +219,11 @@ public class Okhttp {
         }).start();
     }
 
+    /**
+     * Prende la stringa contenente la lista delle lobby e le mette nell' arratlist
+     * @param responseBody la stringa contente la lobby
+     * @return l'arreylist contente le lobby
+     */
     private ArrayList<String> parseLobbies(String responseBody) {
         // Supponiamo che la risposta sia separata da righe
         ArrayList<String> list = new ArrayList<>();
@@ -215,6 +238,10 @@ public class Okhttp {
         return list;
     }
 
+    /**
+     * Ritorna la lista delle lobby
+     * @return la lista delle lobby
+     */
     public ArrayList<String> getLobbyList() { // ! PER IL CAPITANO !
         String instruction = "getLista";
 
@@ -259,6 +286,11 @@ public class Okhttp {
         return result;
     }
 
+    /**
+     * Ritorna il mazzo del giocatore
+     * @param playerKey l'identificativo univoco del giocatore
+     * @return il mazzo del giocatore
+     */
     public ArrayList<String> getMazzo(String playerKey) {
         String instruction = "getMazzo";
 
@@ -305,6 +337,11 @@ public class Okhttp {
         return result;
     }
 
+    /**
+     * Ritorna l'azione del giocatore
+     * @param playerKey il nicname del giocatore
+     * @return l'azione del giocatore
+     */
     public String getAzione(String playerKey){
         String instruction = "getAzione";
 
@@ -337,6 +374,11 @@ public class Okhttp {
         return null;
     }
 
+    /**
+     * Ritorna la vita del giocatore
+     * @param playerKey l'identificativo univoco del giocatore
+     * @return la vita del giocatore
+     */
     public String getHealth(String playerKey){
         String instruction = "getHealth";
 
@@ -369,6 +411,10 @@ public class Okhttp {
         return null;
     }
 
+    /**
+     * Conta quanti giocatori ci sono in una lobby
+     * @return il numero di giocatori
+     */
     public String countPlayers(){
         String instruction = "countPlayers";
 
@@ -400,6 +446,10 @@ public class Okhttp {
         return null;
     }
 
+    /**
+     * Ritorna il mazzo
+     * @return il mazzo
+     */
     public ArrayList<String> getDeck() {
         String instruction = "getDeck";
 
@@ -450,6 +500,10 @@ public class Okhttp {
     //SETTERS AND MODIFIERS ===========================================================================================
     //SETTERS AND MODIFIERS ===========================================================================================
 
+    /**
+     * Inizializza il mazzo del gioco
+     * @param deck il mazzo del gioco
+     */
     public void setDeck(ArrayList<String> deck ){
         String instruction = "deckGenerator";
         /*
@@ -487,6 +541,11 @@ public class Okhttp {
         }
     }
 
+    /**
+     * Aggiunge una carta al giocatore
+     * @param carta la carta pescata
+     * @param playerKey l'identificativo univoco del giocatore
+     */
     public void addCarta(String carta, String playerKey){
         String instruction = "addCarta";
 
@@ -518,6 +577,10 @@ public class Okhttp {
         }
     }
 
+    /**
+     * Sottrae la vita al giocatore
+     * @param playerKey l'identificativo univoco del giocatore
+     */
     public void decreaseHealth(String playerKey){
         String instruction = "decreaseHealth";
 
@@ -548,6 +611,9 @@ public class Okhttp {
         }
     }
 
+    /**
+     * Inizializza il gioco online
+     */
     public void setGameStarted() {
         String instruction = "startGame";
 
@@ -574,7 +640,10 @@ public class Okhttp {
         }
     }
 
-
+    /**
+     * Il giocatore ha scelto di pescare
+     * @param playerKey l'identificativo univoco del giocatore
+     */
     public void setAzioneDraw(String playerKey){
         String instruction = "setAzione";
 
@@ -606,6 +675,10 @@ public class Okhttp {
         }
     }
 
+    /**
+     * Il giocatore ha scelto di stare
+     * @param playerKey l'identificativo univoco del giocatore
+     */
     public void setAzioneStand(String playerKey){
         String instruction = "setAzione";
 
@@ -637,6 +710,10 @@ public class Okhttp {
         }
     }
 
+    /**
+     * Fa eseguire al server l'azione clearAzione
+     * @param playerKey l'identificativo univoco del giocatore
+     */
     public void clearAzione(String playerKey){
         String instruction = "clearAzione";
 
@@ -667,6 +744,10 @@ public class Okhttp {
         }
     }
 
+    /**
+     * Fa eseguire al server l'azione clearMazzo
+     * @param playerKey l'identificativo univoco del giocatore
+     */
     public void clearMazzo(String playerKey){
         String instruction = "clearMazzo";
 
@@ -701,6 +782,10 @@ public class Okhttp {
 
     //DELETE LOBBY ====================================================================================================
     //DELETE LOBBY ====================================================================================================
+
+    /**
+     * Cancella la lobby
+     */
     public void deleteLobby(){
         String instruction = "deleteLobby";
 

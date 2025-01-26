@@ -9,6 +9,9 @@ import okhttp3.*;
 import javax.smartcardio.Card;
 import java.util.ArrayList;
 
+/**
+ * La classe del Controllore
+ */
 public class Controller {
 
     private Deck deck;
@@ -53,6 +56,10 @@ public class Controller {
         deck = new Deck();
     }
 
+    /**
+     * fa partire il gioco
+     * @param playerName il nickname del giocatore
+     */
     public void startGame(String playerName){
         this.playerName = playerName;
         player1 = new PlayerObj(playerName);
@@ -74,7 +81,11 @@ public class Controller {
         player2.addCard(deck.hitCard());
     }
 
-
+    /**
+     * Funzione per il turno del bot
+     * @param updateDisplayCallback
+     * @return true quando il bot ha finito il turno
+     */
     public boolean AITurn(Runnable updateDisplayCallback) {
         int firstCard1 = checkCards(player1, true);
         int runCount2 = checkCards(player2, false);
@@ -101,7 +112,7 @@ public class Controller {
 
 
     /**
-     *
+     * Controlla le carte
      * @param player Il giocatore a cui controllare le carte
      * @param firstOrAll Se true, controllo solo la prima, se false le controllo tutte
      * @return
@@ -213,7 +224,7 @@ public class Controller {
     }
 
     /**
-     *
+     *Spara al giocatore che ha perso
      */
     public boolean shootPlayer(){
         int result = checkResult();
@@ -253,7 +264,7 @@ public class Controller {
     }
 
     /**
-     *
+     * Funzione per pescare le carte
      * @param firstOrSec Se true player1, se false player2
      */
     public void hitCard(boolean firstOrSec){
@@ -315,16 +326,25 @@ public class Controller {
     //GET FUNCTIONS
 
     //ANDRANNO SOSTITUITE CON IL GETPLAYER GENERALe
+
+    /**
+     * Ritorna il giocatore 1
+     * @return il giocatore 1
+     */
     public PlayerObj getPlayer1(){
         return player1;
     }
 
+    /**
+     * Ritorna il giocatore 2
+     * @return il giocatore 2
+     */
     public PlayerObj getPlayer2(){
         return player2;
     }
 
     /**
-     *
+     * Ritorna il giocatore richiesto
      * @param player Se 1, player1, se 2 player2
      * @return il giocatore richiesto
      */

@@ -8,6 +8,9 @@ import com.cof.okhttp.Okhttp;
 import java.util.ArrayList;
 import java.util.Scanner;
 
+/**
+ * Il controllore per il gioco Online
+ */
 public class ControllerOnline {
     private Deck deck;
     private PlayerObj player1, player2;
@@ -15,6 +18,11 @@ public class ControllerOnline {
     private boolean isFirstPlayer;
     private String playerKey;
 
+    /**
+     * Il costruttore del controllore
+     * @param isFirstPlayer true se è il primo giocatore, false se è il secondo
+     * @param playerKey l'identificativo univoco del giocatore
+     */
     public ControllerOnline(boolean isFirstPlayer, String playerKey) {
         this.isFirstPlayer = isFirstPlayer;
         this.playerKey = playerKey;
@@ -32,6 +40,9 @@ public class ControllerOnline {
         player2 = new PlayerObj("Player 2");
     }
 
+    /**
+     * Carica il mazzo dal Server
+     */
     private void loadDeckFromServer() {
         ArrayList<String> cards = okhttp.getDeck();
         deck = new Deck();
@@ -40,12 +51,19 @@ public class ControllerOnline {
         }
     }
 
+    /**
+     * Fa iniziare il gioco
+     * @param playerName il nickname del giocatore
+     */
     public void startGame(String playerName) {
         player1 = new PlayerObj(playerName);
         player2 = new PlayerObj("Opponent");
         turn();
     }
 
+    /**
+     * Funzione per gestire il turno dei giocatori
+     */
     public void turn() {
         player1.resetPlayer();
         player2.resetPlayer();
@@ -57,6 +75,10 @@ public class ControllerOnline {
         player2.addCard(deck.hitCard());
     }
 
+    /**
+     * Funzione per far pescare il giocatore
+     * @param isPlayerTurn true se è il turno del giocatore, false il truno del nemico
+     */
     public void hitCard(boolean isPlayerTurn) {
         if (isPlayerTurn) {
             CardObj card = deck.hitCard();
@@ -69,6 +91,10 @@ public class ControllerOnline {
         }
     }
 
+    /**
+     * Controlla i risultati
+     * @return il risultato del confronto tra i due giocatore
+     */
     public int checkResult() {
         int runCountP1 = checkCards(player1, false);
         int runCountP2 = checkCards(player2, false);
@@ -84,6 +110,12 @@ public class ControllerOnline {
         }
     }
 
+    /**
+     * Controlla il punteggio totale delle carte del giocatore
+     * @param player il giocatore
+     * @param firstOrAll Se è true controlla solo la prima carta del giocatore, false controlla tutte le carte del giocatore
+     * @return
+     */
     public int checkCards(PlayerObj player, boolean firstOrAll) {
         int runCount = 0;
         int aces = 0;
@@ -107,27 +139,49 @@ public class ControllerOnline {
         return runCount;
     }
 
+    /**
+     * Funzione per finire il turno
+     */
     public void endTurn() {
         okhttp.setAzioneStand(playerKey);
     }
 
+    /**
+     * Ritorna se è il turno del giocatore
+     * @return true se è il truno del giocatore, false se è il truno del nemico
+     */
     public boolean isMyTurn() {
         String action = okhttp.getAzione(playerKey);
         return action != null && action.equals("draw");
     }
 
+    /**
+     * Controlla le vite dei giocatori
+     * @return true se un giocatore ha perso tutta la vita, false se i giocatori sono ancora vivi
+     */
     public boolean checkGameOver() {
         return player1.getHP() == 0 || player2.getHP() == 0;
     }
 
+    /**
+     * Funzione per diminuire la vita del giocatore
+     */
     public void decreasePlayerHealth() {
         okhttp.decreaseHealth(playerKey);
     }
 
+    /**
+     * Ritorna il giocatore 1
+     * @return il giocatore 1
+     */
     public PlayerObj getPlayer1() {
         return player1;
     }
 
+    /**
+     * Ritorna il giocaote 2
+     * @return il giocaote 2
+     */
     public PlayerObj getPlayer2() {
         return player2;
     }

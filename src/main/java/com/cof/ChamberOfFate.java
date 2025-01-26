@@ -8,6 +8,10 @@ import javafx.stage.Stage;
 import java.util.ArrayList;
 
 public class ChamberOfFate extends Application {
+    /**
+     * Fa iniziare il gioco
+     * @param primaryStage la finestra principale
+     */
     @Override
     public void start(Stage primaryStage) {
         Okhttp ok=new Okhttp();

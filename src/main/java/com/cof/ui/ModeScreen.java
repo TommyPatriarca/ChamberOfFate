@@ -18,11 +18,18 @@ import javafx.util.Duration;
 
 import java.util.Objects;
 
+/**
+ * La classe dell'interfaccia grafica per la selezione della modalità di gioco
+ */
 public class ModeScreen {
 
     private double xOffset = 0;
     private double yOffset = 0;
 
+    /**
+     * Configura la finestra principale
+     * @param primaryStage la finestra  principale
+     */
     public void show(Stage primaryStage) {
         // Barra superiore
         HBox titleBar = createCustomTitleBar(primaryStage);
@@ -71,6 +78,11 @@ public class ModeScreen {
         fadeIn.play();
     }
 
+    /**
+     * Crea un HBox per il titolo nella finestra principale
+     * @param stage la finestra principale
+     * @return HBox contenente il titolo personalizzato
+     */
     private HBox createCustomTitleBar(Stage stage) {
         HBox titleBar = new HBox();
         titleBar.setAlignment(Pos.CENTER_LEFT);
@@ -136,7 +148,11 @@ public class ModeScreen {
         return titleBar;
     }
 
-
+    /**
+     * Crea un pulsante
+     * @param text il testo nel pulsante
+     * @return il pulsante configurato
+     */
     private Button createButton(String text) {
         Button button = new Button(text);
         styleButton(button);
@@ -172,7 +188,10 @@ public class ModeScreen {
 
         return button;
     }
-
+    /**
+     * Imposta lo stile del pulsante
+     * @param button il pulsante
+     */
     private void styleButton(Button button) {
         button.setStyle(
                 "-fx-background-color: #2A2A2A;" +
@@ -189,7 +208,10 @@ public class ModeScreen {
         button.setMinHeight(70);
     }
 
-
+    /**
+     * Ritorna lo stile del pulsante quando il cursore del mouse passa sopra
+     * @return lo stile del pulsante quando il cursore del mouse passa sopra
+     */
     private String getHoverStyle() {
         return "-fx-background-color: #555555;" +
                 "-fx-text-fill: #ffffff;" +
@@ -200,7 +222,10 @@ public class ModeScreen {
                 "-fx-border-radius: 6;" +
                 "-fx-effect: dropshadow(gaussian, #444444, 20, 0.8, 0, 0);";
     }
-
+    /**
+     * Ritorna lo stile del pulsante quando il cursore del mouse lo preme
+     * @return lo stile del pulsante quando il cursore del mouse lo preme
+     */
     private String getPressedStyle() {
         return "-fx-background-color: #222222;" +
                 "-fx-text-fill: #aaaaaa;" +

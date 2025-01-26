@@ -22,6 +22,9 @@ import javafx.util.Duration;
 
 import java.util.Objects;
 
+/**
+ * La scermata di caricamento per il gioco
+ */
 public class PcLoadingScreen extends Application {
 
     private MusicManager musicManager;
@@ -32,6 +35,10 @@ public class PcLoadingScreen extends Application {
     private double xOffset = 0;
     private double yOffset = 0;
 
+    /**
+     * Configura la finestra principale
+     * @param primaryStage la finestra  principale
+     */
     @Override
     public void start(Stage primaryStage) {
         musicManager = new MusicManager();
@@ -96,12 +103,21 @@ public class PcLoadingScreen extends Application {
         });
     }
 
+    /**
+     * Gestisce le dimensione dello sfondo quando la finestra cambia dimensioni
+     * @param stage la finestra principale
+     * @param backgroundView lo sfondo
+     */
     private void handleBackgroundResize(Stage stage, ImageView backgroundView) {
         // Adatta lo sfondo a riempire sempre l'intera finestra
         stage.widthProperty().addListener((obs, oldVal, newVal) -> backgroundView.setFitWidth(newVal.doubleValue()));
         stage.heightProperty().addListener((obs, oldVal, newVal) -> backgroundView.setFitHeight(newVal.doubleValue()));
     }
 
+    /**
+     * Crea e gestisce l'icona per attivare e disattivare la musica
+     * @return l'icona per attivare e disattivare la musica
+     */
     private ImageView createMuteIcon() {
         // Carica le immagini per mute e unmute
         Image muteImage = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/icons/mute.png")));
@@ -129,6 +145,11 @@ public class PcLoadingScreen extends Application {
         return imageView;
     }
 
+    /**
+     * Crea un HBox per il titolo nella finestra principale
+     * @param stage la finestra principale
+     * @return HBox contenente il titolo personalizzato
+     */
     private HBox createCustomTitleBar(Stage stage) {
         HBox titleBar = new HBox();
         titleBar.setAlignment(Pos.CENTER_LEFT);
@@ -195,7 +216,10 @@ public class PcLoadingScreen extends Application {
     }
 
 
-
+    /**
+     * Esegue una transizione per passare alla finestra successiva
+     * @param stage la finestra principale
+     */
     private void fadeToModeScreen(Stage stage) {
         VBox root = (VBox) stage.getScene().getRoot();
         FadeTransition fadeOut = new FadeTransition(Duration.seconds(1), root);

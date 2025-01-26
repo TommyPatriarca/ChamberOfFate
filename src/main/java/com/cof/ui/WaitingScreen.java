@@ -24,6 +24,9 @@ import java.util.Scanner;
 
 import static javafx.application.Application.launch;
 
+/**
+ * La classe della finestra d'attesa per l'utente
+ */
 public class WaitingScreen {
 
     private double xOffset = 0;
@@ -32,6 +35,10 @@ public class WaitingScreen {
     private Okhttp okhttp = new Okhttp();
     private Stage stage;
 
+    /**
+     * Configura la finestra principale
+     * @param primaryStage la finestra  principale
+     */
     public void show(Stage primaryStage) {
         this.stage = primaryStage;
 
@@ -59,6 +66,9 @@ public class WaitingScreen {
 
     }
 
+    /**
+     * Fa iniziare il gioco
+     */
     private void startGame() {
         checkPlayersTimeline.stop(); // Ferma il controllo periodico
 
@@ -102,7 +112,11 @@ public class WaitingScreen {
 
 
 
-
+    /**
+     * Crea un HBox per il titolo nella finestra principale
+     * @param stage la finestra principale
+     * @return HBox contenente il titolo personalizzato
+     */
     private HBox createCustomTitleBar(Stage stage) {
         HBox titleBar = new HBox();
         titleBar.setAlignment(Pos.CENTER_LEFT);

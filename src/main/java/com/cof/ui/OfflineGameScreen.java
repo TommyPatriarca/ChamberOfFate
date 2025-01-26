@@ -28,6 +28,9 @@ import javafx.util.Duration;
 
 import java.util.Objects;
 
+/**
+ * La classe per lo sfondo le gioco offline
+ */
 public class OfflineGameScreen {
     private double xOffset = 0;
     private double yOffset = 0;
@@ -40,17 +43,18 @@ public class OfflineGameScreen {
     private StackPane root;
     private int currentRound = 1;
     private Stage stagesaved;
-
+    private Label resultOverlay; // Overlay per i risultati
+    /**
+     * Funzione per mostrare la schermata di gioco
+     */
     public OfflineGameScreen(Controller controller) {
         this.controller = controller;
     }
 
     /**
-     * Funzione per mostrare la schermata di gioco
+     * Configura la finestra principale
+     * @param primaryStage la finestra  principale
      */
-
-    private Label resultOverlay; // Overlay per i risultati
-
     public void show(Stage primaryStage) {
         stagesaved = primaryStage;
         primaryStage.setMaximized(true);
@@ -269,19 +273,6 @@ public class OfflineGameScreen {
     }
 
 
-
-    private void endRoundIfNecessary() {
-        int player1Score = controller.checkCards(controller.getPlayer1(), false);
-        int player2Score = controller.checkCards(controller.getPlayer2(), false);
-
-        boolean player1Finished = player1Score > 21 || !isPlayerTurn; // Il giocatore ha sballato o deciso di stare
-        boolean player2Finished = player2Score > 21 || controller.checkCards(controller.getPlayer2(), false) >= 17;
-
-        if (player1Finished && player2Finished) {
-            resolveRound(null); // Termina il round
-        }
-    }
-
     /**
      * Funzione per iniziare il turno del player
      */
@@ -374,7 +365,7 @@ public class OfflineGameScreen {
 
 
     /**
-     * Funzione per risolvere il  round
+     * Funzione per risolvere il round
      */
 
     private void resolveRound(String message) {
@@ -607,6 +598,13 @@ public class OfflineGameScreen {
 
         return menu;
     }
+
+    /**
+     * Crea il pulsante per il menù
+     * @param text il testo che verrà visualizzato sul pulsante
+     * @param action il comportamento da eseguire quando il pulsante viene cliccato
+     * @return il pulsante menù
+     */
     private Button createMenuButton(String text, Runnable action) {
         Button button = new Button(text);
         button.setStyle(
@@ -1064,6 +1062,11 @@ public class OfflineGameScreen {
                         "-fx-effect: dropshadow(gaussian, #000000, 5, 0.7, 0, 1);"
         ));
     }
+
+    /**
+     * L'animazione in cui la revolver viene caricata
+     * @param bullets il numero di proiettili
+     */
     private void shootAnimation(int bullets) {
         // Metti in pausa la logica del round
         setGamePaused(true);
@@ -1142,7 +1145,10 @@ public class OfflineGameScreen {
     }
 
 
-
+    /**
+     * Mette in pausa il gioco
+     * @param paused true il gioco viene messo in pausa, false il gioco riprende
+     */
     private void setGamePaused(boolean paused) {
         isGamePaused = paused;
 

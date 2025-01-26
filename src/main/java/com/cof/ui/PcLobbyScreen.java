@@ -23,6 +23,9 @@ import java.util.Objects;
 import java.util.Scanner;
 import java.util.prefs.Preferences;
 
+/**
+ * La scermata del gioco con le lobby
+ */
 public class PcLobbyScreen {
 
     private double xOffset = 0;
@@ -37,6 +40,10 @@ public class PcLobbyScreen {
     // Preferences to store selected lobby
     private final Preferences preferences = Preferences.userNodeForPackage(PcLobbyScreen.class);
 
+    /**
+     * Configura la finestra principale
+     * @param primaryStage la finestra  principale
+     */
     public void show(Stage primaryStage) {
 
         //Barra superiore
@@ -199,6 +206,9 @@ public class PcLobbyScreen {
         refreshLobbiesTimeline.play();
     }
 
+    /**
+     * Fa iniziare il gioco
+     */
     private void startGame() {
         Stage stage = (Stage) lobbyListView.getScene().getWindow(); // Ottieni la finestra attuale
 
@@ -233,7 +243,10 @@ public class PcLobbyScreen {
         System.out.println("Partita terminata!");
     }
 
-
+    /**
+     * Crea una finestra di dialogo per permettere all'utente di creare una nuova lobby
+     * @param primaryStage la finestra principale
+     */
     private void showCreateLobbyDialog(Stage primaryStage) {
         // Ferma l'aggiornamento delle lobby quando si apre la finestra di creazione
         if (refreshLobbiesTimeline != null) {
@@ -300,12 +313,20 @@ public class PcLobbyScreen {
         overlayPane.setMouseTransparent(false);
     }
 
-
+    /**
+     * Gestisce la finestra d'attesa per l'utente
+     * @param primaryStage la finestra d'attesa
+     */
     private void waitForPlayer(Stage primaryStage) {
         WaitingScreen waitingScreen = new WaitingScreen();
         waitingScreen.show(primaryStage);
     }
 
+    /**
+     * Crea un pulsante
+     * @param text il testo nel pulsante
+     * @return il pulsante configurato
+     */
     private Button createStyledButton(String text) {
         Button button = new Button(text);
         styleButton(button);
@@ -316,6 +337,10 @@ public class PcLobbyScreen {
         return button;
     }
 
+    /**
+     * Imposta lo stile del pulsante
+     * @param button il pulsante
+     */
     private void styleButton(Button button) {
         button.setStyle(
                 "-fx-background-color: #333333;" +
@@ -333,6 +358,10 @@ public class PcLobbyScreen {
         button.setMinHeight(60);
     }
 
+    /**
+     * Ritorna lo stile del pulsante quando il cursore del mouse passa sopra
+     * @return lo stile del pulsante quando il cursore del mouse passa sopra
+     */
     private String getHoverStyle() {
         return "-fx-background-color: #555555;" +
                 "-fx-text-fill: #ffffff;" +
@@ -344,6 +373,10 @@ public class PcLobbyScreen {
                 "-fx-effect: dropshadow(gaussian, #444444, 20, 0.8, 0, 0);";
     }
 
+    /**
+     * Ritorna lo stile del pulsante quando il cursore del mouse lo preme
+     * @return lo stile del pulsante quando il cursore del mouse lo preme
+     */
     private String getPressedStyle() {
         return "-fx-background-color: #222222;" +
                 "-fx-text-fill: #aaaaaa;" +
@@ -354,6 +387,12 @@ public class PcLobbyScreen {
                 "-fx-border-radius: 6;" +
                 "-fx-effect: dropshadow(gaussian, #111111, 30, 1.0, 0, 0);";
     }
+
+    /**
+     * Crea un HBox per il titolo nella finestra principale
+     * @param stage la finestra principale
+     * @return HBox contenente il titolo personalizzato
+     */
     private HBox createCustomTitleBar(Stage stage) {
         HBox titleBar = new HBox();
         titleBar.setAlignment(Pos.CENTER_LEFT);

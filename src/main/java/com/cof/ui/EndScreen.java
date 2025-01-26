@@ -19,11 +19,19 @@ import java.util.Objects;
 
 import static javafx.application.Application.launch;
 
+/**
+ * La classe dell'interfaccia grafica per lo scenario finale del gioco
+ */
 public class EndScreen {
 
     private double xOffset = 0;
     private double yOffset = 0;
 
+    /**
+     *Configura e visualizza la finestra principale con un layout personalizzato, un'immagine di sfondo e una transizione di fade-in. L'immagine di sfondovaria in base al risultato della partita (vittoria o sconfitta)
+     * @param primaryStage la finestra principale
+     * @param victory true se il giocatore a vinto, flase se il giocatore ha perso
+     */
     public void show(Stage primaryStage, boolean victory) {
         // Barra superiore
         HBox titleBar = createCustomTitleBar(primaryStage);
@@ -73,6 +81,11 @@ public class EndScreen {
         fadeIn.play();
     }
 
+    /**
+     * Crea un HBox per il titolo nella finestra principale
+     * @param stage la finestra principale
+     * @return HBox contenente il titolo personalizzato
+     */
     private HBox createCustomTitleBar(Stage stage) {
         HBox titleBar = new HBox();
         titleBar.setAlignment(Pos.CENTER_LEFT);
@@ -131,7 +144,11 @@ public class EndScreen {
         return titleBar;
     }
 
-
+    /**
+     * Crea un pulsante
+     * @param text il testo nel pulsante
+     * @return il pulsante configurato
+     */
     private Button createButton(String text) {
         Button button = new Button(text);
         styleButton(button);
@@ -157,6 +174,10 @@ public class EndScreen {
         return button;
     }
 
+    /**
+     * Imposta lo stile del pulsante
+     * @param button il pulsante
+     */
     private void styleButton(Button button) {
         button.setStyle(
                 "-fx-background-color: #333333;" +
@@ -174,6 +195,10 @@ public class EndScreen {
         button.setMinHeight(60);
     }
 
+    /**
+     * Ritorna lo stile del pulsante quando il cursore del mouse passa sopra
+     * @return lo stile del pulsante quando il cursore del mouse passa sopra
+     */
     private String getHoverStyle() {
         return "-fx-background-color: #555555;" +
                 "-fx-text-fill: #ffffff;" +
@@ -185,6 +210,10 @@ public class EndScreen {
                 "-fx-effect: dropshadow(gaussian, #444444, 20, 0.8, 0, 0);";
     }
 
+    /**
+     * Ritorna lo stile del pulsante quando il cursore del mouse lo preme
+     * @return lo stile del pulsante quando il cursore del mouse lo preme
+     */
     private String getPressedStyle() {
         return "-fx-background-color: #222222;" +
                 "-fx-text-fill: #aaaaaa;" +

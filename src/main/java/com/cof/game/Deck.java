@@ -4,10 +4,15 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * La classe del mazzo di carte
+ */
 public class Deck {
     private List<Card> cards; // Lista delle carte nel mazzo
 
-    // inizializza il mazzo con tutte le carte
+    /**
+     * Il costruttore del mazzo in cui lo inizializza con tutte le carte
+     */
     public Deck() {
         cards = new ArrayList<>();
         String[] suits = {"Clubs", "Diamonds", "Hearts", "Spades"};
@@ -21,11 +26,17 @@ public class Deck {
         shuffleDeck();
     }
 
-    // Mescola il mazzo
+    /**
+     * Mescola il mazzo
+     */
     public void shuffleDeck() {
         Collections.shuffle(cards);
     }
 
+    /**
+     * Pesca una carta
+     * @return la carta pescata
+     */
     // Pesca una carta
     public Card drawCard() {
         if (!cards.isEmpty()) {
@@ -36,7 +47,10 @@ public class Deck {
         }
     }
 
-    // Restituisce il numero di carte rimaste nel mazzo
+    /**
+     * Restituisce il numero di carte rimaste nel mazzo
+     * @return il numero di carte rimaste nel mazzo
+     */
     public int getRemainingCards() {
         return cards.size();
     }

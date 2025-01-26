@@ -6,6 +6,9 @@ import com.controller.objects.PlayerObj;
 import java.util.ArrayList;
 import java.util.Collections;
 
+/**
+ * Il mazzo della partita
+ */
 public class Deck {
 
     private ArrayList<CardObj> deckArr = new ArrayList<>();
@@ -81,20 +84,7 @@ public class Deck {
     }
 
 
-    /**
-     * Funzione per stampare l'intero mazzo
-     */
-    /*public void printDeck(){
 
-        System.out.println("||||||||||||");
-        System.out.println("DECK:");
-        for(CardObj obj : deckArr){
-            System.out.println(obj.getTipo());
-
-        }
-        System.out.println("||||||||||||");
-
-    }*/
 
     /**
      * Funzione per mischiare il mazzo
@@ -104,6 +94,10 @@ public class Deck {
         //printDeck();
     }
 
+    /**
+     * Funzione per pescare una carta
+     * @return la carta pescata
+     */
     public CardObj hitCard() {
         if (deckArr.isEmpty()) {
             System.out.println("Deck is empty. Regenerating the deck...");
@@ -140,7 +134,10 @@ public class Deck {
     }
 
 
-
+    /**
+     * Ritorna se il mazzo è vuoto
+     * @return true se il mazzo è vuoto, false se nel mazzo ci sono carte
+     */
     public boolean isEmpty() {
         if(deckArr.isEmpty()){
             return true;
@@ -150,6 +147,10 @@ public class Deck {
         }
     }
 
+    /**
+     * Ritorna il mazzo do carte
+     * @return il mazzo do carte
+     */
     public ArrayList<CardObj> getDeckArr() {
         return deckArr;
     }
