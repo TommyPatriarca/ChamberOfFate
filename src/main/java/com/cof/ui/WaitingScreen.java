@@ -62,45 +62,13 @@ public class WaitingScreen {
     private void startGame() {
         checkPlayersTimeline.stop(); // Ferma il controllo periodico
 
-        try {
-            Thread.sleep(2000); // Aspetta per garantire che i dati siano aggiornati
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        String playerKey = "player1"; // Imposta il primo giocatore
+        Okhttp okhttp = new Okhttp();
+        okhttp.setDeck(); // Genera e salva il mazzo sul server
 
-        Scanner scanner = new Scanner(System.in);
-        System.out.println("Are you the first player? (true/false): ");
-        boolean isFirst = scanner.nextBoolean();
-        System.out.println("Enter player key: ");
-        String key = scanner.next();
-
-        ControllerOnline controller = new ControllerOnline(isFirst, key);
-        controller.startGame(isFirst ? "Player 1" : "Player 2");
-
-        while (!controller.checkGameOver()) {
-            if (controller.isMyTurn()) {
-                System.out.println("Your turn! Press 'h' to hit or 's' to stand: ");
-                String action = scanner.next();
-                if (action.equalsIgnoreCase("h")) {
-                    controller.hitCard(true);
-                    System.out.println("You drew a card!");
-                } else if (action.equalsIgnoreCase("s")) {
-                    controller.endTurn();
-                    System.out.println("You ended your turn.");
-                }
-            } else {
-                System.out.println("Waiting for opponent...Non è il mio turno");
-                try {
-                    Thread.sleep(5000); // Aggiunto ritardo per ridurre le richieste al server
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-        System.out.println("Game over!");
+        OnlineGameScreen2 gameScreen = new OnlineGameScreen2(playerKey, true);
+        gameScreen.show(stage);
     }
-
-
 
 
     private HBox createCustomTitleBar(Stage stage) {

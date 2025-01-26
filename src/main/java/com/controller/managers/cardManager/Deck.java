@@ -153,4 +153,16 @@ public class Deck {
     public ArrayList<CardObj> getDeckArr() {
         return deckArr;
     }
+
+    public ArrayList<String> getDeckArrAsString() {
+        ArrayList<String> deckList = new ArrayList<>();
+        for (CardObj card : deckArr) {
+            deckList.add(card.getTipo());
+        }
+        return deckList;
+    }
+
+    public void addCard(CardObj card) {
+        deckArr.add(card);
+    }
 }

@@ -139,7 +139,7 @@ public class PcLobbyScreen {
                 Okhttp okhttp = new Okhttp();
                 okhttp.joinLobby(selectedLobby);
 
-                startGame();  // Chiamata senza bisogno di passare primaryStage
+                joinGame();
             } else {
                 System.out.println("No lobby selected.");
             }
@@ -199,38 +199,12 @@ public class PcLobbyScreen {
         refreshLobbiesTimeline.play();
     }
 
-    private void startGame() {
+    private void joinGame() {
         Stage stage = (Stage) lobbyListView.getScene().getWindow(); // Ottieni la finestra attuale
+        String playerKey = "player2"; // Imposta il secondo giocatore
 
-        ControllerOnline controller = new ControllerOnline(true, "belinga");
-        controller.startGame("Player 1");
-
-        // Aggiungi la logica di stampa per testare la CLI temporanea
-        System.out.println("Gioco online avviato per Player 1.");
-
-        while (!controller.checkGameOver()) {
-            if (controller.isMyTurn()) {
-                System.out.println("È il tuo turno! Premi 'h' per pescare una carta o 's' per passare: ");
-                Scanner scanner = new Scanner(System.in);
-                String action = scanner.next();
-                if (action.equalsIgnoreCase("h")) {
-                    controller.hitCard(true);
-                    System.out.println("Carta pescata!");
-                } else if (action.equalsIgnoreCase("s")) {
-                    controller.endTurn();
-                    System.out.println("Turno passato all'avversario.");
-                }
-            } else {
-                System.out.println("In attesa dell'avversario...");
-                try {
-                    Thread.sleep(2000); // Aspetta per simulare polling al server
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-
-        System.out.println("Partita terminata!");
+        OnlineGameScreen2 gameScreen = new OnlineGameScreen2(playerKey, false);
+        gameScreen.show(stage);
     }
 
 
