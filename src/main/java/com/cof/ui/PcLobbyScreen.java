@@ -133,6 +133,7 @@ public class PcLobbyScreen {
         // Button Actions
         createLobbyButton.setOnAction(e -> showCreateLobbyDialog(primaryStage));
         joinLobbyButton.setOnAction(e -> {
+            refreshLobbiesTimeline.stop();
             String selectedLobby = lobbyListView.getSelectionModel().getSelectedItem();
             if (selectedLobby != null) {
                 System.out.println("Selected Lobby: " + selectedLobby);
