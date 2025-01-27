@@ -132,14 +132,15 @@ public class Okhttp {
                 .build();
 
         try (Response response = client.newCall(request).execute()) {
-            System.out.println("[DEBUG] Request to: " + SERVER_URL_1);
+            String responseBody = response.body().string();
+            System.out.println("[DEBUG] Request to join lobby: " + SERVER_URL_1);
             System.out.println("[DEBUG] Params: azione=join, lobbyName=" + lobbyName);
+            System.out.println("[DEBUG] Server response: " + responseBody);
 
-            if (response.isSuccessful()) {
-                System.out.println("[INFO] Response: " + response.body().string());
+            if (response.isSuccessful() && responseBody.contains("\"status\":\"success\"")) {
                 return true;
             } else {
-                System.err.println("[ERROR] Bad Request: " + response.code() + " " + response.message());
+                System.err.println("[ERROR] Join lobby failed: " + response.message());
                 return false;
             }
         } catch (IOException ex) {
@@ -147,6 +148,7 @@ public class Okhttp {
             return false;
         }
     }
+
 
     //CREATE AND JOIN =================================================================================================
     //CREATE AND JOIN =================================================================================================

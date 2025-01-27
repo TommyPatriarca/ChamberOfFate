@@ -56,10 +56,12 @@ public class WaitingScreen {
         primaryStage.show();
 
         checkPlayersTimeline = new Timeline(new KeyFrame(Duration.seconds(2), event -> {
-            int playerCount = Integer.parseInt(okhttp.countPlayers())-1;
+            String countStr = okhttp.countPlayers();
+            int playerCount = (countStr != null && !countStr.isEmpty()) ? Integer.parseInt(countStr) : 0;
+
             System.out.println("[DEBUG] Numero di giocatori nella lobby: " + playerCount);
 
-            if (playerCount != 0 && playerCount==2) {
+            if (playerCount == 2) {
                 System.out.println("[INFO] Due giocatori trovati, avvio della partita.");
                 okhttp.setGameStarted();
                 startGame();
@@ -69,6 +71,7 @@ public class WaitingScreen {
         }));
         checkPlayersTimeline.setCycleCount(Timeline.INDEFINITE);
         checkPlayersTimeline.play();
+
 
     }
 
