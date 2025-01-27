@@ -237,14 +237,19 @@ public class PcLobbyScreen {
                 System.out.println("[INFO] Entrambi i giocatori sono presenti. Avvio del gioco...");
 
                 String gameStatus = okhttp.getAzione("gameStatus");
+                if (gameStatus == null || gameStatus.isEmpty()) {
+                    System.err.println("[ERROR] Lo stato del gioco non è disponibile. Riprova...");
+                    return;
+                }
+
                 if ("started".equals(gameStatus)) {
                     okhttp.setGameStarted();
-                } else if (gameStatus.isEmpty()) {
-                    System.err.println("[ERROR] Lo stato del gioco non è disponibile.");
+                } else {
+                    System.err.println("[ERROR] Lo stato del gioco non è ancora avviato.");
                 }
 
                 playGame(controller);
-                waitForOpponent.stop();  // Assicura che la timeline venga fermata
+                waitForOpponent.stop();
             } else {
                 System.out.println("[INFO] In attesa di un altro giocatore...");
             }
@@ -252,6 +257,7 @@ public class PcLobbyScreen {
         waitForOpponent.setCycleCount(Timeline.INDEFINITE);
         waitForOpponent.play();
     }
+
 
 
     private void playGame(ControllerTest controller) {

@@ -337,7 +337,7 @@ public class Okhttp {
                 if (!responseBody.isEmpty()) {
                     return responseBody;
                 } else {
-                    System.err.println("[ERROR] La risposta del server per getAzione è vuota.");
+                    System.err.println("[ERROR] Risposta vuota ricevuta dal server per getAzione.");
                     return "";
                 }
             } else {
