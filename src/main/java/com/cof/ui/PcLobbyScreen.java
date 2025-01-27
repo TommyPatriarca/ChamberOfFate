@@ -141,6 +141,7 @@ public class PcLobbyScreen {
 
         // Button Actions
         createLobbyButton.setOnAction(e -> showCreateLobbyDialog(primaryStage));
+
         joinLobbyButton.setOnAction(e -> {
             String selectedLobby = lobbyListView.getSelectionModel().getSelectedItem();
             if (selectedLobby != null) {
@@ -149,15 +150,16 @@ public class PcLobbyScreen {
                 boolean success = okhttp.joinLobby(selectedLobby);
 
                 if (success) {
-                    System.out.println("[INFO] Entrato nella lobby con successo.");
+                    System.out.println("[INFO] Player 2 entrato nella lobby con successo.");
                     startGame();
                 } else {
-                    System.err.println("[ERROR] Impossibile entrare nella lobby.");
+                    System.err.println("[ERROR] Impossibile entrare nella lobby. Riprova.");
                 }
             } else {
                 System.out.println("[WARNING] Nessuna lobby selezionata.");
             }
         });
+
 
 
 
@@ -218,43 +220,35 @@ public class PcLobbyScreen {
      * Fa iniziare il gioco
      */
     private void startGame() {
-        Stage stage = (Stage) lobbyListView.getScene().getWindow(); // Ottieni la finestra attuale
+        Stage stage = (Stage) lobbyListView.getScene().getWindow();
+        ControllerTest controller = new ControllerTest(true);
+        controller.startGame("giocatore2");
 
-        Platform.runLater(() -> {
-            ControllerTest controller = new ControllerTest(true);
-            controller.startGame("giocatore2");
+        Timeline waitForOpponent = new Timeline(new KeyFrame(Duration.seconds(2), event -> {
+            Okhttp okhttp = new Okhttp();
+            int playerCount = Integer.parseInt(okhttp.countPlayers());
 
-            while (!controller.checkStand()) {
-                if (controller.isMyTurn()) {
-                    System.out.println("Your turn! Press 'h' to hit or 's' to stand: ");
-                    Scanner scanner = new Scanner(System.in);
-                    String action = scanner.next();
-                    if (action.equalsIgnoreCase("h")) {
-                        controller.drawOnlineCard(controller.getPlayerKey());
-                        System.out.println("You drew a card!");
-                    } else if (action.equalsIgnoreCase("s")) {
-                        System.out.println("You ended your turn.");
-                    }
-                } else {
-                    System.out.println("Waiting for opponent...");
-                    try {
-                        Thread.sleep(2000);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
+            System.out.println("[DEBUG] Numero di giocatori nella lobby: " + playerCount);
+
+            if (playerCount == 2) {
+                System.out.println("[INFO] Entrambi i giocatori sono presenti. Avvio del gioco...");
+
+                // Assicurati che lo stato del gioco sia impostato su "started"
+                if (!okhttp.getAzione("gameStatus").equals("started")) {
+                    okhttp.setGameStarted();
                 }
-            }
 
-            int result = controller.checkResultOnline();
-            if (result == 1) {
-                System.out.println("Player 1 wins!");
-            } else if (result == 2) {
-                System.out.println("Player 2 wins!");
+                playGame(controller);
+                waitForOpponent.stop();
             } else {
-                System.out.println("It's a tie!");
+                System.out.println("[INFO] In attesa di un altro giocatore...");
             }
-        });
+        }));
+        waitForOpponent.setCycleCount(Timeline.INDEFINITE);
+        waitForOpponent.play();
     }
+
+
 
 
     /**
