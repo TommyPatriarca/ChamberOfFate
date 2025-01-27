@@ -57,10 +57,15 @@ public class WaitingScreen {
 
         checkPlayersTimeline = new Timeline(new KeyFrame(Duration.seconds(2), event -> {
             String gameStarted = okhttp.getAzione("gameStatus");
-            if (gameStarted != null && gameStarted.equals("started")) {
+            System.out.println("[DEBUG] Stato partita: " + gameStarted);
+
+            if ("started".equals(gameStarted)) {
                 startGame();
+            } else {
+                System.err.println("[WARNING] La partita non è ancora iniziata.");
             }
         }));
+
         checkPlayersTimeline.setCycleCount(Timeline.INDEFINITE);
         checkPlayersTimeline.play();
 

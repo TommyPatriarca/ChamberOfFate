@@ -118,11 +118,9 @@ public class Okhttp {
      * @return true se si è collegato al server,false se c'è stato un errore
      */
     public boolean joinLobby(String lobbyName) {
-
         String action = "join";
-        LOBBY_NAME=lobbyName;
+        LOBBY_NAME = lobbyName;
 
-        //Request for first url
         RequestBody formBody = new FormBody.Builder()
                 .add("azione", action)
                 .add("lobbyName", lobbyName)
@@ -133,50 +131,23 @@ public class Okhttp {
                 .post(formBody)
                 .build();
 
-        try {
-            Response response = client.newCall(request).execute();
+        try (Response response = client.newCall(request).execute()) {
+            System.out.println("[DEBUG] Request to: " + SERVER_URL_1);
+            System.out.println("[DEBUG] Params: azione=join, lobbyName=" + lobbyName);
 
-            // Mostra la risposta nella text area
             if (response.isSuccessful()) {
-                String responseBody = response.body().string();
-                System.out.println("Risposta del server: \n" + responseBody);
+                System.out.println("[INFO] Response: " + response.body().string());
+                return true;
             } else {
-                System.out.println("Errore del server: \n" + response.message());
+                System.err.println("[ERROR] Bad Request: " + response.code() + " " + response.message());
+                return false;
             }
         } catch (IOException ex) {
-            // Mostra un errore in caso di problemi con la connessione
-            System.out.println("Errore di connessione: \n" + ex.getMessage());
+            System.err.println("[ERROR] Connection Failed: " + ex.getMessage());
+            return false;
         }
-        //Request for first url
-
-        //Request for second url
-        RequestBody formBody2 = new FormBody.Builder()
-                .add("instruction", action)
-                .add("nomeFile", lobbyName)
-                .build();
-
-        Request request2 = new Request.Builder()
-                .url(SERVER_URL_2)
-                .post(formBody2)
-                .build();
-
-        try {
-            Response response2 = client.newCall(request2).execute();
-
-            // Mostra la risposta nella text area
-            if (response2.isSuccessful()) {
-                String responseBody = response2.body().string();
-                System.out.println("Risposta del server: \n" + responseBody);
-            } else {
-                System.out.println("Errore del server: \n" + response2.message());
-            }
-        } catch (IOException ex) {
-            // Mostra un errore in caso di problemi con la connessione
-            System.out.println("Errore di connessione: \n" + ex.getMessage());
-        }
-        //Request for second url
-        return true;
     }
+
     //CREATE AND JOIN =================================================================================================
     //CREATE AND JOIN =================================================================================================
 

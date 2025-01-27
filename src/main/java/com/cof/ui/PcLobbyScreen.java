@@ -142,15 +142,21 @@ public class PcLobbyScreen {
         joinLobbyButton.setOnAction(e -> {
             String selectedLobby = lobbyListView.getSelectionModel().getSelectedItem();
             if (selectedLobby != null) {
-                System.out.println("Selected Lobby: " + selectedLobby);
+                System.out.println("[DEBUG] Tentativo di ingresso nella lobby: " + selectedLobby);
                 Okhttp okhttp = new Okhttp();
-                okhttp.joinLobby(selectedLobby);
+                boolean success = okhttp.joinLobby(selectedLobby);
 
-                startGame();  // Chiamata senza bisogno di passare primaryStage
+                if (success) {
+                    System.out.println("[INFO] Entrato nella lobby con successo.");
+                    startGame();
+                } else {
+                    System.err.println("[ERROR] Impossibile entrare nella lobby.");
+                }
             } else {
-                System.out.println("No lobby selected.");
+                System.out.println("[WARNING] Nessuna lobby selezionata.");
             }
         });
+
 
 
         backButton.setOnAction(e -> {
