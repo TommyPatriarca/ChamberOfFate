@@ -236,9 +236,11 @@ public class PcLobbyScreen {
             if (playerCount == 2) {
                 System.out.println("[INFO] Entrambi i giocatori sono presenti. Avvio del gioco...");
 
-                // Assicurati che lo stato del gioco sia impostato su "started"
-                if (!okhttp.getAzione("gameStatus").equals("started")) {
+                String gameStatus = okhttp.getAzione("gameStatus");
+                if ("started".equals(gameStatus)) {
                     okhttp.setGameStarted();
+                } else if (gameStatus.isEmpty()) {
+                    System.err.println("[ERROR] Lo stato del gioco non è disponibile.");
                 }
 
                 playGame(controller);

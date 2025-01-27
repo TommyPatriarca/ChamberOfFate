@@ -321,7 +321,7 @@ public class Okhttp {
         RequestBody formBody = new FormBody.Builder()
                 .add("instruction", instruction)
                 .add("playerKey", playerKey)
-                .add("nomeFile",LOBBY_NAME)
+                .add("nomeFile", LOBBY_NAME)
                 .build();
 
         Request request = new Request.Builder()
@@ -332,20 +332,23 @@ public class Okhttp {
         try {
             Response response = client.newCall(request).execute();
 
-            // Mostra la risposta nella text area
-            if (response.isSuccessful()) {
-                String responseBody = response.body().string();
-                return  responseBody;
-                //System.out.println("Risposta del server: \n" + responseBody);
+            if (response.isSuccessful() && response.body() != null) {
+                String responseBody = response.body().string().trim();
+                if (!responseBody.isEmpty()) {
+                    return responseBody;
+                } else {
+                    System.err.println("[ERROR] La risposta del server per getAzione è vuota.");
+                    return "";
+                }
             } else {
-                System.out.println("Errore del server: \n" + response.message());
+                System.err.println("[ERROR] Errore nel recupero dell'azione: " + response.message());
             }
         } catch (IOException ex) {
-            // Mostra un errore in caso di problemi con la connessione
-            System.out.println("Errore di connessione: \n" + ex.getMessage());
+            System.err.println("[ERROR] Errore di connessione: " + ex.getMessage());
         }
-        return null;
+        return "";
     }
+
 
     /**
      * Ritorna la vita del giocatore
