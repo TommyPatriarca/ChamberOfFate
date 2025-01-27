@@ -26,6 +26,11 @@ public class ControllerTest {
 
     private int lastKnownOpponentMazzoSize = 2;
 
+    private int numPlayers = 0; // Numero di giocatori nella lobby
+    private int playerDeckSize = 0; // Dimensione del mazzo del giocatore corrente
+    private boolean myTurn = false; // Indica se è il turno del giocatore
+
+
 
     /**
      * Il controller è usato per gestire tutta la parte logica del gioco
@@ -63,7 +68,11 @@ public class ControllerTest {
      */
 
     public void startGame(String playerKey) {
-        startGameLoop();
+        if (numPlayers == 2) {
+            startGameLoop("giocatore1", "giocatore2");
+            startTurnChecker("giocatore1", "giocatore2");
+        }
+
         this.playerKey = playerKey;
         player1 = new PlayerObj(playerKey);
         player2 = new PlayerObj("opponent");
@@ -174,6 +183,9 @@ public class ControllerTest {
             Platform.runLater(() -> {
                 player1.setPlayDeck(getOnlineMazzo(playerKey));
                 player2.setPlayDeck(getOnlineMazzo(opponentKey));
+                playerDeckSize = okhttp.getMazzoSize("giocatore1");
+                System.out.println("[DEBUG] Dimensione del mazzo iniziale: " + playerDeckSize);
+
             });
         }));
         timeline.setCycleCount(1); // Esegui solo una volta
@@ -667,12 +679,70 @@ public class ControllerTest {
         }
     }
 
-    private void startGameLoop() {
-        Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(1), e -> {
-            checkForTurnUpdate();
-        }));
-        timeline.setCycleCount(Animation.INDEFINITE);
-        timeline.play();
+    public void startGameLoop(String playerKey, String opponentKey) {
+        checkTurn(playerKey, opponentKey);
+
+        while (true) {
+            if (myTurn) {
+                // Logica per pescare o stare
+                System.out.println("[INFO] È il tuo turno, scegli un'azione.");
+                break;
+            } else {
+                System.out.println("[INFO] Aspettando l'avversario...");
+            }
+
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+
+    private void checkTurn(String playerKey, String opponentKey) {
+        new Thread(() -> {
+            while (true) {
+                String opponentAction = okhttp.getAzione(opponentKey);
+                int opponentDeckSize = okhttp.getMazzo(opponentKey).size();
+
+                if (opponentAction.equals("stand") || opponentDeckSize > playerDeckSize) {
+                    System.out.println("[INFO] È il mio turno!");
+                    myTurn = true;
+                    break;
+                }
+
+                try {
+                    Thread.sleep(2000);  // Intervallo di polling di 2 secondi
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+    }
+
+    // Metodo per avviare il thread quando entrambi i giocatori sono pronti
+    public void startTurnChecker(String playerName, String opponentName) {
+        new Thread(() -> {
+            while (true) {
+                try {
+                    int currentOpponentDeckSize = okhttp.getMazzoSize(opponentName);
+                    String opponentAction = okhttp.getAzione(opponentName);
+
+                    if (opponentAction.equals("stand") || currentOpponentDeckSize > playerDeckSize) {
+                        myTurn = true;
+                        System.out.println("[INFO] Ora è il tuo turno!");
+                        break;
+                    } else {
+                        System.out.println("[INFO] In attesa che l'avversario giochi...");
+                    }
+
+                    Thread.sleep(2000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
     }
 
 

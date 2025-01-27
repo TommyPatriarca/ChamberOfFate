@@ -795,7 +795,7 @@ public class Okhttp {
     //DELETE LOBBY ====================================================================================================
 
     public int getMazzoSize(String playerKey) {
-        ArrayList<String> mazzo = getMazzo(playerKey);
-        return (mazzo != null) ? mazzo.size() : 0;
+        ArrayList<String> deck = getMazzo(playerKey);
+        return deck.size();
     }
 }
