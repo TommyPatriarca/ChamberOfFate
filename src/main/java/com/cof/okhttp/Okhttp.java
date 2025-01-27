@@ -584,7 +584,7 @@ public class Okhttp {
      * Inizializza il gioco online
      */
     public void setGameStarted() {
-        String instruction = "startGame";
+        String instruction = "join";  // Cambiato da "startGame" a "join"
 
         RequestBody formBody = new FormBody.Builder()
                 .add("instruction", instruction)
@@ -596,12 +596,11 @@ public class Okhttp {
                 .post(formBody)
                 .build();
 
-        try (Response response = client.newCall(request).execute()) {
-            String responseBody = response.body().string();
-            System.out.println("[DEBUG] setGameStarted response: " + responseBody);
-
-            if (response.isSuccessful() && responseBody.contains("\"status\":\"success\"")) {
-                System.out.println("Partita avviata con successo!");
+        try {
+            Response response = client.newCall(request).execute();
+            if (response.isSuccessful() && response.body() != null) {
+                String responseBody = response.body().string();
+                System.out.println("[DEBUG] setGameStarted response: " + responseBody);
             } else {
                 System.err.println("[ERROR] Errore nell'avvio della partita: " + response.message());
             }
@@ -609,6 +608,7 @@ public class Okhttp {
             System.err.println("[ERROR] Errore di connessione: " + ex.getMessage());
         }
     }
+
 
 
     /**
