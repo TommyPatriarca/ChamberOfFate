@@ -4,6 +4,7 @@ import com.cof.okhttp.Okhttp;
 import com.controller.managers.cardManager.Deck;
 import com.controller.objects.CardObj;
 import com.controller.objects.PlayerObj;
+import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
@@ -21,9 +22,9 @@ public class ControllerTest {
 
     private String playerKey, opponentKey;
 
-    private boolean onOrOff, hostOrP;
+    private boolean onOrOff, isMyTurn, hostOrP;
 
-    private int turnCount = 0;
+    private int lastKnownOpponentMazzoSize = 2;
 
 
     /**
@@ -62,6 +63,7 @@ public class ControllerTest {
      */
 
     public void startGame(String playerKey) {
+        startGameLoop();
         this.playerKey = playerKey;
         player1 = new PlayerObj(playerKey);
         player2 = new PlayerObj("opponent");
@@ -76,6 +78,7 @@ public class ControllerTest {
                 hostOrP = false;
                 opponentKey = "giocatore1";
             }
+
 
             onlineTurn(new Okhttp());
 
@@ -648,6 +651,31 @@ public class ControllerTest {
             return null;
         }
     }
+
+    public void checkForTurnUpdate() {
+        int myMazzoSize = okhttp.getMazzoSize(playerKey);
+        int opponentMazzoSize = okhttp.getMazzoSize(opponentKey);
+        String opponentAction = okhttp.getAzione(opponentKey);
+
+        if (opponentMazzoSize > lastKnownOpponentMazzoSize || "stand".equals(opponentAction)) {
+            System.out.println("[INFO] Il tuo turno è iniziato!");
+            lastKnownOpponentMazzoSize = opponentMazzoSize;  // Aggiorna il valore precedente
+            isMyTurn = true;
+        } else {
+            System.out.println("[INFO] In attesa che l'avversario giochi...");
+            isMyTurn = false;
+        }
+    }
+
+    private void startGameLoop() {
+        Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(1), e -> {
+            checkForTurnUpdate();
+        }));
+        timeline.setCycleCount(Animation.INDEFINITE);
+        timeline.play();
+    }
+
+
 
     public String getOpponentKey() {
         return opponentKey;
