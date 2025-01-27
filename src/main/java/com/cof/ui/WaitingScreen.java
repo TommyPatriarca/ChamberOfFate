@@ -56,16 +56,17 @@ public class WaitingScreen {
         primaryStage.show();
 
         checkPlayersTimeline = new Timeline(new KeyFrame(Duration.seconds(2), event -> {
-            String gameStarted = okhttp.getAzione("gameStatus");
-            System.out.println("[DEBUG] Stato partita: " + gameStarted);
+            int playerCount = Integer.parseInt(okhttp.countPlayers())-1;
+            System.out.println("[DEBUG] Numero di giocatori nella lobby: " + playerCount);
 
-            if ("started".equals(gameStarted)) {
+            if (playerCount != 0 && playerCount==2) {
+                System.out.println("[INFO] Due giocatori trovati, avvio della partita.");
+                okhttp.setGameStarted();
                 startGame();
             } else {
-                System.err.println("[WARNING] La partita non è ancora iniziata.");
+                System.out.println("[INFO] In attesa di altri giocatori...");
             }
         }));
-
         checkPlayersTimeline.setCycleCount(Timeline.INDEFINITE);
         checkPlayersTimeline.play();
 
