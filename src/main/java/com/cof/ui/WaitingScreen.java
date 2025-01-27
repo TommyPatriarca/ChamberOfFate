@@ -67,7 +67,9 @@ public class WaitingScreen {
             if (countStr == 2) {
                 System.out.println("[INFO] Due giocatori trovati, avvio della partita.");
                 if (!okhttp.getAzione("gameStatus").equals("started")) {
-                    okhttp.setGameStarted();
+                    if (okhttp.countPlayers().equals("2")) {
+                        okhttp.setGameStarted();
+                    }
                 }
                 startGame();
             } else {

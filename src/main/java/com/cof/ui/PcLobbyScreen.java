@@ -235,7 +235,8 @@ public class PcLobbyScreen {
 
             if (playerCount == 2) {
                 System.out.println("[INFO] Entrambi i giocatori sono presenti. Avvio del gioco...");
-                okhttp.initializePlayerAction("giocatore2");
+                controller.drawOnlineCard("giocatore2");
+                controller.drawOnlineCard("giocatore2");
 
                 String gameStatus = okhttp.getAzione("giocatore2");
                 if (gameStatus == null || gameStatus.isEmpty()) {

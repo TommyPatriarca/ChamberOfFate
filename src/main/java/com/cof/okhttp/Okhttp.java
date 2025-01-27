@@ -483,29 +483,32 @@ public class Okhttp {
     public void setDeck(ArrayList<String> deck) {
         String instruction = "deckGenerator";
         String deckJson = new Gson().toJson(deck);
+        if(getDeck().isEmpty()){
+            RequestBody formBody = new FormBody.Builder()
+                    .add("instruction", instruction)
+                    .add("deck", deckJson)
+                    .add("nomeFile", LOBBY_NAME)
+                    .build();
 
-        RequestBody formBody = new FormBody.Builder()
-                .add("instruction", instruction)
-                .add("deck", deckJson)
-                .add("nomeFile", LOBBY_NAME)
-                .build();
+            Request request = new Request.Builder()
+                    .url(SERVER_URL_2)
+                    .post(formBody)
+                    .build();
 
-        Request request = new Request.Builder()
-                .url(SERVER_URL_2)
-                .post(formBody)
-                .build();
+            try (Response response = client.newCall(request).execute()) {
+                String responseBody = response.body().string();
+                System.out.println("[DEBUG] setDeck response: " + responseBody);
 
-        try (Response response = client.newCall(request).execute()) {
-            String responseBody = response.body().string();
-            System.out.println("[DEBUG] setDeck response: " + responseBody);
-
-            if (response.isSuccessful() && responseBody.contains("\"status\":\"success\"")) {
-                System.out.println("Mazzo salvato correttamente!");
-            } else {
-                System.err.println("[ERROR] Errore nel salvataggio del mazzo: " + response.message());
+                if (response.isSuccessful() && responseBody.contains("\"status\":\"success\"")) {
+                    System.out.println("Mazzo salvato correttamente!");
+                } else {
+                    System.err.println("[ERROR] Errore nel salvataggio del mazzo: " + response.message());
+                }
+            } catch (IOException ex) {
+                System.err.println("[ERROR] Errore di connessione: " + ex.getMessage());
             }
-        } catch (IOException ex) {
-            System.err.println("[ERROR] Errore di connessione: " + ex.getMessage());
+        }else {
+            System.out.println("MAZZO GIA PRESENTE");
         }
     }
 
