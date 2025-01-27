@@ -63,12 +63,18 @@ public class WaitingScreen {
 
             if (playerCount == 2) {
                 System.out.println("[INFO] Due giocatori trovati, avvio della partita.");
-                okhttp.setGameStarted();
+
+                // Inizializza il mazzo solo se non è già stato fatto
+                if (!okhttp.getAzione("gameStatus").equals("started")) {
+                    okhttp.setGameStarted();
+                }
+
                 startGame();
             } else {
                 System.out.println("[INFO] In attesa di altri giocatori...");
             }
         }));
+
         checkPlayersTimeline.setCycleCount(Timeline.INDEFINITE);
         checkPlayersTimeline.play();
 
@@ -88,10 +94,8 @@ public class WaitingScreen {
         }
 
         Scanner scanner = new Scanner(System.in);
-        System.out.println("Enter player key: ");
-        String key = scanner.next();
 
-        ControllerOnline controller = new ControllerOnline(true, key);
+        ControllerOnline controller = new ControllerOnline(true, "giocatore1");
         controller.startGame("giocatore1");
 
         while (!controller.checkGameOver()) {

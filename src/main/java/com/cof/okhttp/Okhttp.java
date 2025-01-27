@@ -477,15 +477,14 @@ public class Okhttp {
      * Inizializza il mazzo del gioco
      * @param deck il mazzo del gioco
      */
-    public void setDeck(ArrayList<String> deck ){
+    public void setDeck(ArrayList<String> deck) {
         String instruction = "deckGenerator";
-
         String deckJson = new Gson().toJson(deck);
 
         RequestBody formBody = new FormBody.Builder()
                 .add("instruction", instruction)
                 .add("deck", deckJson)
-                .add("nomeFile",LOBBY_NAME)
+                .add("nomeFile", LOBBY_NAME)
                 .build();
 
         Request request = new Request.Builder()
@@ -493,21 +492,20 @@ public class Okhttp {
                 .post(formBody)
                 .build();
 
-        try {
-            Response response = client.newCall(request).execute();
+        try (Response response = client.newCall(request).execute()) {
+            String responseBody = response.body().string();
+            System.out.println("[DEBUG] setDeck response: " + responseBody);
 
-            // Mostra la risposta nella text area
-            if (response.isSuccessful()) {
-                String responseBody = response.body().string();
-                System.out.println("Risposta del server: \n" + responseBody);
+            if (response.isSuccessful() && responseBody.contains("\"status\":\"success\"")) {
+                System.out.println("Mazzo salvato correttamente!");
             } else {
-                System.out.println("Errore del server: \n" + response.message());
+                System.err.println("[ERROR] Errore nel salvataggio del mazzo: " + response.message());
             }
         } catch (IOException ex) {
-            // Mostra un errore in caso di problemi con la connessione
-            System.out.println("Errore di connessione: \n" + ex.getMessage());
+            System.err.println("[ERROR] Errore di connessione: " + ex.getMessage());
         }
     }
+
 
     /**
      * Aggiunge una carta al giocatore
@@ -595,18 +593,20 @@ public class Okhttp {
                 .post(formBody)
                 .build();
 
-        try {
-            Response response = client.newCall(request).execute();
+        try (Response response = client.newCall(request).execute()) {
+            String responseBody = response.body().string();
+            System.out.println("[DEBUG] setGameStarted response: " + responseBody);
 
-            if (response.isSuccessful()) {
+            if (response.isSuccessful() && responseBody.contains("\"status\":\"success\"")) {
                 System.out.println("Partita avviata con successo!");
             } else {
-                System.out.println("Errore nell'avvio della partita: " + response.message());
+                System.err.println("[ERROR] Errore nell'avvio della partita: " + response.message());
             }
         } catch (IOException ex) {
-            System.out.println("Errore di connessione: " + ex.getMessage());
+            System.err.println("[ERROR] Errore di connessione: " + ex.getMessage());
         }
     }
+
 
     /**
      * Il giocatore ha scelto di pescare
