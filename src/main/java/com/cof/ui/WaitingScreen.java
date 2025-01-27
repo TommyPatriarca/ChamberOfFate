@@ -36,6 +36,9 @@ public class WaitingScreen {
     private Timeline checkPlayersTimeline;
     private Okhttp okhttp = new Okhttp();
     private Stage stage;
+    private Timeline waitForOpponent;
+    private Timeline gameLoop;
+
 
     /**
      * Configura la finestra principale
@@ -69,9 +72,6 @@ public class WaitingScreen {
                 startGame();
             } else {
                 System.out.println("[INFO] In attesa di altri giocatori... Riprova.");
-                okhttp.getLobbyListAndUpdateUI(updatedLobbies -> {
-                    lobbyListView.getItems().setAll(updatedLobbies);
-                });
             }
         }));
 
@@ -91,7 +91,35 @@ public class WaitingScreen {
         ControllerTest controller = new ControllerTest(true);
         controller.startGame("giocatore1");
 
-        Timeline gameLoop = new Timeline(new KeyFrame(Duration.seconds(2), event -> {
+        System.out.println("[INFO] Il gioco è iniziato per il giocatore 1, in attesa dell'avversario...");
+
+        waitForOpponent = new Timeline(new KeyFrame(Duration.seconds(2), event -> {
+            Okhttp okhttp = new Okhttp();
+            int playerCount = Integer.parseInt(okhttp.countPlayers());
+
+            if (playerCount == 2) {
+                System.out.println("[INFO] Entrambi i giocatori sono connessi. Avvio del gioco...");
+
+                // Assicurati che lo stato del gioco sia impostato su "started"
+                if (!okhttp.getAzione("gameStatus").equals("started")) {
+                    okhttp.setGameStarted();
+                }
+
+                playGame(controller);
+                waitForOpponent.stop();  // Ora waitForOpponent è inizializzato correttamente
+            } else {
+                System.out.println("[INFO] In attesa di un altro giocatore...");
+            }
+        }));
+        waitForOpponent.setCycleCount(Timeline.INDEFINITE);
+        waitForOpponent.play();
+    }
+
+
+
+
+    private void playGame(ControllerTest controller) {
+        gameLoop = new Timeline(new KeyFrame(Duration.seconds(2), event -> {
             if (controller.isMyTurn()) {
                 System.out.println("Your turn! Press 'h' to hit or 's' to stand: ");
                 Scanner scanner = new Scanner(System.in);
@@ -103,7 +131,7 @@ public class WaitingScreen {
                     System.out.println("You ended your turn.");
                 }
             } else {
-                System.out.println("[INFO] In attesa dell'avversario...");
+                System.out.println("[INFO] Aspettando l'avversario...");
             }
 
             if (controller.checkStand()) {
@@ -115,12 +143,15 @@ public class WaitingScreen {
                 } else {
                     System.out.println("It's a tie!");
                 }
-                gameLoop.stop();
+                gameLoop.stop();  // Ora gameLoop è inizializzato correttamente
             }
         }));
         gameLoop.setCycleCount(Timeline.INDEFINITE);
         gameLoop.play();
     }
+
+
+
 
 
 

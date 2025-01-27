@@ -38,6 +38,9 @@ public class PcLobbyScreen {
     private final List<String> lobbies = new ArrayList<>();
     private ListView<String> lobbyListView;
     private StackPane overlayPane;
+    private Timeline waitForOpponent;
+    private Timeline gameLoop;
+
 
     // Preferences to store selected lobby
     private final Preferences preferences = Preferences.userNodeForPackage(PcLobbyScreen.class);
@@ -224,7 +227,7 @@ public class PcLobbyScreen {
         ControllerTest controller = new ControllerTest(true);
         controller.startGame("giocatore2");
 
-        Timeline waitForOpponent = new Timeline(new KeyFrame(Duration.seconds(2), event -> {
+        waitForOpponent = new Timeline(new KeyFrame(Duration.seconds(2), event -> {
             Okhttp okhttp = new Okhttp();
             int playerCount = Integer.parseInt(okhttp.countPlayers());
 
@@ -239,7 +242,7 @@ public class PcLobbyScreen {
                 }
 
                 playGame(controller);
-                waitForOpponent.stop();
+                waitForOpponent.stop();  // Assicura che la timeline venga fermata
             } else {
                 System.out.println("[INFO] In attesa di un altro giocatore...");
             }
@@ -249,6 +252,37 @@ public class PcLobbyScreen {
     }
 
 
+    private void playGame(ControllerTest controller) {
+        gameLoop = new Timeline(new KeyFrame(Duration.seconds(2), event -> {
+            if (controller.isMyTurn()) {
+                System.out.println("Your turn! Press 'h' to hit or 's' to stand: ");
+                Scanner scanner = new Scanner(System.in);
+                String action = scanner.next();
+                if (action.equalsIgnoreCase("h")) {
+                    controller.drawOnlineCard(controller.getPlayerKey());
+                    System.out.println("You drew a card!");
+                } else if (action.equalsIgnoreCase("s")) {
+                    System.out.println("You ended your turn.");
+                }
+            } else {
+                System.out.println("[INFO] Aspettando l'avversario...");
+            }
+
+            if (controller.checkStand()) {
+                int result = controller.checkResultOnline();
+                if (result == 1) {
+                    System.out.println("Player 1 wins!");
+                } else if (result == 2) {
+                    System.out.println("Player 2 wins!");
+                } else {
+                    System.out.println("It's a tie!");
+                }
+                gameLoop.stop();  // Arresta la timeline di gioco una volta completato
+            }
+        }));
+        gameLoop.setCycleCount(Timeline.INDEFINITE);
+        gameLoop.play();
+    }
 
 
     /**
