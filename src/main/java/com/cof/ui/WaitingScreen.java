@@ -79,13 +79,11 @@ public class WaitingScreen {
         }
 
         Scanner scanner = new Scanner(System.in);
-        System.out.println("Are you the first player? (true/false): ");
-        boolean isFirst = scanner.nextBoolean();
         System.out.println("Enter player key: ");
         String key = scanner.next();
 
-        ControllerOnline controller = new ControllerOnline(isFirst, key);
-        controller.startGame(isFirst ? "Player 1" : "Player 2");
+        ControllerOnline controller = new ControllerOnline(true, key);
+        controller.startGame("giocatore1");
 
         while (!controller.checkGameOver()) {
             if (controller.isMyTurn()) {

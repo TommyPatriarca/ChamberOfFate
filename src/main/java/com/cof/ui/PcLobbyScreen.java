@@ -212,35 +212,34 @@ public class PcLobbyScreen {
     private void startGame() {
         Stage stage = (Stage) lobbyListView.getScene().getWindow(); // Ottieni la finestra attuale
 
-        ControllerOnline controller = new ControllerOnline(true, "belinga");
-        controller.startGame("Player 1");
+        ControllerOnline controller = new ControllerOnline(true, "giocatore2");
+        controller.startGame("giocatore2");
 
         // Aggiungi la logica di stampa per testare la CLI temporanea
-        System.out.println("Gioco online avviato per Player 1.");
-
+        System.out.println("Gioco online avviato per Player 2.");
+        controller.startGame("giocatore2");
         while (!controller.checkGameOver()) {
             if (controller.isMyTurn()) {
-                System.out.println("È il tuo turno! Premi 'h' per pescare una carta o 's' per passare: ");
+                System.out.println("Your turn! Press 'h' to hit or 's' to stand: ");
                 Scanner scanner = new Scanner(System.in);
                 String action = scanner.next();
                 if (action.equalsIgnoreCase("h")) {
                     controller.hitCard(true);
-                    System.out.println("Carta pescata!");
+                    System.out.println("You drew a card!");
                 } else if (action.equalsIgnoreCase("s")) {
                     controller.endTurn();
-                    System.out.println("Turno passato all'avversario.");
+                    System.out.println("You ended your turn.");
                 }
             } else {
-                System.out.println("In attesa dell'avversario...");
+                System.out.println("Waiting for opponent...Non è il mio turno");
                 try {
-                    Thread.sleep(2000); // Aspetta per simulare polling al server
+                    Thread.sleep(5000); // Aggiunto ritardo per ridurre le richieste al server
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
             }
         }
-
-        System.out.println("Partita terminata!");
+        System.out.println("Game over!");
     }
 
     /**
