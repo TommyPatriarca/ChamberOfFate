@@ -229,7 +229,7 @@ public class PcLobbyScreen {
 
         waitForOpponent = new Timeline(new KeyFrame(Duration.seconds(2), event -> {
             Okhttp okhttp = new Okhttp();
-            int playerCount = Integer.parseInt(okhttp.countPlayers());
+            int playerCount = Integer.parseInt(okhttp.countPlayers())-1;
 
             System.out.println("[DEBUG] Numero di giocatori nella lobby: " + playerCount);
 

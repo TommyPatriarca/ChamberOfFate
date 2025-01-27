@@ -787,4 +787,32 @@ public class Okhttp {
     }
     //DELETE LOBBY ====================================================================================================
     //DELETE LOBBY ====================================================================================================
+
+    public void initializePlayerAction(String player) {
+        String instruction = "addCarta";
+
+        RequestBody formBody = new FormBody.Builder()
+                .add("instruction", instruction)
+                .add("nomeFile", LOBBY_NAME)
+                .add("player", player)
+                .build();
+
+        Request request = new Request.Builder()
+                .url(SERVER_URL_2)
+                .post(formBody)
+                .build();
+
+        try {
+            Response response = client.newCall(request).execute();
+            if (response.isSuccessful() && response.body() != null) {
+                String responseBody = response.body().string();
+                System.out.println("[DEBUG] Prima carta assegnata al giocatore " + player + ": " + responseBody);
+            } else {
+                System.err.println("[ERROR] Errore nell'assegnare la prima carta: " + response.message());
+            }
+        } catch (IOException ex) {
+            System.err.println("[ERROR] Errore di connessione: " + ex.getMessage());
+        }
+    }
+
 }
