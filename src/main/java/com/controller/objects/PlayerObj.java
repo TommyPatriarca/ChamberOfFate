@@ -101,4 +101,8 @@ public class PlayerObj {
     public void decrementHP() {
         HP--;
     }
+
+    public void setPlayDeck(ArrayList<CardObj> onlineMazzo) {
+        playDeck=onlineMazzo;
+    }
 }

@@ -4,8 +4,10 @@ import com.cof.okhttp.Okhttp;
 import com.cof.utils.FontUtils;
 import com.controller.Controller;
 import com.controller.ControllerOnline;
+import com.controller.ControllerTest;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
+import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -218,35 +220,42 @@ public class PcLobbyScreen {
     private void startGame() {
         Stage stage = (Stage) lobbyListView.getScene().getWindow(); // Ottieni la finestra attuale
 
-        ControllerOnline controller = new ControllerOnline(true, "giocatore2");
-        controller.startGame("giocatore2");
+        Platform.runLater(() -> {
+            ControllerTest controller = new ControllerTest(true);
+            controller.startGame("giocatore2");
 
-        // Aggiungi la logica di stampa per testare la CLI temporanea
-        System.out.println("Gioco online avviato per Player 2.");
-        controller.startGame("giocatore2");
-        while (!controller.checkGameOver()) {
-            if (controller.isMyTurn()) {
-                System.out.println("Your turn! Press 'h' to hit or 's' to stand: ");
-                Scanner scanner = new Scanner(System.in);
-                String action = scanner.next();
-                if (action.equalsIgnoreCase("h")) {
-                    controller.hitCard(true);
-                    System.out.println("You drew a card!");
-                } else if (action.equalsIgnoreCase("s")) {
-                    controller.endTurn();
-                    System.out.println("You ended your turn.");
-                }
-            } else {
-                System.out.println("Waiting for opponent...Non è il mio turno");
-                try {
-                    Thread.sleep(5000); // Aggiunto ritardo per ridurre le richieste al server
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+            while (!controller.checkStand()) {
+                if (controller.isMyTurn()) {
+                    System.out.println("Your turn! Press 'h' to hit or 's' to stand: ");
+                    Scanner scanner = new Scanner(System.in);
+                    String action = scanner.next();
+                    if (action.equalsIgnoreCase("h")) {
+                        controller.drawOnlineCard(controller.getPlayerKey());
+                        System.out.println("You drew a card!");
+                    } else if (action.equalsIgnoreCase("s")) {
+                        System.out.println("You ended your turn.");
+                    }
+                } else {
+                    System.out.println("Waiting for opponent...");
+                    try {
+                        Thread.sleep(2000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
-        }
-        System.out.println("Game over!");
+
+            int result = controller.checkResultOnline();
+            if (result == 1) {
+                System.out.println("Player 1 wins!");
+            } else if (result == 2) {
+                System.out.println("Player 2 wins!");
+            } else {
+                System.out.println("It's a tie!");
+            }
+        });
     }
+
 
     /**
      * Crea una finestra di dialogo per permettere all'utente di creare una nuova lobby

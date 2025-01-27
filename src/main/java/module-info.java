@@ -6,6 +6,7 @@ module com.cof {
     requires okhttp3;
     requires java.prefs;
     requires com.google.gson;
+    requires java.logging;
 
     opens com.cof to javafx.fxml;
     exports com.cof;

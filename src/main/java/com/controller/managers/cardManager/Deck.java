@@ -154,4 +154,8 @@ public class Deck {
     public ArrayList<CardObj> getDeckArr() {
         return deckArr;
     }
+
+    public void setDeckArr(ArrayList<CardObj> onlineDeck) {
+        this.deckArr = deckArr;
+    }
 }
