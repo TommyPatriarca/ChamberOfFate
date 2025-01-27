@@ -56,12 +56,11 @@ public class WaitingScreen {
         primaryStage.show();
 
         checkPlayersTimeline = new Timeline(new KeyFrame(Duration.seconds(2), event -> {
-            String countStr = okhttp.countPlayers();
-            int playerCount = (countStr != null && !countStr.isEmpty()) ? Integer.parseInt(countStr) : 0;
+            int countStr = Integer.parseInt(okhttp.countPlayers())-1;
 
-            System.out.println("[DEBUG] Numero di giocatori nella lobby: " + playerCount);
+            System.out.println("[DEBUG] Numero di giocatori nella lobby: " + countStr);
 
-            if (playerCount == 2) {
+            if (countStr == 2) {
                 System.out.println("[INFO] Due giocatori trovati, avvio della partita.");
 
                 // Inizializza il mazzo solo se non è già stato fatto
