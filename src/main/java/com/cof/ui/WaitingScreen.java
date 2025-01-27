@@ -61,7 +61,7 @@ public class WaitingScreen {
         primaryStage.show();
 
         checkPlayersTimeline = new Timeline(new KeyFrame(Duration.seconds(2), event -> {
-            int countStr = Integer.parseInt(okhttp.countPlayers()) - 1;
+            int countStr = Integer.parseInt(okhttp.countPlayers());
             System.out.println("[DEBUG] Numero di giocatori nella lobby: " + countStr);
 
             if (countStr == 2) {
