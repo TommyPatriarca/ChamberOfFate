@@ -243,7 +243,7 @@ public class ControllerTest {
      * @return se true, entrambi stand, se false no
      */
     public boolean checkStand(){
-        if(okhttp.getAzione(playerKey).equals("stand") && okhttp.getAzione(opponentKey).equals("stand")){
+        if(okhttp.getAzione(playerKey).replace("\"","").equals("stand") && okhttp.getAzione(opponentKey).replace("\"","").equals("stand")){
             return true;
         }
         else{
@@ -657,7 +657,7 @@ public class ControllerTest {
         int opponentMazzoSize = okhttp.getMazzoSize(opponentKey);
         String opponentAction = okhttp.getAzione(opponentKey);
 
-        if (opponentMazzoSize > lastKnownOpponentMazzoSize || "stand".equals(opponentAction)) {
+        if (opponentMazzoSize > lastKnownOpponentMazzoSize || "stand".equals(opponentAction.replace("\"",""))) {
             System.out.println("[INFO] Il tuo turno è iniziato!");
             lastKnownOpponentMazzoSize = opponentMazzoSize;  // Aggiorna il valore precedente
             isMyTurn = true;
