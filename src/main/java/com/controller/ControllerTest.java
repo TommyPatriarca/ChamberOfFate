@@ -656,13 +656,14 @@ public class ControllerTest {
         int myMazzoSize = okhttp.getMazzoSize(playerKey);
         int opponentMazzoSize = okhttp.getMazzoSize(opponentKey);
         String opponentAction = okhttp.getAzione(opponentKey);
+        opponentAction= opponentAction.replace("\"","");
 
         if (opponentMazzoSize > lastKnownOpponentMazzoSize || "stand".equals(opponentAction.replace("\"",""))) {
             System.out.println("[INFO] Il tuo turno è iniziato!");
             lastKnownOpponentMazzoSize = opponentMazzoSize;  // Aggiorna il valore precedente
             isMyTurn = true;
         } else {
-            System.out.println("[INFO] In attesa che l'avversario giochi...");
+            System.out.println("[INFO] In attesa che l'avversario giochi..."+lastKnownOpponentMazzoSize+opponentMazzoSize+opponentAction);
             isMyTurn = false;
         }
     }
