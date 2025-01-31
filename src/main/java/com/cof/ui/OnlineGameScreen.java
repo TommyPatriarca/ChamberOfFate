@@ -6,6 +6,7 @@ import com.cof.managers.SoundManager;
 import com.cof.utils.FontUtils;
 import com.controller.Controller;
 import com.controller.ControllerOnline;
+import com.controller.ControllerTest;
 import com.controller.objects.CardObj;
 import javafx.animation.*;
 import javafx.application.Platform;
@@ -38,7 +39,7 @@ public class OnlineGameScreen {
     private double yOffset = 0;
     private boolean isPlayerTurn = true, isGamePaused = false; // True: turno del giocatore, False: turno del bot
     private SoundManager soundManager = new SoundManager();
-    private ControllerOnline controller;
+    private ControllerTest controller;
     private HBox playerHandDisplay, opponentHandDisplay;
     private Label currentPlayerLabel, player1HP, player2HP,player1ScoreLabel, player2ScoreLabel;
     private Button drawCardButton, passTurnButton;
@@ -51,7 +52,7 @@ public class OnlineGameScreen {
     /**
      * Funzione per mostrare la schermata di gioco
      */
-    public OnlineGameScreen(ControllerOnline controller) {
+    public OnlineGameScreen(ControllerTest controller) {
         this.controller = controller;
     }
 
@@ -284,7 +285,7 @@ public class OnlineGameScreen {
         isPlayerTurn = false;
 
         // Comunica al server che il turno è finito
-        controller.endTurn(playerStands);
+        ///controller.endTurn(playerStands);
 
         // Aggiorna l'interfaccia
         currentPlayerLabel.setText("Opponent's Turn");
@@ -962,7 +963,7 @@ public class OnlineGameScreen {
         isRoundEnded=false;
         isPareggio=false;
 
-        controller.nextTurn();
+        ///controller.nextTurn();
         updateGameDisplay();
         startPlayerTurn();
     }

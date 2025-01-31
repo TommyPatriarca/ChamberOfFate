@@ -333,7 +333,12 @@ public class PcLobbyScreen {
         createButton.setDisable(true);
 
         lobbyNameField.textProperty().addListener((obs, oldText, newText) -> {
-            boolean isValidName = newText.matches("[a-zA-Z0-9 ]+");
+            boolean isValidName = newText.matches("[a-zA-Z0-9 ]*") && newText.length() <= 12;
+            if (isValidName && !newText.isEmpty()) {
+                lobbyNameField.setStyle("-fx-font-size: 16px; -fx-border-width: 2px; -fx-border-color: green;");
+            } else {
+                lobbyNameField.setStyle("-fx-font-size: 16px; -fx-border-width: 2px; -fx-border-color: red;");
+            }
             createButton.setDisable(!isValidName || newText.isEmpty());
         });
 
